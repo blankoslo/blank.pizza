@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+  "github.com/blankoslo/blank.pizza/common"
 
   	"github.com/nlopes/slack"
 )
 
 func main() {
-	api := slack.New("xoxb-80060354886-yGZviwVO4TrMyBh0W3pJz7By")
+	var api = slack.New(os.Getenv("SLACK_TOKEN"))
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
 	slack.SetLogger(logger)
 	api.SetDebug(true)
