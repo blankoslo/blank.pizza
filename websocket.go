@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-  "github.com/blankoslo/blank.pizza/common"
 
   	"github.com/nlopes/slack"
 )
