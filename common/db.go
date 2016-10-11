@@ -57,3 +57,32 @@ func GetRandomUsers(numberOfUsers int) []string {
 
   return userSlackIDs
 }
+
+func SaveInvitations(slackIDs []string, eventID string) {
+  var SQLValues string
+  for i,slackID := range slackIDs {
+    SQLValues += fmt.Sprintf("('%s', '%s')", eventID, slackID)
+    if (i < len(slackIDs) - 1) { SQLValues += ", " }
+  }
+
+  db.Exec(fmt.Sprintf("INSERT INTO invitations (event_id, slack_id) VALUES %s;", SQLValues))
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+
+func GetEventInNeedOfInvitations()(string, string, string)  {
+    var id, time, place string
+    err := db.QueryRow("SELECT id, time, place FROM events WHERE time  < NOW() + interval '10 day' AND NOT EXISTS (SELECT * FROM invitations WHERE invitations.event_id = events.id)").Scan(&id, &time, &place)
+    switch {
+    case err == sql.ErrNoRows:
+            log.Printf("No upcoming events without invitations")
+    case err != nil:
+            log.Fatal(err)
+    default:
+            log.Printf("Event with ID  %s needs invitations \n", id)
+    }
+
+    return id, time, place
+
+}
