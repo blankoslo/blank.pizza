@@ -37,7 +37,7 @@ func updateUsers(users []slack.User) {
   }
 }
 
-func GetUsersToInvite(numberOfUsers int, eventID string) []string {
+func getUsersToInvite(numberOfUsers int, eventID string) []string {
   //TODO expand this with how many attended, and how many eligible for
   var userSlackIDs []string
   rows, err := db.Query(fmt.Sprintf("select * from (select distinct slack_users.slack_id from slack_users where not exists (select * from invitations where invitations.event_id = '%s' and invitations.slack_id = slack_users.slack_id)) as slack_id order by random() limit %d;", eventID, numberOfUsers))
@@ -57,7 +57,7 @@ func GetUsersToInvite(numberOfUsers int, eventID string) []string {
   return userSlackIDs
 }
 
-func SaveInvitations(slackIDs []string, eventID string) {
+func saveInvitations(slackIDs []string, eventID string) {
   var SQLValues string
   for i,slackID := range slackIDs {
     SQLValues += fmt.Sprintf("('%s', '%s')", eventID, slackID)
@@ -70,7 +70,7 @@ func SaveInvitations(slackIDs []string, eventID string) {
   }
 }
 
-func GetEventInNeedOfInvitations()(string, time.Time, string, int)  {
+func getEventInNeedOfInvitations()(string, time.Time, string, int)  {
     var id, place string
     var timestamp time.Time
     var numberOfInvited int
@@ -87,7 +87,7 @@ func GetEventInNeedOfInvitations()(string, time.Time, string, int)  {
     return id, timestamp, place, numberOfInvited
 }
 
-func GetInvitedUsers() []string {
+func getInvitedUsers() []string {
     var userSlackIDs []string
     rows, err := db.Query("SELECT DISTINCT slack_id FROM invitations WHERE rsvp = 'unanswered';")
 

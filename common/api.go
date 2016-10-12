@@ -13,14 +13,13 @@ func Rsvp(slackID string, answer string) {
 }
 
 func InviteIfNeeded() {
-  eventID, timestamp, place, numberOfAlreadyInvited := GetEventInNeedOfInvitations()
-  fmt.Printf(eventID)
+  eventID, timestamp, place, numberOfAlreadyInvited := getEventInNeedOfInvitations()
   if(eventID != "") {
     syncDbWithSlack()
     numberOfUsersToInvite := PeoplePerEvent - numberOfAlreadyInvited
-    randomUsers := GetUsersToInvite(numberOfUsersToInvite, eventID)
+    randomUsers := getUsersToInvite(numberOfUsersToInvite, eventID)
 
-    SaveInvitations(randomUsers, eventID)
+    saveInvitations(randomUsers, eventID)
 
     for _,user := range randomUsers {
       SendSlackMessage("U0A9R2Y1X", fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Kan du? (ja/nei)", place, timestamp.Format("02. jan kl 15:04")))
