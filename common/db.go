@@ -5,6 +5,7 @@ import (
   "os"
   "log"
 	"database/sql"
+  "time"
 
   "github.com/nlopes/slack"
   _ "github.com/lib/pq"
@@ -69,10 +70,11 @@ func SaveInvitations(slackIDs []string, eventID string) {
   }
 }
 
-func GetEventInNeedOfInvitations()(string, string, string, int)  {
-    var id, time, place string
+func GetEventInNeedOfInvitations()(string, time.Time, string, int)  {
+    var id, place string
+    var timestamp time.Time
     var numberOfInvited int
-    err := db.QueryRow(fmt.Sprintf("select id, time, place, count(event_id) as invited from events left outer join invitations on event_id = id and (rsvp = 'unanswered' or rsvp = 'attending') where time  < NOW() + interval '10 days' group by id having count(event_id) < %d;", PeoplePerEvent)).Scan(&id, &time, &place, &numberOfInvited)
+    err := db.QueryRow(fmt.Sprintf("select id, time, place, count(event_id) as invited from events left outer join invitations on event_id = id and (rsvp = 'unanswered' or rsvp = 'attending') where time  < NOW() + interval '10 days' group by id having count(event_id) < %d;", PeoplePerEvent)).Scan(&id, &timestamp, &place, &numberOfInvited)
     switch {
       case err == sql.ErrNoRows:
               log.Printf("No upcoming events without invitations")
@@ -82,7 +84,7 @@ func GetEventInNeedOfInvitations()(string, string, string, int)  {
               log.Printf("Event with ID  %s needs invitations \n", id)
     }
 
-    return id, time, place, numberOfInvited
+    return id, timestamp, place, numberOfInvited
 }
 
 func GetInvitedUsers() []string {
@@ -105,7 +107,7 @@ func GetInvitedUsers() []string {
     return userSlackIDs
 }
 
-func Rsvp(slackID string, answer string) {
+func rsvp(slackID string, answer string) {
   db.Exec(fmt.Sprintf("UPDATE invitations SET rsvp = '%s' WHERE slack_id = '%s' AND rsvp = 'unanswered';", answer, slackID))
   if err != nil {
     log.Fatal(err)
@@ -119,9 +121,10 @@ func markEventAsFinalized(eventID string) {
   }
 }
 
-func getEventReadyToFinalize()(string, string, string) {
-  var eventID, time, place string
-  err := db.QueryRow(fmt.Sprintf("select event_id, time, place from slack_users, invitations, events where invitations.slack_id = slack_users.slack_id and invitations.event_id = events.id and rsvp = 'attending' and not finalized group by event_id, time, place having count(event_id) = %d;", PeoplePerEvent)).Scan(&eventID, &time, &place)
+func getEventReadyToFinalize()(string, time.Time, string) {
+  var eventID, place string
+  var timestamp time.Time
+  err := db.QueryRow(fmt.Sprintf("select event_id, time, place from slack_users, invitations, events where invitations.slack_id = slack_users.slack_id and invitations.event_id = events.id and rsvp = 'attending' and not finalized group by event_id, time, place having count(event_id) = %d;", PeoplePerEvent)).Scan(&eventID, &timestamp, &place)
   switch {
     case err == sql.ErrNoRows:
       log.Printf("No events ready to finalize")
@@ -130,7 +133,7 @@ func getEventReadyToFinalize()(string, string, string) {
     default:
       log.Printf("Event with ID %s is ready for finalizing \n", eventID)
   }
-  return eventID, time, place
+  return eventID, timestamp, place
 }
 
 func getAttendingUsers(eventID string) []string {

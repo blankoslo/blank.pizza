@@ -8,8 +8,12 @@ import (
 const PeoplePerEvent = 5
 const pizzaChannel = "C2NC8DBN1"
 
+func Rsvp(slackID string, answer string) {
+  rsvp(slackID, answer)
+}
+
 func InviteIfNeeded() {
-  eventID, timeStamp, place, numberOfAlreadyInvited := GetEventInNeedOfInvitations()
+  eventID, timestamp, place, numberOfAlreadyInvited := GetEventInNeedOfInvitations()
   fmt.Printf(eventID)
   if(eventID != "") {
     syncDbWithSlack()
@@ -19,8 +23,8 @@ func InviteIfNeeded() {
     SaveInvitations(randomUsers, eventID)
 
     for _,user := range randomUsers {
-      SendSlackMessage("U0A9R2Y1X", user + " er invitert til middag på " + place + " " + timeStamp + ". Kan du? (ja/nei)")
-      log.Printf(user + " was invited to event on " + timeStamp)
+      SendSlackMessage("U0A9R2Y1X", fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Kan du? (ja/nei)", place, timestamp.Format("02. jan kl 15:04")))
+      log.Printf(user + " was invited to event on " + timestamp.Format("02/01/06 kl 15:04"))
     }
   } else {
     log.Printf("No users were invited")
@@ -39,11 +43,9 @@ func FinalizeInvitationIfComplete() {
       message += fmt.Sprintf("%s", username)
       if (i < len(usernames) - 1) { message += ", " }
     }
-    message += fmt.Sprintf("er invitert til å spise på %s, %s", place, timestamp)
+    message += fmt.Sprintf(" skal spise 🍕 på %s, %s", place, timestamp.Format("02. jan kl 15:04"))
     SendSlackMessage(pizzaChannel, message)
   }
-
-
 }
 
 func syncDbWithSlack(){
