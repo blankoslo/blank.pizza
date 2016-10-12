@@ -42,7 +42,7 @@ func FinalizeInvitationIfComplete() {
       message += fmt.Sprintf("@%s", username)
       if (i < len(usernames) - 1) { message += ", " }
     }
-    message += fmt.Sprintf("! Dere skal spise 🍕 på %s, %s. Blank betaler!", place, timestamp.Format("02. jan kl 15:04"))
+    message += fmt.Sprintf("! Dere skal spise 🍕 på %s, %s. Blank betaler!", place, timestamp.Format("02/01 kl 15:04"))
     SendSlackMessage(pizzaChannel, message)
   }
 }
