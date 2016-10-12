@@ -9,7 +9,7 @@ import (
 
 var api = slack.New(os.Getenv("SLACK_TOKEN"))
 
-func GetSlackUsers() []slack.User {
+func getSlackUsers() []slack.User {
   allUsers, err := api.GetUsers()
   if err != nil {
     log.Fatal(err)

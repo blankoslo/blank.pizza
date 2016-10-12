@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+  "strings"
 
-  	"github.com/nlopes/slack"
+  "github.com/nlopes/slack"
+  "github.com/blankoslo/blank.pizza/common"
 )
 
 func main() {
@@ -21,27 +23,26 @@ Loop:
 	for {
 		select {
 		case msg := <-rtm.IncomingEvents:
-			fmt.Print("Event Received: ")
 			switch ev := msg.Data.(type) {
-			case *slack.HelloEvent:
-				// Ignore hello
-
-			case *slack.ConnectedEvent:
-				fmt.Println("Infos:", ev.Info)
-				fmt.Println("Connection counter:", ev.ConnectionCount)
-
 			case *slack.MessageEvent:
-        //rtm.SendMessage(rtm.NewOutgoingMessage("hva vil du", ev.Channel))
 				fmt.Printf("Message received: %v\n", ev)
 
-			case *slack.PresenceChangeEvent:
-				fmt.Printf("Presence Change: %v\n", ev)
+        invitedSlackIDs := common.GetInvitedUsers()
+        userIsInvited := common.StringInSlice(ev.User, invitedSlackIDs)
 
-			case *slack.LatencyReport:
-				fmt.Printf("Current latency: %v\n", ev.Value)
-
-			case *slack.RTMError:
-				fmt.Printf("Error: %s\n", ev.Error())
+        if(userIsInvited) {
+          if(strings.ToLower(ev.Text) == "ja") {
+            common.Rsvp(ev.User, "attending")
+            rtm.SendMessage(rtm.NewOutgoingMessage("Sweet! 👍", ev.Channel))
+            common.FinalizeInvitationIfComplete()
+          } else if (strings.ToLower(ev.Text) == "nei") {
+            common.Rsvp(ev.User, "not attending")
+            rtm.SendMessage(rtm.NewOutgoingMessage("Ok 😏", ev.Channel))
+            common.InviteIfNeeded()
+          } else {
+            rtm.SendMessage(rtm.NewOutgoingMessage("Hehe jeg er litt dum, jeg. Skjønner jeg ikke helt hva du mener 😳. Kan du svare ja eller nei?", ev.Channel))
+          }
+        }
 
 			case *slack.InvalidAuthEvent:
 				fmt.Printf("Invalid credentials")

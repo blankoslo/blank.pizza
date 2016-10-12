@@ -23,7 +23,7 @@ var dbhost = envOr("dbhost", "ec2-23-21-71-9.compute-1.amazonaws.com")
 var dburl = fmt.Sprintf("user=%s dbname=%s password=%s host=%s", dbuser, dbname, dbpass, dbhost)
 var db, err = sql.Open("postgres", dburl)
 
-func UpdateUsers(users []slack.User) {
+func updateUsers(users []slack.User) {
   var usersSQLValues string
   for i,user := range users {
     usersSQLValues += fmt.Sprintf("('%s', '%s')", user.ID, user.Name)
@@ -36,12 +36,10 @@ func UpdateUsers(users []slack.User) {
   }
 }
 
-
-func GetRandomUsers(numberOfUsers int) []string {
+func GetUsersToInvite(numberOfUsers int, eventID string) []string {
   //TODO expand this with how many attended, and how many eligible for
   var userSlackIDs []string
-  rows, err := db.Query("select slack_id from slack_users order by random() limit 5;")
-
+  rows, err := db.Query(fmt.Sprintf("select * from (select distinct slack_users.slack_id from slack_users where not exists (select * from invitations where invitations.event_id = '%s' and invitations.slack_id = slack_users.slack_id)) as slack_id order by random() limit %d;", eventID, numberOfUsers))
   if err != nil {
     log.Fatal(err)
   }
@@ -71,18 +69,86 @@ func SaveInvitations(slackIDs []string, eventID string) {
   }
 }
 
-func GetEventInNeedOfInvitations()(string, string, string)  {
+func GetEventInNeedOfInvitations()(string, string, string, int)  {
     var id, time, place string
-    err := db.QueryRow("SELECT id, time, place FROM events WHERE time  < NOW() + interval '10 day' AND NOT EXISTS (SELECT * FROM invitations WHERE invitations.event_id = events.id)").Scan(&id, &time, &place)
+    var numberOfInvited int
+    err := db.QueryRow(fmt.Sprintf("select id, time, place, count(event_id) as invited from events left outer join invitations on event_id = id and (rsvp = 'unanswered' or rsvp = 'attending') where time  < NOW() + interval '10 days' group by id having count(event_id) < %d;", PeoplePerEvent)).Scan(&id, &time, &place, &numberOfInvited)
     switch {
-    case err == sql.ErrNoRows:
-            log.Printf("No upcoming events without invitations")
-    case err != nil:
-            log.Fatal(err)
-    default:
-            log.Printf("Event with ID  %s needs invitations \n", id)
+      case err == sql.ErrNoRows:
+              log.Printf("No upcoming events without invitations")
+      case err != nil:
+              log.Fatal(err)
+      default:
+              log.Printf("Event with ID  %s needs invitations \n", id)
     }
 
-    return id, time, place
+    return id, time, place, numberOfInvited
+}
 
+func GetInvitedUsers() []string {
+    var userSlackIDs []string
+    rows, err := db.Query("SELECT DISTINCT slack_id FROM invitations WHERE rsvp = 'unanswered';")
+
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+      var slackID string
+      if err := rows.Scan(&slackID); err != nil {
+        log.Fatal(err)
+      }
+      userSlackIDs = append(userSlackIDs, slackID)
+    }
+
+    return userSlackIDs
+}
+
+func Rsvp(slackID string, answer string) {
+  db.Exec(fmt.Sprintf("UPDATE invitations SET rsvp = '%s' WHERE slack_id = '%s' AND rsvp = 'unanswered';", answer, slackID))
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+
+func markEventAsFinalized(eventID string) {
+  db.Exec(fmt.Sprintf("UPDATE event SET finalized = true WHERE id = '%s';", eventID))
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+
+func getEventReadyToFinalize()(string, string, string) {
+  var eventID, time, place string
+  err := db.QueryRow(fmt.Sprintf("select event_id, time, place from slack_users, invitations, events where invitations.slack_id = slack_users.slack_id and invitations.event_id = events.id and rsvp = 'attending' and not finalized group by event_id, time, place having count(event_id) = %d;", PeoplePerEvent)).Scan(&eventID, &time, &place)
+  switch {
+    case err == sql.ErrNoRows:
+      log.Printf("No events ready to finalize")
+    case err != nil:
+      log.Fatal(err)
+    default:
+      log.Printf("Event with ID %s is ready for finalizing \n", eventID)
+  }
+  return eventID, time, place
+}
+
+func getAttendingUsers(eventID string) []string {
+  var slackUsernames []string
+  rows, err := db.Query(fmt.Sprintf("SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s';", eventID))
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  defer rows.Close()
+  for rows.Next() {
+    var slackUsername string
+    if err := rows.Scan(&slackUsername); err != nil {
+      log.Fatal(err)
+    }
+    slackUsernames = append(slackUsernames, slackUsername)
+  }
+
+  return slackUsernames
 }

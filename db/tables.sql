@@ -10,6 +10,7 @@ CREATE TABLE events (
   id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
   time TIMESTAMP NOT NULL,
   place TEXT NOT NULL
+  finalized BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TYPE RSVP AS ENUM ('attending', 'not attending', 'unanswered');
