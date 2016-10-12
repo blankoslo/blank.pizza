@@ -22,7 +22,7 @@ func InviteIfNeeded() {
     saveInvitations(randomUsers, eventID)
 
     for _,user := range randomUsers {
-      SendSlackMessage("U0A9R2Y1X", fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Kan du? (ja/nei)", place, timestamp.Format("02. jan kl 15:04")))
+      SendSlackMessage(user, fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Kan du? (ja/nei)", place, timestamp.Format("02. jan kl 15:04")))
       log.Printf(user + " was invited to event on " + timestamp.Format("02/01/06 kl 15:04"))
     }
   } else {
@@ -39,12 +39,16 @@ func FinalizeInvitationIfComplete() {
     markEventAsFinalized(eventID)
 
     for i,username := range usernames {
-      message += fmt.Sprintf("%s", username)
+      message += fmt.Sprintf("@%s", username)
       if (i < len(usernames) - 1) { message += ", " }
     }
-    message += fmt.Sprintf(" skal spise 🍕 på %s, %s", place, timestamp.Format("02. jan kl 15:04"))
+    message += fmt.Sprintf("! Dere skal spise 🍕 på %s, %s", place, timestamp.Format("02. jan kl 15:04"))
     SendSlackMessage(pizzaChannel, message)
   }
+}
+
+func GetInvitedUsers() []string {
+  return getInvitedUsers()
 }
 
 func syncDbWithSlack(){

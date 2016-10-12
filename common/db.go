@@ -138,7 +138,7 @@ func getEventReadyToFinalize()(string, time.Time, string) {
 
 func getAttendingUsers(eventID string) []string {
   var slackUsernames []string
-  rows, err := db.Query(fmt.Sprintf("SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s';", eventID))
+  rows, err := db.Query(fmt.Sprintf("SELECT current_username FROM invitations, slack_users WHERE rsvp = 'attending' and slack_users.slack_id = invitations.slack_id and event_id = '%s';", eventID))
 
   if err != nil {
     log.Fatal(err)

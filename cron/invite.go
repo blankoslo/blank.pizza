@@ -6,6 +6,5 @@ import (
 
 func main() {
     common.InviteIfNeeded()
-    //common.FinalizeInvitation()
-    //fmt.Println("default format:", time.Now().Format(time.Stamp))
+    //TODO check if someone didnt answer in 24h and auto-reply no
 }
