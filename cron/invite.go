@@ -6,5 +6,5 @@ import (
 
 func main() {
     common.InviteIfNeeded()
-    //TODO check if someone didnt answer in 24h and auto-reply no
+    common.AutoReplyNo()
 }

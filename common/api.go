@@ -6,6 +6,7 @@ import (
 )
 
 const PeoplePerEvent = 5
+const replyDeadlineInHours = 24
 const pizzaChannel = "C2NC8DBN1"
 
 func Rsvp(slackID string, answer string) {
@@ -49,6 +50,16 @@ func FinalizeInvitationIfComplete() {
 
 func GetInvitedUsers() []string {
   return getInvitedUsers()
+}
+
+func AutoReplyNo() {
+  usersThatDidNotReply := autoReplyAfterDeadline(replyDeadlineInHours)
+
+  for _,username := range usersThatDidNotReply {
+    SendSlackMessage(username, "Neivel, da antar jeg du ikke er interessert. Håper du blir med neste gang!")
+    log.Printf(username + " didn't answer. Setting rsvp to not attending.")
+  }
+  InviteIfNeeded()
 }
 
 func syncDbWithSlack(){

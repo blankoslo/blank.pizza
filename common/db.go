@@ -152,6 +152,23 @@ func getAttendingUsers(eventID string) []string {
     }
     slackUsernames = append(slackUsernames, slackUsername)
   }
+  return slackUsernames
+}
 
+func autoReplyAfterDeadline(deadline int) []string {
+  var slackUsernames []string
+  rows, err := db.Query(fmt.Sprintf("update invitations set rsvp = 'not attending' where rsvp = 'unanswered' and invited_at < NOW() - interval '%d hours' returning slack_id;", deadline))
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  defer rows.Close()
+  for rows.Next() {
+    var slackUsername string
+    if err := rows.Scan(&slackUsername); err != nil {
+      log.Fatal(err)
+    }
+    slackUsernames = append(slackUsernames, slackUsername)
+  }
   return slackUsernames
 }
