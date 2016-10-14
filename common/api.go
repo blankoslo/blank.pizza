@@ -36,12 +36,12 @@ func FinalizeInvitationIfComplete() {
   if(eventID != ""){
     var message = "Halloi! "
     syncDbWithSlack()
-    usernames := getAttendingUsers(eventID)
+    slackIDs := getAttendingUsers(eventID)
     markEventAsFinalized(eventID)
 
-    for i,username := range usernames {
-      message += fmt.Sprintf("@%s", username)
-      if (i < len(usernames) - 1) { message += ", " }
+    for i,slackID := range slackIDs {
+      message += fmt.Sprintf("<@%s>", slackID)
+      if (i < len(slackIDs) - 1) { message += ", " }
     }
     message += fmt.Sprintf("! Dere skal spise 🍕 på %s, %s. Blank betaler!", place, timestamp.Format("02/01 kl 15:04"))
     SendSlackMessage(pizzaChannel, message)

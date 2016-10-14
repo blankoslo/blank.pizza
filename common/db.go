@@ -137,8 +137,8 @@ func getEventReadyToFinalize()(string, time.Time, string) {
 }
 
 func getAttendingUsers(eventID string) []string {
-  var slackUsernames []string
-  rows, err := db.Query(fmt.Sprintf("SELECT current_username FROM invitations, slack_users WHERE rsvp = 'attending' and slack_users.slack_id = invitations.slack_id and event_id = '%s';", eventID))
+  var slackIDs []string
+  rows, err := db.Query(fmt.Sprintf("SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s';", eventID))
 
   if err != nil {
     log.Fatal(err)
@@ -146,13 +146,13 @@ func getAttendingUsers(eventID string) []string {
 
   defer rows.Close()
   for rows.Next() {
-    var slackUsername string
-    if err := rows.Scan(&slackUsername); err != nil {
+    var slackID string
+    if err := rows.Scan(&slackID); err != nil {
       log.Fatal(err)
     }
-    slackUsernames = append(slackUsernames, slackUsername)
+    slackIDs = append(slackIDs, slackID)
   }
-  return slackUsernames
+  return slackIDs
 }
 
 func autoReplyAfterDeadline(deadline int) []string {
