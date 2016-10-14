@@ -115,7 +115,7 @@ func rsvp(slackID string, answer string) {
 }
 
 func markEventAsFinalized(eventID string) {
-  db.Exec(fmt.Sprintf("UPDATE event SET finalized = true WHERE id = '%s';", eventID))
+  db.Exec(fmt.Sprintf("UPDATE events SET finalized = true WHERE id = '%s';", eventID))
   if err != nil {
     log.Fatal(err)
   }
