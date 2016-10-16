@@ -16,9 +16,9 @@ func envOr(key, value string) (string) {
   return value
 }
 
-var dbuser = envOr("dbuser", "kedqujopdsikse")
+var dbuser = envOr("dbuser", "jaciektnsdbcoe")
 var dbname = envOr("dbname", "dahcjao9t5534p")
-var dbpass = envOr("dbpass", "qrUu57g_MoaKAZhd0s20EV0WRt")
+var dbpass = envOr("dbpass", "")
 var dbhost = envOr("dbhost", "ec2-23-21-71-9.compute-1.amazonaws.com")
 
 var dburl = fmt.Sprintf("user=%s dbname=%s password=%s host=%s", dbuser, dbname, dbpass, dbhost)
