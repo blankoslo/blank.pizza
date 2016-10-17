@@ -33,14 +33,14 @@ Loop:
         if(userIsInvited) {
           if(strings.ToLower(ev.Text) == "ja") {
             common.Rsvp(ev.User, "attending")
-            rtm.SendMessage(rtm.NewOutgoingMessage("Sweet! 👍", ev.Channel))
+						common.SendSlackMessage(ev.Channel, "Sweet! 👍")
             common.FinalizeInvitationIfComplete()
           } else if (strings.ToLower(ev.Text) == "nei") {
             common.Rsvp(ev.User, "not attending")
-            rtm.SendMessage(rtm.NewOutgoingMessage("Ok 😏", ev.Channel))
+						common.SendSlackMessage(ev.Channel, "Ok 😏")
             common.InviteIfNeeded()
           } else {
-            rtm.SendMessage(rtm.NewOutgoingMessage("Hehe jeg er litt dum, jeg. Skjønner jeg ikke helt hva du mener 😳. Kan du svare ja eller nei?", ev.Channel))
+						common.SendSlackMessage(ev.Channel, "Hehe jeg er litt dum, jeg. Skjønner jeg ikke helt hva du mener 😳. Kan du svare ja eller nei?")
           }
         }
 
