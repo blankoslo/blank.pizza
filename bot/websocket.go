@@ -27,6 +27,11 @@ Loop:
 			case *slack.MessageEvent:
 				fmt.Printf("Message received: %v\n", ev)
 
+				if(ev.File != nil){
+					common.SendSlackMessage(ev.Channel, fmt.Sprintf("Takk for fil, <@%s> 👍", ev.File.User))
+					//TODO: Download from ev.File.URLPrivate and store somewhere
+				}
+
         invitedSlackIDs := common.GetInvitedUsers()
         userIsInvited := common.StringInSlice(ev.User, invitedSlackIDs)
 
