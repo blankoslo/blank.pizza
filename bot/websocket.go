@@ -40,7 +40,7 @@ Loop:
 						common.SendSlackMessage(ev.Channel, "Ok 😏")
             common.InviteIfNeeded()
           } else {
-						common.SendSlackMessage(ev.Channel, "Hehe jeg er litt dum, jeg. Skjønner jeg ikke helt hva du mener 😳. Kan du svare ja eller nei?")
+						common.SendSlackMessage(ev.Channel, "Hehe jeg er litt dum, jeg. Skjønner jeg ikke helt hva du mener 😳. Kan du være med? (ja/nei)")
           }
         }
 
