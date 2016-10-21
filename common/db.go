@@ -37,10 +37,21 @@ func updateUsers(users []slack.User) {
   }
 }
 
-func getUsersToInvite(numberOfUsers int, eventID string) []string {
-  //TODO expand this with how many attended, and how many eligible for
+func getUsersToInvite(numberOfUsersToInvite int, eventID string, totalNumberOfEmployees int, employeesPerEvent int) []string {
+  numberOfEventsRegarded := employeesPerEvent / totalNumberOfEmployees
+
+  // order users by who have attended fewest events "recently", and remove those who have already been invited
+  queryString := fmt.Sprintf(`
+    select slack_users.slack_id, current_username, count(rsvp) as events_attended from slack_users
+    left join invitations on slack_users.slack_id = invitations.slack_id
+    and invitations.rsvp = 'attending'
+    and invitations.event_id in (select id from events where time < NOW() and finalized = true order by time desc limit %d)
+    where not exists (select * from invitations where invitations.event_id = '%s' and invitations.slack_id = slack_users.slack_id)
+    group by slack_users.slack_id order by events_attended, random()
+    limit %d;`, numberOfEventsRegarded, eventId, numberOfUsersToInvite)
+
   var userSlackIDs []string
-  rows, err := db.Query(fmt.Sprintf("select * from (select distinct slack_users.slack_id from slack_users where not exists (select * from invitations where invitations.event_id = '%s' and invitations.slack_id = slack_users.slack_id)) as slack_id order by random() limit %d;", eventID, numberOfUsers))
+  rows, err := db.Query(queryString)
   if err != nil {
     log.Fatal(err)
   }
