@@ -48,7 +48,7 @@ func getUsersToInvite(numberOfUsersToInvite int, eventID string, totalNumberOfEm
     and invitations.event_id in (select id from events where time < NOW() and finalized = true order by time desc limit %d)
     where not exists (select * from invitations where invitations.event_id = '%s' and invitations.slack_id = slack_users.slack_id)
     group by slack_users.slack_id order by events_attended, random()
-    limit %d;`, numberOfEventsRegarded, eventId, numberOfUsersToInvite)
+    limit %d;`, numberOfEventsRegarded, eventID, numberOfUsersToInvite)
 
   var userSlackIDs []string
   rows, err := db.Query(queryString)

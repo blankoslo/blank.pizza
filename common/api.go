@@ -16,9 +16,9 @@ func Rsvp(slackID string, answer string) {
 func InviteIfNeeded() {
   eventID, timestamp, place, numberOfAlreadyInvited := getEventInNeedOfInvitations()
   if(eventID != "") {
-    syncDbWithSlack()
+    totalNumberOfEmployees := syncDbWithSlackAndReturnCount()
     numberOfUsersToInvite := PeoplePerEvent - numberOfAlreadyInvited
-    randomUsers := getUsersToInvite(numberOfUsersToInvite, eventID)
+    randomUsers := getUsersToInvite(numberOfUsersToInvite, eventID, totalNumberOfEmployees, PeoplePerEvent)
 
     saveInvitations(randomUsers, eventID)
 
@@ -35,7 +35,7 @@ func FinalizeInvitationIfComplete() {
   eventID, timestamp, place := getEventReadyToFinalize()
   if(eventID != ""){
     var message = "Halloi! "
-    syncDbWithSlack()
+    syncDbWithSlackAndReturnCount()
     slackIDs := getAttendingUsers(eventID)
     markEventAsFinalized(eventID)
 
@@ -62,7 +62,8 @@ func AutoReplyNo() {
   InviteIfNeeded()
 }
 
-func syncDbWithSlack(){
+func syncDbWithSlackAndReturnCount() int {
   slackUsers := getSlackUsers();
   updateUsers(slackUsers);
+	return len(slackUsers)
 }
