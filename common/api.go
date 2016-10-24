@@ -7,6 +7,7 @@ import (
 
 const PeoplePerEvent = 5
 const replyDeadlineInHours = 24
+const daysInAdvanceToInvite = 14
 const pizzaChannel = "C2NC8DBN1"
 
 func Rsvp(slackID string, answer string) {
@@ -14,7 +15,7 @@ func Rsvp(slackID string, answer string) {
 }
 
 func InviteIfNeeded() {
-  eventID, timestamp, place, numberOfAlreadyInvited := getEventInNeedOfInvitations()
+  eventID, timestamp, place, numberOfAlreadyInvited := getEventInNeedOfInvitations(daysInAdvanceToInvite)
   if(eventID != "") {
     totalNumberOfEmployees := syncDbWithSlackAndReturnCount()
     numberOfUsersToInvite := PeoplePerEvent - numberOfAlreadyInvited

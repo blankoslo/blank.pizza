@@ -81,11 +81,11 @@ func saveInvitations(slackIDs []string, eventID string) {
   }
 }
 
-func getEventInNeedOfInvitations()(string, time.Time, string, int)  {
+func getEventInNeedOfInvitations(daysInAdvanceToInvite int)(string, time.Time, string, int)  {
     var id, place string
     var timestamp time.Time
     var numberOfInvited int
-    err := db.QueryRow(fmt.Sprintf("select id, time, place, count(event_id) as invited from events left outer join invitations on event_id = id and (rsvp = 'unanswered' or rsvp = 'attending') where time  < NOW() + interval '10 days' group by id having count(event_id) < %d;", PeoplePerEvent)).Scan(&id, &timestamp, &place, &numberOfInvited)
+    err := db.QueryRow(fmt.Sprintf("select id, time, place, count(event_id) as invited from events left outer join invitations on event_id = id and (rsvp = 'unanswered' or rsvp = 'attending') where time  < NOW() + interval '%d days' group by id having count(event_id) < %d;", daysInAdvanceToInvite, PeoplePerEvent)).Scan(&id, &timestamp, &place, &numberOfInvited)
     switch {
       case err == sql.ErrNoRows:
               log.Printf("No upcoming events without invitations")
