@@ -7,7 +7,7 @@ import (
 
 const PeoplePerEvent = 5
 const replyDeadlineInHours = 24
-const daysInAdvanceToInvite = 14
+const daysInAdvanceToInvite = 9
 const pizzaChannel = "C2NC8DBN1"
 
 func Rsvp(slackID string, answer string) {
