@@ -38,11 +38,11 @@ func updateUsers(users []slack.User) {
 }
 
 func getUsersToInvite(numberOfUsersToInvite int, eventID string, totalNumberOfEmployees int, employeesPerEvent int) []string {
-  numberOfEventsRegarded := employeesPerEvent / totalNumberOfEmployees
+  numberOfEventsRegarded :=  totalNumberOfEmployees / employeesPerEvent
 
   // order users by who have attended fewest events "recently", and remove those who have already been invited
   queryString := fmt.Sprintf(`
-    select slack_users.slack_id, current_username, count(rsvp) as events_attended from slack_users
+    select slack_users.slack_id, count(rsvp) as events_attended from slack_users
     left join invitations on slack_users.slack_id = invitations.slack_id
     and invitations.rsvp = 'attending'
     and invitations.event_id in (select id from events where time < NOW() and finalized = true order by time desc limit %d)
@@ -59,7 +59,8 @@ func getUsersToInvite(numberOfUsersToInvite int, eventID string, totalNumberOfEm
   defer rows.Close()
   for rows.Next() {
     var slackID string
-    if err := rows.Scan(&slackID); err != nil {
+    var count int
+    if err := rows.Scan(&slackID, &count); err != nil {
       log.Fatal(err)
     }
     userSlackIDs = append(userSlackIDs, slackID)
