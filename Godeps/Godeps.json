@@ -7,6 +7,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/ddliu/go-httpclient",
+			"Comment": "v0.5.1-4-g7a5db79",
+			"Rev": "7a5db79c2f4120d8a8cb58f2b9136e7a48fdfc65"
+		},
+		{
 			"ImportPath": "github.com/lib/pq",
 			"Comment": "go1.0-cutoff-117-g50761b0",
 			"Rev": "50761b0867bd1d9d069276790bcd4a3bccf2324a"
