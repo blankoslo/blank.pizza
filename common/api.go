@@ -63,6 +63,10 @@ func AutoReplyNo() {
   InviteIfNeeded()
 }
 
+func SaveImage(cloudinaryID string, slackID string, title string) {
+	saveImage(cloudinaryID, slackID, title)
+}
+
 func syncDbWithSlackAndReturnCount() int {
   slackUsers := getSlackUsers();
   updateUsers(slackUsers);

@@ -5,10 +5,17 @@ import (
 	"log"
 	"os"
   "strings"
+	"encoding/base64"
+	"encoding/json"
 
+	"github.com/ddliu/go-httpclient"
   "github.com/nlopes/slack"
   "github.com/blankoslo/blank.pizza/common"
 )
+
+type CloudinaryResponse struct {
+    PublicID    string `json:"public_id"`
+}
 
 func main() {
 	var api = slack.New(os.Getenv("SLACK_TOKEN"))
@@ -18,6 +25,10 @@ func main() {
 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
+
+	httpclient.Defaults(httpclient.Map {
+        "Authorization": fmt.Sprintf("Bearer %s", os.Getenv("SLACK_TOKEN")),
+    })
 
 Loop:
 	for {
@@ -29,7 +40,20 @@ Loop:
 
 				if(ev.File != nil){
 					common.SendSlackMessage(ev.Channel, fmt.Sprintf("Takk for fil, <@%s> 👍", ev.File.User))
-					//TODO: Download from ev.File.URLPrivate and store somewhere
+					res, _ := httpclient.Get(ev.File.URLPrivateDownload, nil)
+					bodyBytes, _ := res.ReadAll()
+					b64 := base64.StdEncoding.EncodeToString([]byte(bodyBytes))
+					base := "data:image;base64,"
+
+					resp, _ := httpclient.Post("https://api.cloudinary.com/v1_1/blank/image/upload", map[string]string {
+        			"file": base + b64,
+							"upload_preset": "blank.pizza",
+    			})
+		
+					cloudBytes, _ := resp.ReadAll()
+					var f CloudinaryResponse
+					json.Unmarshal(cloudBytes, &f)
+					common.SaveImage(f.PublicID, ev.File.User, ev.File.Title)
 				}
 
         invitedSlackIDs := common.GetInvitedUsers()

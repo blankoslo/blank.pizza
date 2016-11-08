@@ -69,6 +69,13 @@ func getUsersToInvite(numberOfUsersToInvite int, eventID string, totalNumberOfEm
   return userSlackIDs
 }
 
+func saveImage(cloudinaryID string, slackID string, title string) {
+  db.Exec(fmt.Sprintf("INSERT INTO images (cloudinary_id, uploaded_by, title) VALUES ('%s','%s','%s');", cloudinaryID, slackID, title))
+  if err != nil {
+    log.Fatal(err)
+  }
+}
+
 func saveInvitations(slackIDs []string, eventID string) {
   var SQLValues string
   for i,slackID := range slackIDs {
