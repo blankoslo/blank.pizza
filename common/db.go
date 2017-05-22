@@ -155,6 +155,29 @@ func getEventReadyToFinalize()(string, time.Time, string) {
   return eventID, timestamp, place
 }
 
+func getUnansweredInvitations() []Invitation {
+  var invitations []Invitation
+
+  rows, err := db.Query("select slack_id, invited_at, reminded_at from invitations where rsvp = 'unanswered';")
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  defer rows.Close()
+  for rows.Next() {
+    var slackID string
+    var invitedAt time.Time
+    var remindedAt time.Time
+    if err := rows.Scan(&slackID, &invitedAt, &remindedAt); err != nil {
+      log.Fatal(err)
+    }
+    invitations = append(invitations, Invitation{slackID, invitedAt, remindedAt})
+  }
+
+  return invitations
+}
+
 func getAttendingUsers(eventID string) []string {
   var slackIDs []string
   rows, err := db.Query(fmt.Sprintf("SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s';", eventID))
@@ -172,6 +195,14 @@ func getAttendingUsers(eventID string) []string {
     slackIDs = append(slackIDs, slackID)
   }
   return slackIDs
+}
+
+
+func updateRemindedAt(slackID string) {
+  db.Exec(fmt.Sprintf("update invitations set reminded_at = 'NOW()' where rsvp = 'unanswered' and slack_id = '%s';", slackID))
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 
 func autoReplyAfterDeadline(deadline int) []string {

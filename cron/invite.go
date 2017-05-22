@@ -5,6 +5,7 @@ import (
 )
 
 func main() {
-    common.InviteIfNeeded()
     common.AutoReplyNo()
+    common.InviteIfNeeded()
+    common.SendReminders()
 }

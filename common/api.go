@@ -3,6 +3,7 @@ package common
 import (
 	"log"
   "fmt"
+  "time"
 )
 
 const PeoplePerEvent = 5
@@ -24,13 +25,27 @@ func InviteIfNeeded() {
     saveInvitations(randomUsers, eventID)
 
     for _,user := range randomUsers {
-      SendSlackMessage(user, fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Kan du? (ja/nei)", place, timestamp.Format("02/01 kl 15:04")))
+      SendSlackMessage(user, fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Du har %s timer til å svare. Kan du? (ja/nei)", place, timestamp.Format("02/01 kl 15:04"), replyDeadlineInHours))
       log.Printf(user + " was invited to event on " + timestamp.Format("02/01/06 kl 15:04"))
     }
   } else {
     log.Printf("No users were invited")
   }
 }
+
+func SendReminders() {
+  var invitations = getUnansweredInvitations()
+
+  for _,invitation := range invitations {
+    var fiveHoursAgo = time.Now().Add(-5 * time.Hour)
+    if (invitation.remindedAt.Before(fiveHoursAgo)) {
+      SendSlackMessage(invitation.slackID, "Hei du! Jeg hørte ikke noe mer? Er du gira? (ja/nei)")
+      updateRemindedAt(invitation.slackID)
+      log.Printf(invitation.slackID + " was reminded about event.")
+    }
+  }
+}
+
 
 func FinalizeInvitationIfComplete() {
   eventID, timestamp, place := getEventReadyToFinalize()
