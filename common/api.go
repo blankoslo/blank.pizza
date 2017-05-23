@@ -26,7 +26,7 @@ func InviteIfNeeded() {
     saveInvitations(randomUsers, eventID)
 
     for _,user := range randomUsers {
-      SendSlackMessage(user, fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Du har %s timer til å svare. Kan du? (ja/nei)", place, timestamp.Format("02/01 kl 15:04"), replyDeadlineInHours))
+      SendSlackMessage(user, fmt.Sprintf("Du er invitert til 🍕 på %s, %s. Du har %d timer til å svare. Kan du? (ja/nei)", place, timestamp.Format("02/01 kl 15:04"), replyDeadlineInHours))
       log.Printf(user + " was invited to event on " + timestamp.Format("02/01/06 kl 15:04"))
     }
   } else {
