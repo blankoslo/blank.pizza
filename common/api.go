@@ -9,6 +9,7 @@ import (
 const PeoplePerEvent = 5
 const replyDeadlineInHours = 24
 const daysInAdvanceToInvite = 9
+const hoursToWaitBetweenEachReminder = 5
 const pizzaChannel = "C2NC8DBN1"
 
 func Rsvp(slackID string, answer string) {
@@ -37,7 +38,7 @@ func SendReminders() {
   var invitations = getUnansweredInvitations()
 
   for _,invitation := range invitations {
-    var fiveHoursAgo = time.Now().Add(-5 * time.Hour)
+    var fiveHoursAgo = time.Now().Add(-hoursToWaitBetweenEachReminder * time.Hour)
     if (invitation.remindedAt.Before(fiveHoursAgo)) {
       SendSlackMessage(invitation.slackID, "Hei du! Jeg hørte ikke noe mer? Er du gira? (ja/nei)")
       updateRemindedAt(invitation.slackID)
