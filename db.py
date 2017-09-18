@@ -33,6 +33,7 @@ def get_users_to_invite(number_of_users_to_invite, event_id, total_number_of_emp
                 IN (SELECT id FROM events WHERE time < NOW() AND finalized = true ORDER BY time desc limit %s)
                 WHERE NOT EXISTS (SELECT * FROM invitations WHERE invitations.event_id = %s
                 AND invitations.slack_id = slack_users.slack_id)
+                AND slack_users.active = TRUE
                 GROUP BY slack_users.slack_id ORDER BY events_attended, random()
                 LIMIT %s;"""
 
