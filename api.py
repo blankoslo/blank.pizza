@@ -6,7 +6,7 @@ import db
 import locale
 from datetime import datetime, timedelta
 
-locale.setlocale(locale.LC_ALL, "no_NO")
+locale.setlocale(locale.LC_ALL, "nb_NO")
 
 PEOPLE_PER_EVENT = 5
 REPLY_DEADLINE_IN_HOURS = 24
