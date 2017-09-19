@@ -3,12 +3,15 @@
 
 import slack
 import db
+import locale
 from datetime import datetime, timedelta
+
+locale.setlocale(locale.LC_ALL, "no_NO")
 
 PEOPLE_PER_EVENT = 5
 REPLY_DEADLINE_IN_HOURS = 24
 DAYS_IN_ADVANCE_TO_INVITE = 9
-HOURS_BETWEEN_REMINDERS = 5
+HOURS_BETWEEN_REMINDERS = 4
 
 def invite_if_needed():
     event = db.get_event_in_need_of_invitations(DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
