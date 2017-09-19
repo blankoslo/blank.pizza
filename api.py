@@ -4,6 +4,7 @@
 import slack
 import db
 import locale
+import pytz
 from datetime import datetime, timedelta
 
 locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
@@ -39,7 +40,7 @@ def send_reminders():
 
     for invitation in inviations:
         slack_id, invited_at, reminded_at = invitation
-        remind_timestamp = datetime.now() + timedelta(hours=-HOURS_BETWEEN_REMINDERS)
+        remind_timestamp = datetime.now(pytz.utc) + timedelta(hours=-HOURS_BETWEEN_REMINDERS)
         if(reminded_at < remind_timestamp):
             slack.send_slack_message(slack_id, "Hei du! Jeg hørte ikke noe mer? Er du gira? (ja/nei)")
             db.update_reminded_at(slack_id)
