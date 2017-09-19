@@ -60,6 +60,8 @@ def finalize_event_if_complete():
 
 def auto_reply():
     users_that_did_not_reply = db.auto_reply_after_deadline(REPLY_DEADLINE_IN_HOURS)
+    if users_that_did_not_reply is None:
+       return
 
     for user_id in users_that_did_not_reply:
         slack.send_slack_message(user_id, "Neivel, da antar jeg du ikke er interessert. Håper du blir med neste gang!")
