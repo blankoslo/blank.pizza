@@ -1,0 +1,14 @@
+appdirs==1.4.0
+cloudinary==1.8.0
+funcsigs==1.0.2
+mock==2.0.0
+packaging==16.8
+pbr==3.1.1
+psycopg2==2.6.2
+pyparsing==2.1.10
+requests==2.13.0
+six==1.10.0
+slackclient==1.0.5
+typing==3.5.3.0
+urllib3==1.22
+websocket-client==0.40.0
