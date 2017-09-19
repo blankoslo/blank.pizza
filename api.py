@@ -48,7 +48,7 @@ def finalize_event_if_complete():
     else:
         event_id, timestamp, place = event
         sync_db_with_slack_and_return_count()
-        slack_ids = db.get_attending_users(event_id)
+        slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
         ids_string = ", ".join(slack_ids)
         slack.send_slack_message('#pizza', "Halloi! %s! Dere skal spise 🍕 på %s, %s. Blank betaler!" % (ids_string, place, timestamp))
