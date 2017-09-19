@@ -10,7 +10,7 @@ locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
 
 PEOPLE_PER_EVENT = 5
 REPLY_DEADLINE_IN_HOURS = 24
-DAYS_IN_ADVANCE_TO_INVITE = 9
+DAYS_IN_ADVANCE_TO_INVITE = 10
 HOURS_BETWEEN_REMINDERS = 4
 
 def invite_if_needed():
