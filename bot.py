@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import api
+import os
 
 from slackclient import SlackClient
 from time import sleep
