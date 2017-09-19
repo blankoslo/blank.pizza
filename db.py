@@ -119,12 +119,12 @@ def get_unanswered_invitations():
             return curs.fetchall()
 
 def get_attending_users(event_id):
-    sql = "SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s';" % event_id
+    sql = "SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s' ORDER BY random();" % event_id
 
     with conn:
         with conn.cursor() as curs:
             curs.execute(sql)
-            return curs.fetchall()
+            return [t[0] for t in curs.fetchall()]
 
 def update_reminded_at(slack_id):
     sql = "UPDATE invitations SET reminded_at = \'NOW()\' where rsvp = 'unanswered' and slack_id = '%s';" % slack_id
