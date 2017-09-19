@@ -24,10 +24,14 @@ def invite_if_needed():
     number_to_invite = PEOPLE_PER_EVENT - number_of_already_invited
     users_to_invite = db.get_users_to_invite(number_to_invite, event_id, number_of_employees, PEOPLE_PER_EVENT)
 
+    if len(users_to_invite) == 0:
+        print("Event in need of users, but noone to invite") # TODO: needs to be handled
+        return
+
     db.save_invitations(users_to_invite, event_id)
 
     for user_id in users_to_invite:
-        slack.send_slack_message(user_id, "Du er invitert til 🍕 på %s, %s. Du har %d timer til å svare. Kan du? (ja/nei)" % (place, timestamp, REPLY_DEADLINE_IN_HOURS))
+        slack.send_slack_message(user_id, "Du er invitert til 🍕 på %s, %s. Pls svar innen %d timer 🙏. Kan du? (ja/nei)" % (place, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS))
         print("%s was invited to event on %s" % (user_id, timestamp))
 
 def send_reminders():
