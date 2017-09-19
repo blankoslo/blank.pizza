@@ -13,9 +13,6 @@ sc = SlackClient(slack_token)
 if sc.rtm_connect():
     while True:
         event_list = sc.rtm_read()
-        for event in event_list:
-            print 'Event :', event
-
         message_list = list(filter(lambda m: m['type'] == 'message', event_list))
         for message in message_list:
             if 'file' in message:
