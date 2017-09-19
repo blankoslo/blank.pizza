@@ -1,19 +1,20 @@
 from psycopg2 import connect
 import math
+import os
 
 def create_connection_string(db_host, db_name, db_user, db_passwd):
     return "host='{}' dbname='{}' user='{}' password='{}'".format(db_host, db_name, db_user, db_passwd)
 
-def connect_to_db(db_config):
-    db_host = db_config.get("DB_HOST")
-    db_name = db_config.get("DB_NAME")
-    db_user = db_config.get("DB_USER")
-    db_passwd = db_config.get("DB_PASSWD")
+def connect_to_db():
+    db_host = os.environ["DB_HOST"]
+    db_name = os.environ["DB_NAME"]
+    db_user = os.environ["DB_USER"]
+    db_passwd = os.environ["DB_PASSWD"]
 
     conn = connect(create_connection_string(db_host, db_name, db_user, db_passwd))
     return conn
 
-conn = connect_to_db({})
+conn = connect_to_db()
 
 def update_slack_users(slack_users):
     usernames = ["('{0}','{1}')".format(u['id'],u['name']) for u in slack_users]
