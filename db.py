@@ -17,26 +17,27 @@ def connect_to_db():
 conn = connect_to_db()
 
 def update_slack_users(slack_users):
-    usernames = ["('{0}','{1}')".format(u['id'],u['name']) for u in slack_users]
-    sql = ','.join(usernames)
+    usernames = [(u['id'], u['name']) for u in slack_users]
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute("INSERT INTO slack_users (slack_id, current_username) VALUES {} ON CONFLICT (slack_id) DO UPDATE SET current_username = EXCLUDED.current_username;".format(sql))
+            curs.executemany("INSERT INTO slack_users (slack_id, current_username) VALUES (%s,%s) ON CONFLICT (slack_id) DO UPDATE SET current_username = EXCLUDED.current_username;", usernames)
 
 def get_users_to_invite(number_of_users_to_invite, event_id, total_number_of_employees, employees_per_event):
     number_of_events_regarded = math.ceil(total_number_of_employees / employees_per_event)
 
-    sql = """SELECT slack_users.slack_id, count(rsvp) AS events_attended
-                FROM slack_users
-                LEFT JOIN invitations ON slack_users.slack_id = invitations.slack_id
-                AND invitations.rsvp = 'attending' AND invitations.event_id
-                IN (SELECT id FROM events WHERE time < NOW() AND finalized = true ORDER BY time desc limit %s)
-                WHERE NOT EXISTS (SELECT * FROM invitations WHERE invitations.event_id = %s
-                AND invitations.slack_id = slack_users.slack_id)
-                AND slack_users.active = TRUE
-                GROUP BY slack_users.slack_id ORDER BY events_attended, random()
-                LIMIT %s;"""
+    sql = """
+        SELECT slack_users.slack_id, count(rsvp) AS events_attended
+        FROM slack_users
+        LEFT JOIN invitations ON slack_users.slack_id = invitations.slack_id
+        AND invitations.rsvp = 'attending' AND invitations.event_id
+        IN (SELECT id FROM events WHERE time < NOW() AND finalized = true ORDER BY time desc limit %s)
+        WHERE NOT EXISTS (SELECT * FROM invitations WHERE invitations.event_id = %s
+        AND invitations.slack_id = slack_users.slack_id)
+        AND slack_users.active = TRUE
+        GROUP BY slack_users.slack_id ORDER BY events_attended, random()
+        LIMIT %s;
+    """
 
     with conn:
         with conn.cursor() as curs:
@@ -53,24 +54,25 @@ def save_image(cloudinary_id, slack_id, title):
 
 
 def save_invitations(slack_ids, event_id):
-    sql_values = ["('%s', '%s')" % (event_id, slack_id) for slack_id in slack_ids]
-    sql = "INSERT INTO invitations (event_id, slack_id) VALUES %s;" % ', '.join(sql_values)
+    values = [(event_id, slack_id) for slack_id in slack_ids]
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.executemany("INSERT INTO invitations (event_id, slack_id) VALUES (%s, %s);", values)
 
 def get_event_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
     with conn:
         with conn.cursor() as curs:
-            sql = """SELECT id, time, place, count(event_id) AS invited
-                        FROM events LEFT OUTER JOIN invitations on event_id = id
-                        AND (rsvp = 'unanswered' OR rsvp = 'attending')
-                        WHERE time > NOW() and time  < NOW() + interval '%d days'
-                        GROUP BY id
-                        HAVING count(event_id) < %d;""" % (days_in_advance_to_invite, people_per_event)
+            sql = """
+                SELECT id, time, place, count(event_id) AS invited
+                FROM events LEFT OUTER JOIN invitations on event_id = id
+                AND (rsvp = 'unanswered' OR rsvp = 'attending')
+                WHERE time > NOW() and time  < NOW() + interval '%s days'
+                GROUP BY id
+                HAVING count(event_id) < %s;
+            """
 
-            curs.execute(sql)
+            curs.execute(sql, (days_in_advance_to_invite, people_per_event))
             return curs.fetchone()
 
 def get_invited_users():
@@ -81,34 +83,35 @@ def get_invited_users():
             curs.execute(sql)
             return [t[0] for t in curs.fetchall()]
 
-
 def rsvp(slack_id, answer):
-    sql = "UPDATE invitations SET rsvp = '%s' WHERE slack_id = '%s' AND rsvp = 'unanswered';" % (answer, slack_id)
+    sql = "UPDATE invitations SET rsvp = %s WHERE slack_id = %s AND rsvp = 'unanswered';"
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.execute(sql, (answer, slack_id))
 
 def mark_event_as_finalized(event_id):
-    sql = "UPDATE events SET finalized = true WHERE id = '%s';" % event_id
+    sql = "UPDATE events SET finalized = true WHERE id = %s;"
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.execute(sql, (event_id,))
 
 def get_event_ready_to_finalize(people_per_event):
-    sql = """SELECT event_id, time, place
-                FROM slack_users, invitations, events
-                WHERE  invitations.slack_id = slack_users.slack_id
-                AND invitations.event_id = events.id
-                AND rsvp = 'attending'
-                AND not finalized
-                GROUP BY event_id, time, place
-                HAVING count(event_id) = %d;""" % people_per_event
+    sql = """
+        SELECT event_id, time, place
+        FROM slack_users, invitations, events
+        WHERE  invitations.slack_id = slack_users.slack_id
+        AND invitations.event_id = events.id
+        AND rsvp = 'attending'
+        AND not finalized
+        GROUP BY event_id, time, place
+        HAVING count(event_id) = %s;
+    """
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.execute(sql, (people_per_event,))
             return curs.fetchone()
 
 def get_unanswered_invitations():
@@ -120,26 +123,28 @@ def get_unanswered_invitations():
             return curs.fetchall()
 
 def get_attending_users(event_id):
-    sql = "SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = '%s' ORDER BY random();" % event_id
+    sql = "SELECT slack_id FROM invitations WHERE rsvp = 'attending' and event_id = %s ORDER BY random();"
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.execute(sql, (event_id,))
             return [t[0] for t in curs.fetchall()]
 
 def update_reminded_at(slack_id):
-    sql = "UPDATE invitations SET reminded_at = \'NOW()\' where rsvp = 'unanswered' and slack_id = '%s';" % slack_id
+    sql = "UPDATE invitations SET reminded_at = 'NOW()' where rsvp = 'unanswered' and slack_id = %s;"
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.execute(sql, (slack_id,))
 
 def auto_reply_after_deadline(deadline):
-    sql = """UPDATE invitations
-                SET rsvp = 'not attending'
-                WHERE rsvp = 'unanswered'
-                AND invited_at < NOW() - interval '%d hours' returning slack_id;""" % deadline
+    sql = """
+        UPDATE invitations
+        SET rsvp = 'not attending'
+        WHERE rsvp = 'unanswered'
+        AND invited_at < NOW() - interval '%s hours' returning slack_id;
+    """
 
     with conn:
         with conn.cursor() as curs:
-            curs.execute(sql)
+            curs.execute(sql, (deadline,))
