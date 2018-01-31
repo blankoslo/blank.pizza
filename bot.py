@@ -17,7 +17,7 @@ if sc.rtm_connect():
         event_list = sc.rtm_read()
         message_list = list(filter(lambda m: m['type'] == 'message', event_list))
         for message in message_list:
-            if 'file' in message:
+            if (message.subtype and message.subtype == 'file_share'):
                 api.send_slack_message(message['channel'], u'Takk for fil! 🤙')
                 headers = {u'Authorization': u'Bearer %s' % slack_token}
                 r = requests.get(message['file']['url_private'], headers=headers)
