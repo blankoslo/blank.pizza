@@ -22,12 +22,13 @@ pizza_conn = connect_to_pizza_db()
 
 
 def update_slack_users(slack_users):
-    usernames = [(u['id'], u['name']) for u in slack_users]
+    usernames = [(u['id'], u['name'], u['profile']['email'])
+                 for u in slack_users]
 
     with pizza_conn:
         with pizza_conn.cursor() as curs:
             curs.executemany(
-                "INSERT INTO slack_users (slack_id, current_username) VALUES (%s,%s) ON CONFLICT (slack_id) DO UPDATE SET current_username = EXCLUDED.current_username;", usernames)
+                "INSERT INTO slack_users (slack_id, current_username, email) VALUES (%s,%s,%s) ON CONFLICT (slack_id) DO UPDATE SET current_username = EXCLUDED.current_username, email = EXCLUDED.email;", usernames)
 
 
 def get_users_to_invite(number_of_users_to_invite, event_id, total_number_of_employees, employees_per_event):
