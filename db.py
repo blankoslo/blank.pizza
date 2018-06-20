@@ -149,6 +149,16 @@ def get_attending_users(event_id):
             return [t[0] for t in curs.fetchall()]
 
 
+def get_slack_ids_from_emails(emails):
+    sql = "select slack_id from slack_users where email in ('%s');" % (
+        "','".join(emails))
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql)
+            return [t[0] for t in curs.fetchall()]
+
+
 def update_reminded_at(slack_id):
     sql = "UPDATE invitations SET reminded_at = 'NOW()' where rsvp = 'unanswered' and slack_id = %s;"
 

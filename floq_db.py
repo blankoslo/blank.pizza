@@ -22,10 +22,18 @@ floq_conn = connect_to_floq_db()
 
 
 def get_users_with_first_day():
-
-    sql = "select first_name from employees where date_of_employment = current_date;"
+    sql = "select email from employees where date_of_employment = current_date;"
 
     with floq_conn:
         with floq_conn.cursor() as curs:
             curs.execute(sql)
-            return curs.fetchall()
+            return [t[0] for t in curs.fetchall()]
+
+
+def get_users_with_birthday():
+    sql = "select email from employees where extract(month from birth_date) = extract(month from current_date) and extract(day from birth_date) = extract(day from current_date) and (termination_date is null OR termination_date >= current_date);"
+
+    with floq_conn:
+        with floq_conn.cursor() as curs:
+            curs.execute(sql)
+            return [t[0] for t in curs.fetchall()]
