@@ -25,7 +25,7 @@ def mention_people(people, message):
         mention_ids = map(lambda x: '<@%s>' % x, slack_ids)
         mention_string = create_mention_string(mention_ids)
         api.send_slack_message(
-            '#test', message % mention_string)
+            '#general', message % mention_string)
 
 
 api.sync_db_with_slack_and_return_count()
