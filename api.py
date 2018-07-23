@@ -73,8 +73,10 @@ def save_image(cloudinary_id, slack_id, title):
 def rsvp(slack_id, answer):
     db.rsvp(slack_id, answer)
 
-def send_slack_message(channel_id, text):
-    slack.send_slack_message(channel_id, text)
+
+def send_slack_message(channel_id, text, attachments=None):
+    slack.send_slack_message(channel_id, text, attachments)
+
 
 def get_invited_users():
     return db.get_invited_users()
