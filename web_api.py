@@ -9,5 +9,5 @@ def hello():
 
 @app.route("/api/action")
 def action():
-    print(request.json)
+    app.logger.info(request.json)
     return "Hello"
