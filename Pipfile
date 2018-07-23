@@ -17,6 +17,7 @@ slackclient = "*"
 "psycopg2" = "*"
 pytz = "*"
 flask = "*"
+gunicorn = "*"
 
 
 [requires]
