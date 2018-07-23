@@ -9,4 +9,5 @@ def hello():
 
 @app.route("/api/action")
 def action():
-    return request.json
+    print(request.json)
+    return "Hello"
