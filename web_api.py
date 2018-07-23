@@ -7,7 +7,9 @@ def hello():
     return "Hello World!"
 
 
-@app.route("/api/action")
+@app.route("/api/action", methods=['GET', 'POST'])
 def action():
-    app.logger.info(request.json)
-    return "Hello"
+    print(request.is_json)
+    content = request.get_json()
+    print(content)
+    return 'JSON posted'
