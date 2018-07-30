@@ -10,7 +10,7 @@ def hello():
 
 @app.route("/api/action", methods=['GET', 'POST'])
 def action():
-    requestDict = json.loads(request.data)
+    requestDict = json.loads(request.data.decode("utf-8"))
     print(requestDict)
     team_id = requestDict['team']['id']
     user_id = requestDict['user']['id']
