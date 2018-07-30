@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e3ad94d73ea8c13a505d0492f9e007f659577fd2e321683da3203bfbf4b3681e"
+            "sha256": "155b78fb016064ae0e97035b2b926f70e0912de7111a57e3c923ce250c6239bc"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -9,9 +9,9 @@
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "17.6.0",
+            "platform_release": "17.7.0",
             "platform_system": "Darwin",
-            "platform_version": "Darwin Kernel Version 17.6.0: Tue May  8 15:22:16 PDT 2018; root:xnu-4570.61.1~1/RELEASE_X86_64",
+            "platform_version": "Darwin Kernel Version 17.7.0: Thu Jun 21 22:53:14 PDT 2018; root:xnu-4570.71.2~1/RELEASE_X86_64",
             "python_full_version": "3.6.5",
             "python_version": "3.6",
             "sys_platform": "darwin"

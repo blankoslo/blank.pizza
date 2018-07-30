@@ -14,8 +14,31 @@ REPLY_DEADLINE_IN_HOURS = 24
 DAYS_IN_ADVANCE_TO_INVITE = 10
 HOURS_BETWEEN_REMINDERS = 4
 
+BUTTONS_ATTACHMENT = [
+    {
+        "fallback": "Det funket ikke å svare :/",
+        "callback_id": "rsvp",
+        "color": "#3AA3E3",
+        "attachment_type": "default",
+        "actions": [
+            {
+                "name": "option",
+                "text": "Hells yesss!!! 🍕🍕🍕",
+                "type": "button",
+                "value": "attending"
+            },
+            {
+                "name": "option",
+                "text": "Nah ☹️",
+                "type": "button",
+                "value": "not attending"
+            }]
+    }]
+
+
 def invite_if_needed():
-    event = db.get_event_in_need_of_invitations(DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
+    event = db.get_event_in_need_of_invitations(
+        DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
     if event is None:
         print("No users were invited")
         return
@@ -32,7 +55,8 @@ def invite_if_needed():
     db.save_invitations(users_to_invite, event_id)
 
     for user_id in users_to_invite:
-        slack.send_slack_message(user_id, "Du er invitert til 🍕 på %s, %s. Pls svar innen %d timer 🙏. Kan du? (ja/nei)" % (place, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS))
+        slack.send_slack_message(user_id, "Du er invitert til 🍕 på %s, %s. Pls svar innen %d timer 🙏. Kan du?" %
+                                 (place, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS), BUTTONS_ATTACHMENT)
         print("%s was invited to event on %s" % (user_id, timestamp))
 
 def send_reminders():

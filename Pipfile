@@ -18,6 +18,7 @@ slackclient = "*"
 pytz = "*"
 flask = "*"
 gunicorn = "*"
+"urllib3" = "*"
 
 
 [requires]
