@@ -14,8 +14,12 @@ def action():
     payload = json.loads(request.form["payload"])
     # team_id = requestDict['team']['id']
 
+    responses = []
+
     for action in payload['actions']:
-        button_rsvp(payload['user']['id'], action['value'])
+        responses.append(button_rsvp(payload['user']['id'], action['value']))
+
+    return responses[0]
 
 
 def button_rsvp(user_id, rsvp):
