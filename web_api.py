@@ -11,8 +11,8 @@ def hello():
 @app.route("/api/action", methods=['GET', 'POST'])
 def action():
     # requestDict = json.loads(request.data.decode("utf-8"))
-    print(type(request.data))
-    print(request.data)
+    print(type(request))
+    print(request)
 
     # print(requestDict)
     # team_id = requestDict['team']['id']
