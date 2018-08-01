@@ -40,4 +40,4 @@ def response_message(original_message, text):
     original_message['attachments'] = []
     original_message['text'] = text
 
-    return original_message
+    return json.dumps(original_message)
