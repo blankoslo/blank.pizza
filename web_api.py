@@ -17,19 +17,27 @@ def action():
     responses = []
 
     for action in payload['actions']:
-        responses.append(button_rsvp(payload['user']['id'], action['value']))
+        responses.append(button_rsvp(
+            payload['user']['id'], action['value'], payload['original_message']))
 
     return responses[0]
 
 
-def button_rsvp(user_id, rsvp):
+def button_rsvp(user_id, rsvp, original_message):
     if user_id in api.get_invited_users():
         api.rsvp(user_id, rsvp)
         if(rsvp == "attending"):
             api.finalize_event_if_complete()
-            return "Sweet! Det blir sykt nice 😋"
+            return response_message(original_message, "Sweet! Det blir sykt nice 😋")
         elif (rsvp == "not attending"):
             api.invite_if_needed()
-            return "Ah, ok. Neste gang! 🤝"
+            return response_message(original_message, "Ah, ok. Neste gang! 🤝")
     else:
         return "Hmm, hva har du gjort for noe rart nå?"
+
+
+def response_message(original_message, text):
+    original_message['attachments'] = []
+    original_message['text'] = text
+
+    return original_message
