@@ -26,7 +26,7 @@ if sc.rtm_connect():
             filter(lambda m: m['type'] == 'message', event_list))
         for message in message_list:
             if(message['channel'] == pizza_channel_id):
-                if 'file' in message:
+                if 'files' in message:
                     api.send_slack_message(
                         message['channel'], u'Takk for fil! 🤙')
                     headers = {u'Authorization': u'Bearer %s' % slack_token}
