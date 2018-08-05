@@ -57,4 +57,4 @@ if sc.rtm_connect():
         sleep(0.5)
 
 else:
-    print "Connection Failed, invalid token?"
+    print("Connection Failed, invalid token?")
