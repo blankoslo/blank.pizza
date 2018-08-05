@@ -30,15 +30,16 @@ if sc.rtm_connect():
                     api.send_slack_message(
                         message['channel'], u'Takk for fil! 🤙')
                     headers = {u'Authorization': u'Bearer %s' % slack_token}
-                    r = requests.get(
-                        message['file']['url_private'], headers=headers)
-                    b64 = base64.b64encode(r.content)
-                    payload = {'file': 'data:image;base64,%s' % b64,
-                               'upload_preset': 'blank.pizza'}
-                    r2 = requests.post(
-                        'https://api.cloudinary.com/v1_1/blank/image/upload', data=payload)
-                    api.save_image(
-                        r2.json()['public_id'], message['file']['user'], message['file']['title'])
+                    for file in message['files']:
+                        r = requests.get(
+                            file['url_private'], headers=headers)
+                        b64 = base64.b64encode(r.content).decode('utf-8')
+                        payload = {'file': 'data:image;base64,%s' % b64,
+                                   'upload_preset': 'blank.pizza'}
+                        r2 = requests.post(
+                            'https://api.cloudinary.com/v1_1/blank/image/upload', data=payload)
+                        api.save_image(
+                            r2.json()['public_id'], file['user'], file['title'])
             elif(is_dm(message)):
                 if message['user'] in api.get_invited_users():
                     if message['text'].lower() == 'ja':
