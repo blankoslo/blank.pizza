@@ -16,12 +16,11 @@ def hello():
 def action():
     payload = json.loads(request.form["payload"])
     # team_id = requestDict['team']['id']
-    print(request.form["payload"].encode('utf-8'))
     responses = []
 
     for action in payload['actions']:
         responses.append(button_rsvp(
-            payload['user']['id'], action['selected_options'][0]['value'], payload['original_message']))
+            payload['user']['id'], action['value'], payload['original_message']))
 
     return responses[0]
 
