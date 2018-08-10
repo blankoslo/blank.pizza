@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, request
+from flask import Flask, request, Response
 import json
 import api
 app = Flask(__name__)
@@ -22,7 +22,7 @@ def action():
         responses.append(button_rsvp(
             payload['user']['id'], action['value'], payload['original_message']))
 
-    return responses[0]
+    return Response(response=responses[0], mimetype='application/json')
 
 
 def button_rsvp(user_id, rsvp, original_message):
