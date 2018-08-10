@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from flask import Flask, request
 import json
 import api
@@ -18,7 +21,7 @@ def action():
 
     for action in payload['actions']:
         responses.append(button_rsvp(
-            payload['user']['id'], action['value'], payload['original_message']))
+            payload['user']['id'], action['selected_options'][0]['value'], payload['original_message']))
 
     return responses[0]
 
@@ -33,11 +36,12 @@ def button_rsvp(user_id, rsvp, original_message):
             api.invite_if_needed()
             return response_message(original_message, "Ah, ok. Neste gang! 🤝")
     else:
-        return "Hmm, hva har du gjort for noe rart nå?"
+        return response_message(original_message, "Hmm, hva har du gjort for noe rart nå?")
 
 
 def response_message(original_message, text):
     original_message['attachments'] = []
     original_message['text'] = text
+    original_message['replace_original'] = False
 
     return json.dumps(original_message)
