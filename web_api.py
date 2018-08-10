@@ -30,17 +30,16 @@ def button_rsvp(user_id, rsvp, original_message):
         api.rsvp(user_id, rsvp)
         if(rsvp == "attending"):
             api.finalize_event_if_complete()
-            return response_message(original_message, "Sweet! Det blir sykt nice 😋")
+            return response_message(original_message, "✅ Sweet! Det blir sykt nice 😋")
         elif (rsvp == "not attending"):
             api.invite_if_needed()
-            return response_message(original_message, "Ah, ok. Neste gang! 🤝")
+            return response_message(original_message, "⛔️ Ah, ok. Neste gang! 🤝")
     else:
-        return response_message(original_message, "Hmm, hva har du gjort for noe rart nå?")
+        return response_message(original_message, "💣 Hmm, hva har du gjort for noe rart nå?")
 
 
 def response_message(original_message, text):
-    original_message['attachments'] = []
-    original_message['text'] = text
-    original_message['replace_original'] = False
+    original_message['attachments'] = [{'text': text}]
+    original_message['replace_original'] = True
 
     return json.dumps(original_message)
