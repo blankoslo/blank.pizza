@@ -16,7 +16,7 @@ def hello():
 def action():
     payload = json.loads(request.form["payload"])
     # team_id = requestDict['team']['id']
-    print(payload)
+    print(request.form["payload"].encode('utf-8'))
     responses = []
 
     for action in payload['actions']:
