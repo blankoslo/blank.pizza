@@ -6,7 +6,8 @@ import floq_db
 import db
 
 
-def create_mention_string(slack_ids):
+def create_mention_string(slack_ids_map):
+    slack_ids = list(slack_ids_map)
     if len(slack_ids) < 1:
         raise ValueError('Noone to mention!')
     elif len(slack_ids) == 1:
