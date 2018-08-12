@@ -40,7 +40,7 @@ if sc.rtm_connect():
                             'https://api.cloudinary.com/v1_1/blank/image/upload', data=payload)
                         api.save_image(
                             r2.json()['public_id'], file['user'], file['title'])
-            elif(is_dm(message)):
+            elif(is_dm(message) and 'user' in message):
                 if message['user'] in api.get_invited_users():
                     if message['text'].lower() == 'ja':
                         api.rsvp(message['user'], 'attending')
