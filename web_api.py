@@ -49,5 +49,6 @@ def button_rsvp(user_id, rsvp, original_message, response_url):
 
 def response_message(original_message, text):
     original_message['attachments'] = [{'text': text}]
+    print(json.dumps(original_message))
 
     return json.dumps(original_message)
