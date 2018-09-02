@@ -8,11 +8,6 @@ import api
 app = Flask(__name__)
 
 
-@app.route("/")
-def hello():
-    return "Hello World!"
-
-
 @app.route("/api/action", methods=['GET', 'POST'])
 def action():
     payload = json.loads(request.form["payload"])
@@ -28,7 +23,6 @@ def action():
 
 
 def button_rsvp(user_id, rsvp, original_message, response_url):
-    print(response_url)
     if user_id in api.get_invited_users():
         api.rsvp(user_id, rsvp)
         if(rsvp == "attending"):
@@ -49,6 +43,4 @@ def button_rsvp(user_id, rsvp, original_message, response_url):
 
 def response_message(original_message, text):
     original_message['attachments'] = [{'text': text}]
-    print(json.dumps(original_message))
-
     return json.dumps(original_message)
