@@ -28,6 +28,7 @@ def action():
 
 
 def button_rsvp(user_id, rsvp, original_message, response_url):
+    print(response_url)
     if user_id in api.get_invited_users():
         api.rsvp(user_id, rsvp)
         if(rsvp == "attending"):
