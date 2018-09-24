@@ -19,7 +19,7 @@ def action():
         responses.append(button_rsvp(
             payload['user']['id'], action['value'], payload['original_message'], response_url))
 
-    return Response(response=responses[0], mimetype='application/json')
+    return '', 200
 
 
 def button_rsvp(user_id, rsvp, original_message, response_url):
