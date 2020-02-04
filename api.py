@@ -98,8 +98,8 @@ def rsvp(slack_id, answer):
     db.rsvp(slack_id, answer)
 
 
-def send_slack_message(channel_id, text, attachments=None):
-    slack.send_slack_message(channel_id, text, attachments)
+def send_slack_message(channel_id, text, attachments=None, thread_ts=None):
+    return slack.send_slack_message(channel_id, text, attachments, thread_ts)
 
 
 def get_invited_users():
