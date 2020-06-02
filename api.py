@@ -55,8 +55,8 @@ def invite_if_needed():
     db.save_invitations(users_to_invite, event_id)
 
     for user_id in users_to_invite:
-        slack.send_slack_message(user_id, "Du er invitert til video-🍕 _hjemme hos deg selv_, %s. Blank betaler pizzaen. Pls svar innen %d timer 🙏. Kan du?" %
-                                 (timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS), BUTTONS_ATTACHMENT)
+        slack.send_slack_message(user_id, "Du er invitert til 🍕 på %s, %s. Pls svar innen %d timer 🙏. Kan du?" %
+                                 (place, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS), BUTTONS_ATTACHMENT)
         print("%s was invited to event on %s" % (user_id, timestamp))
 
 def send_reminders():
@@ -80,7 +80,7 @@ def finalize_event_if_complete():
         slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
         ids_string = ", ".join(slack_ids)
-        slack.send_slack_message('#pizza', "Halloi! %s! Dere skal spise 🍕 _hjemme hos dere selv_, %s. Bestill pizza, koble opp videosamtale på Slack og lever utgiftsrapport 💸" % (ids_string, timestamp.strftime("%A %d. %B kl %H:%M")))
+        slack.send_slack_message('#pizza', "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, place, timestamp.strftime("%A %d. %B kl %H:%M"), slack_ids[0], slack_ids[1]))
 
 def auto_reply():
     users_that_did_not_reply = db.auto_reply_after_deadline(REPLY_DEADLINE_IN_HOURS)
