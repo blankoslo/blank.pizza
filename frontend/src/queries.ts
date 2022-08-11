@@ -1,6 +1,4 @@
-const BASE_URL = 'https://reqres.in'
-
 export const fetchAllPizzaEvents = async () => {
-  const res = await fetch(BASE_URL + `/api/users?page=2`);
+  const res = await fetch(`http://localhost:8080`);
   return res.json();
 }
