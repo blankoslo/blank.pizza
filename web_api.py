@@ -5,6 +5,7 @@ from flask import Flask, request, Response
 import requests
 import json
 import api
+import db
 app = Flask(__name__)
 
 
@@ -21,6 +22,12 @@ def action():
 
     return '', 200
 
+@app.route("/api/events", methods=['GET'])
+def events():
+    raw_events = db.get_previous_pizza_events()
+    events = [a['time'], a['place'], a['attendees'].split(', ') for a in raw_events]
+   
+    return events
 
 def button_rsvp(user_id, rsvp, original_message, response_url):
     if user_id in api.get_invited_users():
