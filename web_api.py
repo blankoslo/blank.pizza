@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, request, Response
-import requests
+#import requests
 import json
-import api
+#import api
 import db
 app = Flask(__name__)
 
@@ -25,7 +25,7 @@ def action():
 @app.route("/api/events", methods=['GET'])
 def events():
     raw_events = db.get_previous_pizza_events()
-    events = [a['time'], a['place'], a['attendees'].split(', ') for a in raw_events]
+    events = [{"time": a[0], "place":a[1], "attendees":a[2].split(', ')} for a in raw_events]
    
     return events
 
@@ -51,3 +51,5 @@ def button_rsvp(user_id, rsvp, original_message, response_url):
 def response_message(original_message, text):
     original_message['attachments'] = [{'text': text}]
     return json.dumps(original_message)
+
+app.run(host="0.0.0.0",port=8080)

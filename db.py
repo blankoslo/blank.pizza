@@ -8,10 +8,10 @@ def create_connection_string(db_host, db_name, db_user, db_passwd):
 
 
 def connect_to_pizza_db():
-    db_host = os.environ["DB_HOST"]
-    db_name = os.environ["DB_NAME"]
-    db_user = os.environ["DB_USER"]
-    db_passwd = os.environ["DB_PASSWD"]
+    db_host = "localhost"
+    db_name = "postgres"
+    db_user = "postgres"
+    db_passwd = "password"
 
     conn = connect(create_connection_string(
         db_host, db_name, db_user, db_passwd))
@@ -181,7 +181,7 @@ def auto_reply_after_deadline(deadline):
 
 
 def get_previous_pizza_events():
-    events = """
+    sql = """
         SELECT time, place, string_agg(current_username,', ') AS attendees, events.id FROM events
         INNER JOIN invitations ON events.id = invitations.event_id
         INNER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
