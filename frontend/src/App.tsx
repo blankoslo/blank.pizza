@@ -9,7 +9,7 @@ const queryClient = new QueryClient()
 function App() {
   return (
   <QueryClientProvider client={queryClient}>
-    <div className="App App-header">
+    <div className="App">
       <h1>Pizza Events</h1>
       <PizzaEvents />
     </div>

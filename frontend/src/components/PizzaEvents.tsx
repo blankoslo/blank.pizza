@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchAllPizzaEvents } from 'queries';
+import { IPizzaEvent } from 'types';
 
 function PizzaEvents() {
   const { isLoading, error, data } = useQuery(
@@ -21,14 +22,29 @@ function PizzaEvents() {
   return (
     <>
         {
-            data.data.map((pizzaEvent : any) => {
-                return (
-                    <p key={pizzaEvent.id}>{pizzaEvent.first_name}</p>
-                )
+            data.map((pizzaEvent : IPizzaEvent) => {
+                return <PizzaEvent 
+                    time={pizzaEvent.time} 
+                    place={pizzaEvent.place} 
+                    attendees={pizzaEvent.attendees} 
+                />
             })
         }
     </>
   )
+}
+
+function PizzaEvent({time, place, attendees }: IPizzaEvent) {
+    return (
+        <>
+            <p><b>{place}</b> - {time}</p>
+            <ul>
+                {attendees.map(attendee => {
+                    return <li>{attendee}</li>
+                })}
+            </ul>
+        </>
+    )
 }
 
 export default PizzaEvents;
