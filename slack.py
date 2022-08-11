@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from slackclient import SlackClient
+#from slackclient import SlackClient
 import os
 
 slack_token = os.environ["SLACK_API_TOKEN"]
