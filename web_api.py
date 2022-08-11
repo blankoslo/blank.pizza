@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, request, Response
+from flask_cors import cross_origin
 #import requests
 import json
 #import api
@@ -23,6 +24,7 @@ def action():
     return '', 200
 
 @app.route("/api/events", methods=['GET'])
+@cross_origin()
 def events():
     raw_events = db.get_previous_pizza_events()
     events = [{"time": a[0], "place":a[1], "attendees":a[2].split(', ')} for a in raw_events]
