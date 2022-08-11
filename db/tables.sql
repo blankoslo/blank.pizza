@@ -5,7 +5,8 @@ CREATE TABLE slack_users (
   slack_id TEXT NOT NULL PRIMARY KEY,
   current_username TEXT NOT NULL,
   first_seen DATE NOT NULL DEFAULT NOW(),
-  active BOOLEAN NOT NULL DEFAULT TRUE
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  email TEXT
 );
 
 CREATE TABLE events (
@@ -22,7 +23,8 @@ CREATE TABLE invitations (
   slack_id TEXT REFERENCES slack_users (slack_id),
   invited_at TIMESTAMP NOT NULL DEFAULT NOW(),
   rsvp RSVP NOT NULL DEFAULT 'unanswered',
-  PRIMARY KEY (event_id, slack_id)
+  PRIMARY KEY (event_id, slack_id),
+  reminded_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE images (
