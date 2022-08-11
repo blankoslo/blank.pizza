@@ -178,3 +178,19 @@ def auto_reply_after_deadline(deadline):
     with pizza_conn:
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (deadline,))
+
+
+def get_previous_pizza_events():
+    events = """
+        SELECT time, place, string_agg(current_username,', ') AS attendees, events.id FROM events
+        INNER JOIN invitations ON events.id = invitations.event_id
+        INNER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
+        WHERE events.finalized = TRUE AND invitations.rsvp = 'attending'
+        GROUP BY events.id;
+    """
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql)
+            return curs.fetchall()
+
+    
