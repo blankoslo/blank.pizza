@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './App.css';
+
+import PizzaEvents from 'components/PizzaEvents';
+
+const queryClient = new QueryClient()
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Pizza-events</h1>
-      </header>
+  <QueryClientProvider client={queryClient}>
+    <div className="App App-header">
+      <h1>Pizza Events</h1>
+      <PizzaEvents />
     </div>
+  </QueryClientProvider>
   );
 }
 
