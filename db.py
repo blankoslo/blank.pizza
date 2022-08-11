@@ -186,7 +186,7 @@ def get_previous_pizza_events():
         INNER JOIN invitations ON events.id = invitations.event_id
         INNER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
         WHERE events.finalized = TRUE AND invitations.rsvp = 'attending'
-        GROUP BY events.id;
+        GROUP BY events.id ORDER BY time DESC;
     """
     with pizza_conn:
         with pizza_conn.cursor() as curs:
