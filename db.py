@@ -195,11 +195,20 @@ def get_previous_pizza_events():
 
 def get_future_pizza_events():
     sql = """
-        SELECT time, place, string_agg(current_username,', ') AS attendees, events.id FROM events
-        INNER JOIN invitations ON events.id = invitations.event_id
-        INNER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
-        WHERE events.finalized = false AND invitations.rsvp = 'attending' AND events.time > NOW()
-        GROUP BY events.id ORDER BY time DESC;
+        SELECT 
+            time,
+            place, 
+            string_agg(current_username || ';' || invitations.rsvp, ', ') AS attendees,
+            events.id
+        FROM events
+            INNER JOIN invitations ON events.id = invitations.event_id
+            INNER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
+        WHERE 
+            events.time > NOW()
+        GROUP BY
+            events.id
+        ORDER BY
+            time DESC;
     """
     with pizza_conn:
         with pizza_conn.cursor() as curs:
