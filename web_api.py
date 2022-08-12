@@ -23,13 +23,24 @@ def action():
 
     return '', 200
 
-@app.route("/api/events", methods=['GET'])
+@app.route("/api/events", methods=['GET', 'POST'])
 @cross_origin()
 def events():
-    raw_events = db.get_previous_pizza_events()
-    events = [{"time": a[0], "place":a[1], "attendees":a[2].split(', ')} for a in raw_events]
-   
-    return events
+    if request.method == 'GET':
+        raw_events = db.get_previous_pizza_events()
+        events = [{"time": a[0], "place":a[1], "attendees":a[2].split(', ')} for a in raw_events]
+        return events
+    else:
+        event = request.json['event']
+        db.create_new_pizza_event(convert_datetime_object_to_timestamp(event['time']), place)
+        return '', 201
+
+def convert_datetime_object_to_timestamp(date):
+    months={"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
+    strings = date.split()
+    timestamp = f"{strings[3]}{months[strings[1]]}{strings[2]} {strings[4]} GMT"
+    return timestamp
+
 
 @app.route("/api/future_events", methods=['GET'])
 @cross_origin()
