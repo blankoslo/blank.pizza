@@ -193,4 +193,12 @@ def get_previous_pizza_events():
             curs.execute(sql)
             return curs.fetchall()
 
-    
+def create_new_pizza_event(time, place):
+    sql = """
+        INSERT INTO events (id, time, place, finalized)
+        VALUES (DEFAULT, %s, %s, DEFAULT)
+    """
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql, (time, place))    
