@@ -35,6 +35,7 @@ def events():
         db.create_new_pizza_event(convert_datetime_object_to_timestamp(event['time']), place)
         return '', 201
 
+
 def convert_datetime_object_to_timestamp(date):
     months={"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
     strings = date.split()
