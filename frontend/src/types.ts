@@ -3,3 +3,8 @@ export interface IPizzaEvent {
     place: string,
     attendees: string[],
 }
+
+export interface PizzaEventProps {
+    queryKey: string[],
+    query: () => Promise<any>,
+}

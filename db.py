@@ -201,8 +201,8 @@ def get_future_pizza_events():
             string_agg(current_username || ';' || invitations.rsvp, ', ') AS attendees,
             events.id
         FROM events
-            INNER JOIN invitations ON events.id = invitations.event_id
-            INNER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
+            FULL OUTER JOIN invitations ON events.id = invitations.event_id
+            FULL OUTER JOIN slack_users ON invitations.slack_id = slack_users.slack_id
         WHERE 
             events.time > NOW()
         GROUP BY

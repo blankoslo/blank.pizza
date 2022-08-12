@@ -1,23 +1,28 @@
 import { useQuery } from '@tanstack/react-query'
+import { IPizzaEvent, PizzaEventProps } from 'types';
+import { Typography } from '@mui/material';
 
-import { fetchAllPizzaEvents } from 'queries';
-import { IPizzaEvent } from 'types';
-
-function PizzaEvents() {
+function PizzaEvents({ queryKey, query } : PizzaEventProps) {
   const { isLoading, error, data } = useQuery(
-      ['pizzaEvents'],
-      fetchAllPizzaEvents
+      queryKey,
+      query
   )
 
   if (isLoading) return (
-      <h2>Loading...</h2>
+      <Typography variant="subtitle1">Loading...</Typography>
   )
-
+      
   if (error) return (
-      <h2>
-          Could not fetch pizza events
-      </h2>
-  )
+    <Typography variant="subtitle1">Could not fetch pizza events</Typography>
+    )
+
+  console.log(queryKey, data);
+    
+  if (data === undefined || data.length == 0) {
+      return (
+          <Typography variant="subtitle1">No pizza events :(</Typography>
+      )
+  }
 
   return (
     <>
