@@ -32,12 +32,12 @@ def events():
         return events
     else:
         event = request.json['event']
-        db.create_new_pizza_event(convert_datetime_object_to_timestamp(event['time']), place)
+        db.create_new_pizza_event(convert_datetime_object_to_timestamp(event['time']), event["place"])
         return '', 201
 
 
 def convert_datetime_object_to_timestamp(date):
-    months={"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
+    months={"Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06", "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
     strings = date.split()
     timestamp = f"{strings[3]}{months[strings[1]]}{strings[2]} {strings[4]} GMT"
     return timestamp
