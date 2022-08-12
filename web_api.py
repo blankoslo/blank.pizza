@@ -31,6 +31,15 @@ def events():
    
     return events
 
+@app.route("/api/future_events", methods=['GET'])
+@cross_origin()
+def future_events():
+    raw_events = db.get_future_pizza_events()
+    return raw_events_to_list_of_dict(raw_events)
+
+def raw_events_to_list_of_dict(raw_events):
+    return [{"time": a[0], "place":a[1], "attendees":a[2].split(', ')} for a in raw_events]
+
 def button_rsvp(user_id, rsvp, original_message, response_url):
     if user_id in api.get_invited_users():
         api.rsvp(user_id, rsvp)
