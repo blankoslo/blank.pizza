@@ -1,12 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { IPizzaEvent, PizzaEventProps } from 'types';
 
-import { fetchAllPizzaEvents } from 'queries';
-import { IPizzaEvent } from 'types';
-
-function PizzaEvents() {
+function PizzaEvents({ queryKey, query } : PizzaEventProps) {
   const { isLoading, error, data } = useQuery(
-      ['pizzaEvents'],
-      fetchAllPizzaEvents
+      queryKey,
+      query
   )
 
   if (isLoading) return (
