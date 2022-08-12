@@ -16,8 +16,6 @@ function PizzaEvents({ queryKey, query } : PizzaEventProps) {
     <Typography variant="subtitle1">Could not fetch pizza events</Typography>
     )
 
-  console.log(queryKey, data);
-    
   if (data === undefined || data.length == 0) {
       return (
           <Typography variant="subtitle1">No pizza events :(</Typography>
