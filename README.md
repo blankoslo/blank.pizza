@@ -1,7 +1,5 @@
 # pizza-app
 
-## How to run the system
-
 ## Slack App Bot setup
 1. Go to `https://api.slack.com/apps/`
 2. Click the `Create New App` button
@@ -26,29 +24,31 @@
 21. Copy the Token (this is the `SLACK_APP_TOKEN`).
 22. Now you have the `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` needed to run the bot.
 
-## Development
+## How to run the system
+
+### Development
 The frontend, backend, bot (worker and batch), and database can all be run with docker compose by running `docker-compose up`. Optionally you can do `docker-compose up -d [service]` to only start one or more service. During development all services run behind an nginx instance to simplify their interactions. The ports are 80 and 443.
 
-## Production
-### Frontend
+### Production
+#### Frontend
 The frontend is a React application. Simply run the command `npm run build:production` and then host the files in your prefered cloud service for static files.
 
-### Backend
+#### Backend
 The backend is a flask application. The easiest way to run it is to use the dockerfile in `/containers/production` in your prefered cloud service.
 
 To build the image run the command `docker build --build-arg DB_NAME=pizza --build-arg DB_USER=postgres --build-arg DB_PASSWD=postgres --build-arg DB_HOST=host.docker.internal --build-arg DB_PORT=5432 -f backend.Dockerfile ../../` with the args `DB_USER` `DB_PASSWD` `DB_NAME` `DB_HOST` `DB_PORT` with your systems values.
 
 To run the image run the command `docker run -e DB_NAME=pizza -e DB_USER=postgres -e DB_PASSWD=postgres -e DB_HOST=host.docker.internal -e DB_PORT=5432 -p 80:80 [id]` where `id` is the docker image id, with the args `DB_USER` `DB_PASSWD` `DB_NAME` `DB_HOST` `DB_PORT` with your systems values.
 
-### Bot
+#### Bot
 The bot is a collection of python applications. The easiest way to run it is to use the dockerfiles starting with the name bot. in `/containers/production` in your prefered cloud service.
 
-#### Worker
+##### Worker
 To build the image run the command `docker build --build-arg DB_HOST=host.docker.internal --build-arg DB_NAME=pizza --build-arg DB_USER=postgres --build-arg DB_PASSWD=postgres --build-arg SLACK_BOT_TOKEN=[bot-token] --build-arg SLACK_APP_TOKEN=[app-token] --build-arg PIZZA_CHANNEL_ID=[pizza-channel-id] -f bot.worker.Dockerfile ../../` with the args `DB_USER` `DB_PASSWD` `JDBC_URL` `SLACK_BOT_TOKEN` `SLACK_APP_TOKEN` `PIZZA_CHANNEL_ID` with your systems values.
 
 To run the image run the command `docker run [id]` where `id` is the docker image id.
 
-#### Batch
+##### Batch
 To build the image run the command `docker build --build-arg DB_HOST=host.docker.internal --build-arg DB_NAME=pizza --build-arg DB_USER=postgres --build-arg DB_PASSWD=postgres --build-arg SLACK_BOT_TOKEN=[bot-token] --build-arg SLACK_APP_TOKEN=[app-token] --build-arg PIZZA_CHANNEL_ID=[pizza-channel-id] -f bot.batch.Dockerfile ../../` with the args `DB_USER` `DB_PASSWD` `JDBC_URL` `SLACK_BOT_TOKEN` `SLACK_APP_TOKEN` `PIZZA_CHANNEL_ID` with your systems values.
 
 To run the image run the command `docker run [id]` where `id` is the docker image id.
