@@ -12,8 +12,8 @@ x-common-database-variables: &common-database-variables
   DB_PORT: 5432
 
 x-common-slack-variables: &common-slack-variables
-  SLACK_BOT_TOKEN: xoxb-3940810710916-4016112527984-fRI4wfJjviwUofSi9Gaijekq
-  SLACK_APP_TOKEN: xapp-1-A03UUU3FYCA-3992397240034-8722484ae4bc275b7a76c16e9046751b4a0468fcc32d90114795539825507c68
+  SLACK_BOT_TOKEN: xoxb-
+  SLACK_APP_TOKEN: xapp-1-
   PIZZA_CHANNEL_ID: C03T5NVH3HV
 
 services:
