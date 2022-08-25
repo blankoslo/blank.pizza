@@ -1,0 +1,126 @@
+version: '3.8'
+
+x-common-variables: &common-variables
+  PYTHONUNBUFFERED: 1
+  PYTHONPATH: /srv/bot
+
+x-common-database-variables: &common-database-variables
+  DB_HOST: database
+  DB_NAME: pizza
+  DB_USER: postgres
+  DB_PASSWD: postgres
+  DB_PORT: 5432
+
+x-common-slack-variables: &common-slack-variables
+  SLACK_BOT_TOKEN: xoxb-3940810710916-4016112527984-fRI4wfJjviwUofSi9Gaijekq
+  SLACK_APP_TOKEN: xapp-1-A03UUU3FYCA-3992397240034-8722484ae4bc275b7a76c16e9046751b4a0468fcc32d90114795539825507c68
+  PIZZA_CHANNEL_ID: C03T5NVH3HV
+
+services:
+  frontend:
+    build:
+      context: ../../
+      dockerfile: containers/development/Dockerfile.frontend
+    expose:
+      - 3000
+    volumes:
+      - ../../frontend:/srv/frontend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+    depends_on:
+      - backend
+    networks:
+      - proxy-network
+  backend:
+    build:
+      context: ../../
+      dockerfile: containers/development/Dockerfile.backend
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+    volumes:
+      - ../../backend:/srv/backend
+    environment:
+      <<: *common-database-variables
+      <<: *common-variables
+      FLASK_ENV: "development"
+      FLASK_APP: "main.py"
+      FLASK_RUN_HOST: "0.0.0.0"
+      FLASK_RUN_PORT: "3000"
+    networks:
+      - database-network
+      - proxy-network
+  bot-worker:
+    build:
+      context: ../../
+      dockerfile: containers/development/Dockerfile.bot.worker
+    volumes:
+      - ../../bot:/srv/bot
+    environment:
+      <<: *common-database-variables
+      <<: *common-slack-variables
+      <<: *common-variables
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - database-network
+  bot-batch:
+    build:
+      context: ../../
+      dockerfile: containers/development/Dockerfile.bot.batch
+    volumes:
+      - ../../bot:/srv/bot
+    environment:
+      <<: *common-database-variables
+      <<: *common-slack-variables
+    depends_on:
+     database:
+        condition: service_healthy
+    networks:
+      - database-network
+  database:
+    image: postgres
+    restart: always
+    volumes:
+      - database_data:/var/lib/postgressql/data
+    environment:
+      POSTGRES_DB: pizza
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgressql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+    networks:
+      - database-network
+  nginx:
+    image: nginx:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile.nginx
+    depends_on: 
+      - frontend
+      - backend
+    networks:
+      - proxy-network
+    ports:
+      - 80:80
+      - 443:443
+
+networks:
+  database-network:
+    driver: bridge
+  proxy-network:
+    driver: bridge
+
+volumes:
+  database_data:

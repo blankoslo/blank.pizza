@@ -1,0 +1,6 @@
+.idea
+dist
+public
+node_modules
+.prettierrc.js
+webpack.*.js
