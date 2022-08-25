@@ -25,8 +25,4 @@ RUN \
  pip install -r requirements.txt && \
  apk --purge del .build-deps
 
-EXPOSE 80
-EXPOSE 443
-EXPOSE 5432
-
 CMD python batch.py
