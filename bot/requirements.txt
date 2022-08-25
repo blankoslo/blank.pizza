@@ -1,0 +1,7 @@
+psycopg2
+urllib3
+requests
+slack_sdk
+slack_bolt
+pytz
+flask

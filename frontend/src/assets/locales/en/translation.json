@@ -1,0 +1,165 @@
+{
+  "header": {
+    "logo": "Pizzabot Administration",
+    "pages": {
+      "home": {
+        "name": "home",
+        "link": "/"
+      },
+      "restaurants": {
+        "name": "restaurants",
+        "link": "/restaurants/list"
+      },
+      "events": {
+        "name": "events",
+        "link": "/events/list"
+      },
+      "users": {
+        "name": "users",
+        "link": "/users/list"
+      }
+    },
+    "settings": {
+      "profile": {
+        "name": "profile",
+        "link": "/profile"
+      },
+      "logout": {
+        "name": "logout",
+        "link": "/logout"
+      }
+    }
+  },
+  "footer": {
+    "logo": "Pizzabot By"
+  },
+  "infinityLoadingList": {
+    "loading": "Loading...",
+    "end": "End of list."
+  },
+  "invitations": {
+    "update": {
+      "validation": {
+        "rsvp": {
+          "required": "answer is required"
+        }
+      },
+      "mutation": {
+        "onSuccess": "New answer registered",
+        "onError": "Failed to register new answer"
+      }
+    },
+    "list": {
+      "invitedAt": "Invited at:",
+      "remindedAt": "Reminded at:"
+    }
+  },
+  "users": {
+    "list": {
+      "title": "List of Users",
+      "card": {
+        "username": "Username:",
+        "email": "Email:",
+        "joined": "Joined:",
+        "noEmail": "N/A",
+        "priority": "Priority",
+        "active": "Active"
+      },
+      "noResults": "No users found"
+    },
+    "update": {
+      "mutation": {
+        "onSuccess": "Update of user was successful",
+        "onError": "Update of user failed"
+      }
+    }
+  },
+  "events": {
+    "new": {
+      "datePicker": {
+        "label": "Week picker",
+        "inputFormat": "'Week of' MMM d"
+      },
+      "mutation": {
+        "onSuccess": "New event registered",
+        "onError": "Failed to register event"
+      },
+      "errors": {
+        "noSelectedDate": "You must choose a week before you can create an event",
+        "noRestaurantsExists": "No restaurants exists in the system. Add a restaurant before you add a new event"
+      },
+      "title": "New Pizza Event 🍕",
+      "button": "Create"
+    },
+    "list": {
+      "eventCard": {
+        "extended": {
+          "title": "NEXT PIZZAEVENT 🍕"
+        },
+        "normal": {
+          "place": "Pizza at " 
+        }
+      },
+      "futureEvents": {
+        "title": "Future Events 🍕"
+      },
+      "pastEvents": {
+        "title": "Past Events 🍕"
+      },
+      "deletedRestaurant": "N/A (Restaurant deleted from system)",
+      "newEventButton": "New Event",
+      "noResults":"No events found"
+    }
+  },
+  "restaurants": {
+    "new": {
+      "title": "New Restaurant",
+      "validation": {
+        "name": {
+          "min": "The name must be at least 1 letters long",
+          "required": "Name is required"
+        }
+      },
+      "mutation": {
+        "onSuccess": "New restaurant registered",
+        "onError": "Failed to register restaurant"
+      },
+      "form": {
+        "name": "Restaurant name",
+        "link": "Restaurant link",
+        "tlf": "Restaurant phone number",
+        "address": "Restaurant address",
+        "button": "Create"
+      }
+    },
+    "list": {
+      "title": "List of Restaurants",
+      "noResults": "Ingen restauranter funnet",
+      "optionalValue": "N/A",
+      "entry": {
+        "name": "Name",
+        "link": "Link",
+        "tlf": "Phone number",
+        "address": "Address"
+      },
+      "confirmation": {
+        "title": "Delete resturant",
+        "content": {
+          "line1": "Are you sure you want to delete this resturant? ",
+          "line2": "This action cannot be undone."
+        },
+        "action": {
+          "cancel": "Cancel",
+          "accept": "Delete"
+        }
+      },
+      "newRestaurantButton": "New Restaurant"
+    },
+    "delete": {
+      "mutation": {
+        "onSuccess": "Deletion of restaurant was successful",
+        "onError": "Deletion of restaurant failed"
+      }
+    }
+  }
+}

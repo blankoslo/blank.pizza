@@ -1,0 +1,16 @@
+FROM python:alpine
+
+WORKDIR /srv/backend
+
+COPY backend/requirements.txt /tmp
+WORKDIR /tmp
+RUN \
+ apk add --no-cache build-base && \
+ apk add --no-cache postgresql-libs && \
+ apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ pip install -r requirements.txt && \
+ apk --purge del .build-deps
+
+WORKDIR /srv/backend
+
+CMD flask run

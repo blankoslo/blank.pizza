@@ -1,0 +1,23 @@
+FROM python:3.6-alpine
+
+WORKDIR /srv/bot
+
+COPY bot/requirements.txt /tmp/
+WORKDIR /tmp
+RUN \
+ apk add --no-cache build-base && \
+ apk add --no-cache postgresql-libs && \
+ apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ pip install -r requirements.txt && \
+ apk --purge del .build-deps
+
+# Copy batch.cron file to the cron.d directory
+COPY containers/development/batch.cron /etc/cron.d/batch.cron
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/cron.d/batch.cron
+# Apply cron job
+RUN crontab /etc/cron.d/batch.cron
+# Create the log file to be able to run tail
+RUN touch /var/log/cron.log
+
+CMD crond && tail -f /var/log/cron.log
