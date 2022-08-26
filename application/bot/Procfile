@@ -1,0 +1,2 @@
+worker: python bot_app.py
+batch: python batch.py

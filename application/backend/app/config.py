@@ -1,7 +1,8 @@
 import os
 
 class Base(object):
-  SQLALCHEMY_DATABASE_URI = f'postgresql://{os.environ.get("DB_USER")}:{os.environ.get("DB_PASSWD")}@{os.environ.get("DB_HOST")}:{os.environ.get("DB_PORT")}/{os.environ.get("DB_NAME")}'
+  # DATABASE_URL is the environment variable created by heroku during production deployment
+  SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1) if 'DATABASE_URL' in os.environ else f'postgresql://{os.environ.get("DB_USER")}:{os.environ.get("DB_PASSWD")}@{os.environ.get("DB_HOST")}:{os.environ.get("DB_PORT")}/{os.environ.get("DB_NAME")}'
   SQLALCHEMY_TRACK_MODIFICATIONS = False
   API_TITLE = "API"
   API_VERSION = "v1"

@@ -11,7 +11,7 @@ ENV DB_NAME $DB_NAME
 ENV DB_HOST $DB_HOST
 ENV DB_PORT $DB_PORT
 
-COPY ./backend /app
+COPY ../../backend /app
 
 WORKDIR /app
 

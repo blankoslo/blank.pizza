@@ -7,7 +7,10 @@ import locale
 import pytz
 from datetime import datetime, timedelta
 
-locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
+try:
+    locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
+except:
+    print("Missing locale nb_NO.utf8 on server")
 
 PEOPLE_PER_EVENT = 5
 REPLY_DEADLINE_IN_HOURS = 24

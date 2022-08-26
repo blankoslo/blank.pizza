@@ -4,4 +4,3 @@ requests
 slack_sdk
 slack_bolt
 pytz
-flask
