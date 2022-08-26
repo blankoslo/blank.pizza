@@ -1,19 +1,35 @@
 from psycopg2 import connect
 import math
 import os
+from urllib.parse import urlparse
 
-def create_connection_string(db_host, db_name, db_user, db_passwd):
-    return "host='{}' dbname='{}' user='{}' password='{}'".format(db_host, db_name, db_user, db_passwd)
+def create_connection_string(db_host, db_name, db_user, db_passwd, db_port):
+    return f"host='{db_host}' dbname='{db_name}' user='{db_user}' password='{db_passwd}' port='{db_port}'"
 
+def create_connection_string_from_uri(uri):
+    result = urlparse(uri)
+    username = result.username
+    password = result.password
+    database = result.path[1:]
+    hostname = result.hostname
+    port = result.port
+
+    return create_connection_string(db_host=hostname, db_name=database, db_user=username, db_passwd=password, db_port=port)
 
 def connect_to_pizza_db():
-    db_host = os.environ["DB_HOST"]
-    db_name = os.environ["DB_NAME"]
-    db_user = os.environ["DB_USER"]
-    db_passwd = os.environ["DB_PASSWD"]
-
-    conn = connect(create_connection_string(
-        db_host, db_name, db_user, db_passwd))
+    if ("DATABASE_URL" in os.environ):
+        db_uri = os.environ["DATABASE_URL"]
+        connection_string = create_connection_string_from_uri(db_uri)
+        conn = connect(connection_string)
+    else:
+        db_host = os.environ["DB_HOST"]
+        db_name = os.environ["DB_NAME"]
+        db_user = os.environ["DB_USER"]
+        db_passwd = os.environ["DB_PASSWD"]
+        db_port = os.environ["DB_PORT"]
+        connection_string = create_connection_string(db_host, db_name, db_user, db_passwd, db_port)
+        conn = connect(connection_string)
+    
     return conn
 
 

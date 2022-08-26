@@ -25,9 +25,9 @@ class Event(CrudMixin, db.Model):
     def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
         query = session.query(cls)
         # Add filters to the query
-        if (filters['age'] == Age.New):
+        if ('age' in filters and filters['age'] == Age.New):
             query = query.filter(cls.time > datetime.now())
-        elif (filters['age'] == Age.Old):
+        elif ('age' in filters and filters['age'] == Age.Old):
             query = query.filter(cls.time < datetime.now())
         # Add order by to the query
         if (order_by):
