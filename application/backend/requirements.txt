@@ -10,3 +10,7 @@ psycopg2==2.9.3
 Flask-Migrate==3.1.0
 marshmallow_enum==1.5.1
 gunicorn==20.1.0
+oauthlib
+flask_jwt_extended
+requests
+flask-talisman

@@ -22,10 +22,29 @@
 19. Click `Basic Information` in the menu
 20. Now you have the `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` needed to run the bot.
 
+## Google Login Setup
+1. Go to the [Google developers credentials page](https://console.developers.google.com/apis/credentials)
+2. If you don't have a project, create one, else choose the prefered project.
+2. Press the Create credentials button
+3. Select the option for `OAuth client ID`
+4. Click `Configure consent screen`
+    1. If open for all users choose `External`, but if only open for an organization like `blank.no` then choose `Internal`.
+    2. Fill out the necessary information for the conest screen
+    3. Click `Add or remove scopes` and add `.../auth/userinfo.email`	`.../auth/userinfo.profile` `openid`.
+    4. If you are testing add a test user for testing
+5. Choose `Web application`
+6. Give it a name 
+6. Set the Authorized JavaScript origins 
+    * If testing then set to `https://localhost` and Authorized redirect URIs to `https://localhost/api/auth/login/callback`
+    * If production then replace `localhost` with your domain
+7. Hit Create and take note of the `client ID` and `client secret`
+
 ## How to run the system
 
 ### Development
 The frontend, backend, bot (worker and batch), and database can all be run with docker compose by running `docker-compose up`. Optionally you can do `docker-compose up -d [service]` to only start one or more service. During development all services run behind an nginx instance to simplify their interactions. The ports are 80 and 443.
+
+As we use Ouath2 for authentication we are forced to use https. Nginx needs valid ssl certificates, so you are gonna need to generate one with the command `openssl req -x509 -nodes -newkey rsa:4096 -keyout nginx-selfsigned.key -out nginx-selfsigned.crt -sha256 -days 365` and add it to `application/containers/development`
 
 ### Production
 #### Heroku
