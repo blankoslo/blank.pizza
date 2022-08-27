@@ -22,8 +22,9 @@ type Props = {
 const RouterContainer: React.FC<Props> = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [state, dispatch] = useStore();
-    const loggedIn = !!state.user;
+    //const loggedIn = !!state.user;
 
+    // TODO: Fix loading indicator
     /*useEffect(() => {
         if (loggedIn) {
             setIsLoading(true);
