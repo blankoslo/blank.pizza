@@ -1,7 +1,9 @@
 {
   "login": {
-    "logo": "Pizzabot By"
+    "logo": "Pizzabot By",
+    "button": "Login"
   },
+  "logout": "Logging you out...",
   "header": {
     "logo": "Pizzabot Administration",
     "pages": {

@@ -100,7 +100,7 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
                                 }}
                                 onClick={onClickLogin}
                             >
-                                Login
+                                {t('login.button')}
                             </Button>
                         </Box>
                     </>
