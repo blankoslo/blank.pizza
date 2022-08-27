@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
 from app.models.restaurant import Restaurant, RestaurantSchema, RestaurantQueryArgsSchema, RestaurantUpdateSchema
+from flask_jwt_extended import jwt_required
 
 bp = Blueprint("restaurants", "restaurants", url_prefix="/restaurants", description="Operations on restaurants")
 
@@ -17,6 +18,7 @@ class Restaurants(views.MethodView):
     
     @bp.arguments(RestaurantSchema)
     @bp.response(201, RestaurantSchema)
+    @jwt_required()
     def post(self, new_data):
         """Add an restaurant"""
         Restaurant.upsert(new_data)
@@ -34,6 +36,7 @@ class RestaurantsById(views.MethodView):
     
     @bp.arguments(RestaurantUpdateSchema)
     @bp.response(200, RestaurantSchema)
+    @jwt_required()
     def put(self, update_data, restaurant_id):
         """Update existing restaurant"""
         restaurant = Restaurant.get_by_id(restaurant_id)
@@ -44,6 +47,7 @@ class RestaurantsById(views.MethodView):
         return updated_restaurant
 
     @bp.response(204)
+    @jwt_required()
     def delete(self, restaurant_id):
         """Delete restaurant"""
         restaurant = Restaurant.get_by_id(restaurant_id)

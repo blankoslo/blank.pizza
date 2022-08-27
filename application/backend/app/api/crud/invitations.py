@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
 from app.models.invitation import Invitation, InvitationSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
+from flask_jwt_extended import jwt_required
 
 bp = Blueprint("invitations", "invitations", url_prefix="/invitations", description="Operations on invitations")
 
@@ -35,6 +36,7 @@ class InvitationsById(views.MethodView):
     
     @bp.arguments(InvitationUpdateSchema)
     @bp.response(200, InvitationSchema)
+    @jwt_required()
     def put(self, update_data, event_id, user_id):
         """Update existing invitation"""
         invitation = Invitation.get_by_id((event_id, user_id))

@@ -9,15 +9,17 @@ import { set } from 'date-fns';
 import { Box, Paper } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useStore } from '../../../../state/store';
 
 export const EventCreator: React.FC = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const [state] = useStore();
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const { isLoading, data: restaurants } = useRestaurants();
 
-    const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent), {
+    const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent, state.user?.token), {
         onSuccess: () => {
             toast.success(t('events.new.mutation.onSuccess'));
         },
