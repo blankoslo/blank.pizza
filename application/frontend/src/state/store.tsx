@@ -6,8 +6,11 @@ interface Indexable {
 }
 
 export interface User {
-    uid: string;
-    token: unknown;
+    id: string;
+    email: string;
+    picture: string;
+    name: string;
+    token: string;
     roles: Array<string>;
 }
 

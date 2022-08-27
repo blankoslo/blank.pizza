@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from flask import views, request, redirect, jsonify, current_app
 from flask_smorest import Blueprint, abort
 from app.models.user import User, UserSchema
@@ -19,13 +20,15 @@ class Auth(views.MethodView):
 
         # Use library to construct the request for Google login and provide
         # scopes that let you retrieve user's profile from Google
-        print(request.base_url + "/callback")
+        base_url = os.environ.get("FRONTEND_URI")
         request_uri = auth.client.prepare_request_uri(
             authorization_endpoint,
-            redirect_uri=request.base_url + "/callback",
+            redirect_uri = f'{os.environ.get("FRONTEND_URI")}/login/callback',
             scope=["openid", "email", "profile"],
         )
-        return redirect(request_uri)
+        return jsonify({
+            'auth_url': request_uri
+        });
 
 @bp.route("/logout")
 class Auth(views.MethodView):
@@ -36,12 +39,15 @@ class Auth(views.MethodView):
 class Auth(views.MethodView):
     def get(self):
         code = request.args.get("code")
+        authorization_response = f'{os.environ.get("FRONTEND_URI")}/login/callback?'
+        for key in request.args.keys():
+            authorization_response += f'{key}={request.args.get(key)}&';
         google_provider_cfg = get_google_provider_cfg()
         token_endpoint = google_provider_cfg["token_endpoint"]
         token_url, headers, body = auth.client.prepare_token_request(
             token_endpoint,
-            authorization_response=request.url,
-            redirect_url=request.base_url,
+            authorization_response= authorization_response,
+            redirect_url= f'{os.environ.get("FRONTEND_URI")}/login/callback',
             code=code
         )
         token_response = requests.post(
@@ -51,7 +57,6 @@ class Auth(views.MethodView):
             auth=(current_app.config["GOOGLE_CLIENT_ID"], current_app.config["GOOGLE_CLIENT_SECRET"]),
         )
 
-        # Parse the tokens!
         auth.client.parse_request_body_response(json.dumps(token_response.json()))
 
         userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
@@ -71,6 +76,11 @@ class Auth(views.MethodView):
                 user = UserSchema().load(data=data)
                 user.upsert(user)
             
-            access_token = create_access_token(identity=user)
+            json_user = UserSchema().dump(user)
+            additional_claims = {
+                # TODO handle roles
+                "user": {**json_user, "roles": []}
+            }
+            access_token = create_access_token(identity=user, additional_claims=additional_claims)
             return jsonify(access_token=access_token)
         return abort(400, message = "User email not available or not verified by Google.")

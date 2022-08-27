@@ -1,4 +1,7 @@
 {
+  "login": {
+    "logo": "Pizzabot By"
+  },
   "header": {
     "logo": "Pizzabot Administration",
     "pages": {
