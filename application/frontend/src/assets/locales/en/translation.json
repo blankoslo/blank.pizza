@@ -25,10 +25,6 @@
       }
     },
     "settings": {
-      "profile": {
-        "name": "profile",
-        "link": "/profile"
-      },
       "logout": {
         "name": "logout",
         "link": "/logout"
