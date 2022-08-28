@@ -62,9 +62,16 @@ export const RestaurantEntry: React.FC<Props> = ({
             <Box
                 sx={{
                     display: 'flex',
+                    alignItems: 'center',
                 }}
             >
-                <IconButton size="large" onClick={() => deleteRestaurantButton(id)}>
+                <IconButton
+                    sx={{
+                        height: 'fit-content',
+                    }}
+                    size="large"
+                    onClick={() => deleteRestaurantButton(id)}
+                >
                     <DeleteIcon fontSize="large" />
                 </IconButton>
             </Box>
