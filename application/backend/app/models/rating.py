@@ -12,10 +12,10 @@ class Rating(db.Model):
   __tablename__ = "ratings"
   slack_id = sa.Column(sa.String, sa.ForeignKey('slack_users.slack_id'), primary_key=True)
   restaurant_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey('restaurants.id'), primary_key=True)
-  rating = sa.Column(sa.Integer, nullable=False, server_default='1')
+  rating = sa.Column(sa.Integer, nullable=False)
   __table_args__ = (
       sa.CheckConstraint(rating >= 1, name='check_rating_range_min'),
-      sa.CheckConstraint(rating <= 6, name='check_rating_range_max'),
+      sa.CheckConstraint(rating <= 5, name='check_rating_range_max'),
   )
   
   def __repr__(self):

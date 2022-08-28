@@ -67,7 +67,7 @@ export const RestaurantList: React.FC = () => {
                     padding: 1,
                     height: '100%',
                     width: '30vw',
-                    minWidth: '500px',
+                    minWidth: '600px',
                     backgroundColor: theme.palette.secondary.main,
                     borderRadius: 3,
                     display: 'flex',

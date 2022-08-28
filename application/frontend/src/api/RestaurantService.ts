@@ -15,6 +15,7 @@ export interface ApiRestaurantBase {
 
 export interface ApiRestaurant extends ApiRestaurantBase {
     id: string;
+    rating?: number;
 }
 
 export interface ApiRestaurants extends Pagination {
