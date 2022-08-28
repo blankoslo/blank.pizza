@@ -1,7 +1,7 @@
 import uuid
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy_utils import aggregated
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy import func, select
 from app.db import db
@@ -21,11 +21,19 @@ class Restaurant(CrudMixin, db.Model):
     tlf = sa.Column(sa.String, nullable=True)
     address = sa.Column(sa.String, nullable=True)
     deleted = sa.Column(sa.Boolean, nullable=False, server_default='f')
-    ratings = relationship("Rating")
+    ratings = relationship("Rating", uselist=True, lazy="dynamic")
 
-    @aggregated('ratings', sa.Column(sa.Float))
+    @hybrid_property
     def rating(self):
-        return sa.func.avg(Rating.rating)
+        return self.ratings.with_entities(func.avg(Rating.rating)).scalar()
+
+    @rating.expression
+    def rating(cls):
+        return (
+            select(func.avg(Rating.rating))
+            .where(Rating.restaurant_id == cls.id)
+            .label("rating")
+        )
 
     query_class = QueryWithSoftDelete
   
@@ -45,7 +53,7 @@ class RestaurantSchema(SQLAlchemySchema):
     tlf = auto_field()
     address = auto_field()
     deleted = auto_field(load_only=True)
-    rating = auto_field(dump_only=True)
+    rating = fields.Float(dump_only=True)
 
 class RestaurantUpdateSchema(RestaurantSchema):
     class Meta(RestaurantSchema.Meta):
