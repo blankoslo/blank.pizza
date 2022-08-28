@@ -20,10 +20,10 @@ class Auth(views.MethodView):
 
         # Use library to construct the request for Google login and provide
         # scopes that let you retrieve user's profile from Google
-        base_url = os.environ.get("FRONTEND_URI")
+        base_url = os.environ.get("FRONTEND_URI").rstrip('/')
         request_uri = auth.client.prepare_request_uri(
             authorization_endpoint,
-            redirect_uri = f'{os.environ.get("FRONTEND_URI")}/login/callback',
+            redirect_uri = f'{base_url}/login/callback',
             scope=["openid", "email", "profile"],
         )
         return jsonify({
@@ -38,8 +38,9 @@ class Auth(views.MethodView):
 @bp.route("/login/callback")
 class Auth(views.MethodView):
     def get(self):
+        base_url = os.environ.get("FRONTEND_URI").rstrip('/')
         code = request.args.get("code")
-        authorization_response = f'{os.environ.get("FRONTEND_URI")}/login/callback?'
+        authorization_response = f'{base_url}/login/callback?'
         for key in request.args.keys():
             authorization_response += f'{key}={request.args.get(key)}&';
         google_provider_cfg = get_google_provider_cfg()
@@ -47,7 +48,7 @@ class Auth(views.MethodView):
         token_url, headers, body = auth.client.prepare_token_request(
             token_endpoint,
             authorization_response= authorization_response,
-            redirect_url= f'{os.environ.get("FRONTEND_URI")}/login/callback',
+            redirect_url= f'{base_url}/login/callback',
             code=code
         )
         token_response = requests.post(

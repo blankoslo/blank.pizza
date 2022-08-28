@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestHeaders } from 'axios';
 
-const baseUrl = process.env.BACKEND_URI ? `${process.env.BACKEND_URI}/api/` : '/api/';
+const baseUrl = process.env.BACKEND_URI ? `${process.env.BACKEND_URI.replace(/\/+$/, '')}/api` : '/api';
 
 export const httpClient = (token?: string): AxiosInstance => {
     const headers: AxiosRequestHeaders = {};

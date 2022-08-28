@@ -132,9 +132,6 @@ dmypy.json
 node_modules
 .eslintcache
 
-# Frontend build
-public/
-
 # Local .terraform directories
 **/.terraform/*
 

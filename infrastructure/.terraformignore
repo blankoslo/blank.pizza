@@ -1,2 +1,2 @@
-backend/venv/
-frontend/node_modules/
+../application/backend/venv/
+../application/frontend/node_modules/

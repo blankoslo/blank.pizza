@@ -20,6 +20,12 @@ module.exports = merge(common, {
         ]
     },
     plugins: [
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: [
+                '**/*',
+                '!.gitignore',
+                '!.static',
+            ],
+        })
     ]
 });
