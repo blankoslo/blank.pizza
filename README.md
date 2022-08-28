@@ -53,10 +53,10 @@ We are using terraform to describe the infrastructure, which can be found in the
 1. Go into the `infrastructure` folder and run `terraform apply`.
 2. Add the urls from the heroku app to the Google OAuth client settings (the google ouath client should also be configured to be internal and be put into production (to not be limited to test users)).
 
-Infrastructure:
-  Backend-app: contains the database, papertrail instance, and backend application
-  Bot-app: contains an attachement to the database,, an attachement to the papertrail instance, the bot worker, the bot batch (not running), scheduler and scheduler job
-  Frontend-app: contains an nginx instance with the build files from the `public` folder
+Infrastructure:  
+* Backend-app: contains the database, papertrail instance, and backend application  
+* Bot-app: contains an attachement to the database,, an attachement to the papertrail instance, the bot worker, the bot batch (not running), scheduler and scheduler job  
+* Frontend-app: contains an nginx instance with the build files from the `public` folder  
 
 #### Cloud / Docker
 It should be fairly straight forward to deploy to other cloud services by using the production docker containers in `application/containers/production`. However, Heroku and Terraform didnt fully support using docker (as the build context would be the same location as the Dockerfile which would ruin the folder structure. The fact that everything application related is put into the `application` folder is already from a limition in terraform/heroku), as such docker won't be used for this project as of now, but they are here for when they are needed.
