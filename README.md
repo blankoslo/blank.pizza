@@ -13,7 +13,7 @@
 10. Open `Subscribe to bot events`
 11. Add the events `app_mention` `file_shared` `message.channels` `message.im`
 12. Click `OAuth & Permissions` in the menu
-13. Go down to `Scopes` and click `Add an OAuth Scope` and add the scopes `chat:write` `im:write`
+13. Go down to `Scopes` and click `Add an OAuth Scope` and add the scopes `chat:write` `im:write` `users:read` `users:read.email`
 14. Go to `App Home`
 15. Go down to `Show Tabs` and switch on `Messages Tab` (to allow DMs)
 16. Go up to `OAuth Tokens for Your Workspace` and click `Install to Workspace`
