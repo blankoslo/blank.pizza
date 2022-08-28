@@ -13,6 +13,8 @@ class Restaurants(views.MethodView):
     def get(self, args, pagination_parameters):
         """List restaurants"""
         total, restaurants = Restaurant.get(filters = args, page = pagination_parameters.page, per_page = pagination_parameters.page_size)
+        print(restaurants[0].ratings)
+        print(restaurants[0].rating)
         pagination_parameters.item_count = total
         return restaurants
     
