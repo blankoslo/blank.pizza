@@ -23,10 +23,7 @@ const pages = [
     { name: 'header.pages.events.name', link: 'header.pages.events.link' },
     { name: 'header.pages.users.name', link: 'header.pages.users.link' },
 ];
-const settings = [
-    { name: 'header.settings.profile.name', link: 'header.settings.profile.link' },
-    { name: 'header.settings.logout.name', link: 'header.settings.logout.link' },
-];
+const settings = [{ name: 'header.settings.logout.name', link: 'header.settings.logout.link' }];
 
 const StyledMenuItem = styled(MenuItem)({
     position: 'relative',

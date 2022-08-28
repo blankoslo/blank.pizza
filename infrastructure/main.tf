@@ -6,6 +6,12 @@ resource "heroku_app" "staging-backend" {
   name = "pizzabot-staging-backend"
   region = "eu"
   stack = "heroku-22"
+
+  sensitive_config_vars = {
+    "SECRET_KEY" = var.SECRET_KEY_BACKEND
+    "GOOGLE_CLIENT_ID" = var.GOOGLE_CLIENT_ID
+    "GOOGLE_CLIENT_SECRET" = var.GOOGLE_CLIENT_SECRET
+  }
 }
 
 resource "heroku_app" "staging-bot" {
@@ -13,11 +19,25 @@ resource "heroku_app" "staging-bot" {
   region = "eu"
   stack = "heroku-22"
 
-  config_vars = {
+  sensitive_config_vars = {
     "SLACK_BOT_TOKEN" = var.SLACK_BOT_TOKEN
     "SLACK_APP_TOKEN" = var.SLACK_APP_TOKEN
     "PIZZA_CHANNEL_ID" = var.PIZZA_CHANNEL_ID
   }
+}
+
+resource "heroku_config" "endpoints" {
+    vars = {
+        FRONTEND_URI = heroku_app.staging-frontend.web_url
+        BACKEND_URI = heroku_app.staging-backend.web_url
+    }
+}
+
+resource "heroku_app_config_association" "config_backend_association" {
+  app_id = heroku_app.staging-backend.id
+
+  vars = heroku_config.endpoints.vars
+  sensitive_vars = heroku_config.endpoints.sensitive_vars
 }
 
 data "external" "frontend_build" {
@@ -25,7 +45,9 @@ data "external" "frontend_build" {
 ((export BACKEND_URI=${heroku_app.staging-backend.web_url}; cd ../application/frontend && npm run build:production && cd ../../infrastructure)  >&2 && echo "{\"nop\": \"nop\"}")
 EOT
 ]
-  depends_on=[heroku_app.staging-backend]
+  depends_on = [
+    heroku_app.staging-backend
+  ]
 }
 
 resource "heroku_app" "staging-frontend" {
@@ -67,6 +89,20 @@ resource "heroku_build" "staging-frontend" {
   source {
     path = "../application/frontend/public"
   }
+
+  depends_on = [
+    data.external.frontend_build
+  ]
+}
+
+resource "heroku_addon" "staging-papertrail-backend" {
+  app_id = heroku_app.staging-backend.id
+  plan = "papertrail:choklad"
+}
+
+resource "heroku_addon_attachment" "staging-papertrail-bot" {
+  app_id  = heroku_app.staging-bot.id
+  addon_id = heroku_addon.staging-papertrail-backend.id
 }
 
 # This creates the environment variable DATABASE_URL that we can use in our heroku_app

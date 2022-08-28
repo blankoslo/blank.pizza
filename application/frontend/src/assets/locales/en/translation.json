@@ -1,4 +1,9 @@
 {
+  "login": {
+    "logo": "Pizzabot By",
+    "button": "Login"
+  },
+  "logout": "Logging you out...",
   "header": {
     "logo": "Pizzabot Administration",
     "pages": {
@@ -20,10 +25,6 @@
       }
     },
     "settings": {
-      "profile": {
-        "name": "profile",
-        "link": "/profile"
-      },
       "logout": {
         "name": "logout",
         "link": "/logout"

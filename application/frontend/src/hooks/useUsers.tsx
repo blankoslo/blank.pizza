@@ -3,7 +3,7 @@ import {
     ApiUsers,
     ApiUsersInfinite,
     getUsers,
-    getRestaurantsInfinite,
+    getUsersInfinite,
     usersDefaultQueryKey,
     ApiUsersParams,
 } from '../api/UserService';
@@ -20,7 +20,7 @@ export const useInfiniteUsers = (
 ): InfiniteQueryObserverResult<ApiUsersInfinite> => {
     return useInfiniteQuery<ApiUsersInfinite>({
         queryKey: [usersDefaultQueryKey, params],
-        queryFn: ({ pageParam = 1 }) => getRestaurantsInfinite({ ...params, page: pageParam }),
+        queryFn: ({ pageParam = 1 }) => getUsersInfinite({ ...params, page: pageParam }),
         getNextPageParam: (lastGroup) => lastGroup.nextPage,
         getPreviousPageParam: (firstGroup) => firstGroup.prevPage,
     });

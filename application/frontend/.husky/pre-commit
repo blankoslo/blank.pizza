@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-(cd frontend && node_modules/.bin/lint-staged)
+(cd application/frontend && node_modules/.bin/lint-staged)

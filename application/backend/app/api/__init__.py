@@ -10,6 +10,7 @@ from app.api.crud.restaurants import bp as restaurants_bp
 from app.api.crud.events import bp as events_bp
 from app.api.crud.images import bp as images_bp
 from app.api.crud.slack_users import bp as users_bp
+from app.api.auth import bp as auth_bp
 
 from flask_smorest import Api
 from flask_marshmallow import Marshmallow

@@ -13,6 +13,7 @@ import RestaurantListPage from '../components/pages/restaurants/list';
 import EvenListPage from '../components/pages/events/list';
 import NewEventPage from '../components/pages/events/new';
 import UserListPage from '../components/pages/users/list';
+import { useQuery } from '../hooks/useQuery';
 
 type Props = {
     children?: React.ReactNode;
@@ -21,8 +22,9 @@ type Props = {
 const RouterContainer: React.FC<Props> = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [state, dispatch] = useStore();
-    const loggedIn = !!state.user;
+    //const loggedIn = !!state.user;
 
+    // TODO: Fix loading indicator
     /*useEffect(() => {
         if (loggedIn) {
             setIsLoading(true);
@@ -41,14 +43,12 @@ export const Router: React.FC = () => {
         <BrowserRouter>
             <RouterContainer>
                 <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <Template>
-                                <Outlet />
-                            </Template>
-                        }
-                    >
+                    <Route element={<Auth loggedIn={false} />}>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/login/callback" element={<Login callback={true} />} />
+                    </Route>
+                    <Route element={<Auth loggedIn={true} />}>
+                        <Route path="/" element={<Outlet />} />
                         <Route path="/restaurants" element={<Outlet />}>
                             <Route path="new" element={<NewRestaurantPage />} />
                             <Route path="list" element={<RestaurantListPage />} />
@@ -60,11 +60,6 @@ export const Router: React.FC = () => {
                         <Route path="/users" element={<Outlet />}>
                             <Route path="list" element={<UserListPage />} />
                         </Route>
-                    </Route>
-                    <Route element={<Auth loggedIn={false} />}>
-                        <Route path="/login" element={<Login />} />
-                    </Route>
-                    <Route element={<Auth loggedIn={true} />}>
                         <Route path="/logout" element={<Logout />} />
                     </Route>
                 </Routes>

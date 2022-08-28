@@ -132,9 +132,6 @@ dmypy.json
 node_modules
 .eslintcache
 
-# Frontend build
-public/
-
 # Local .terraform directories
 **/.terraform/*
 
@@ -169,3 +166,7 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# nginx
+*.crt
+*.key

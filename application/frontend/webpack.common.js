@@ -2,7 +2,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const path = require('path');
 const Dotenv = require('dotenv-webpack');
-const CreateFileWebpack = require('create-file-webpack')
 
 module.exports = {
     entry: path.resolve(__dirname, 'src', 'index.tsx'),
@@ -45,13 +44,6 @@ module.exports = {
         }),
         new Dotenv({
             systemvars: true
-        }),
-        new CreateFileWebpack({
-            path: './public',
-            // file name
-            fileName: '.static',
-            // content of the file
-            content: ''
         })
     ],
 };

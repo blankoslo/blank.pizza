@@ -49,7 +49,7 @@ export interface ApiUsersInfinite {
     prevPage: number;
 }
 
-export const getRestaurantsInfinite: (params?: ApiUsersParams, token?: string) => Promise<ApiUsersInfinite> = async (
+export const getUsersInfinite: (params?: ApiUsersParams, token?: string) => Promise<ApiUsersInfinite> = async (
     params,
     token,
 ) => {

@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
 from app.models.event import Event, EventSchema, EventQueryArgsSchema
+from flask_jwt_extended import jwt_required
 
 bp = Blueprint("events", "events", url_prefix="/events", description="Operations on events")
 
@@ -17,6 +18,7 @@ class Events(views.MethodView):
 
     @bp.arguments(EventSchema)
     @bp.response(201, EventSchema)
+    @jwt_required()
     def post(self, new_data):
         """Add an event"""
         Event.upsert(new_data)
@@ -33,6 +35,7 @@ class EventsById(views.MethodView):
         return event
 
     @bp.response(204)
+    @jwt_required()
     def delete(self, event_id):
         """Delete event"""
         Event.delete(event_id)

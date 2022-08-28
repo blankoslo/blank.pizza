@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
 from app.models.slack_user import SlackUser, SlackUserSchema, SlackUserUpdateSchema, SlackUserQueryArgsSchema
+from flask_jwt_extended import jwt_required
 
 bp = Blueprint("users", "users", url_prefix="/users", description="Operations on users")
 
@@ -27,6 +28,7 @@ class SlackUsersById(views.MethodView):
 
     @bp.arguments(SlackUserUpdateSchema)
     @bp.response(200, SlackUserSchema)
+    @jwt_required()
     def put(self, update_data, slack_user_id):
         """Update existing user"""
         slack_user = SlackUser.get_by_id(slack_user_id)
