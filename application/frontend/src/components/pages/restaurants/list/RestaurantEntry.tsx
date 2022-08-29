@@ -5,6 +5,7 @@ import { ApiRestaurant } from '../../../../api/RestaurantService';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@mui/material';
+import PizzaRating from './PizzaRating';
 
 interface Props {
     restaurant: ApiRestaurant;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 export const RestaurantEntry: React.FC<Props> = ({
-    restaurant: { id, name, link, tlf, address },
+    restaurant: { id, name, link, tlf, address, rating },
     deleteRestaurantButton,
 }) => {
     const { t } = useTranslation();
@@ -52,9 +53,25 @@ export const RestaurantEntry: React.FC<Props> = ({
             <Box
                 sx={{
                     display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
             >
-                <IconButton size="large" onClick={() => deleteRestaurantButton(id)}>
+                <PizzaRating rating={rating} />
+            </Box>
+            <Box
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                }}
+            >
+                <IconButton
+                    sx={{
+                        height: 'fit-content',
+                    }}
+                    size="large"
+                    onClick={() => deleteRestaurantButton(id)}
+                >
                     <DeleteIcon fontSize="large" />
                 </IconButton>
             </Box>

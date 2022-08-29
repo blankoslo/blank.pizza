@@ -154,7 +154,8 @@
           "accept": "Delete"
         }
       },
-      "newRestaurantButton": "New Restaurant"
+      "newRestaurantButton": "New Restaurant",
+      "rating": "No rating"
     },
     "delete": {
       "mutation": {
