@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useReducer, useEffect } from 'react';
 import rootReducer, { Actions } from './reducers';
+import store from 'store';
 
 interface Indexable {
     [key: string]: User | undefined;
@@ -32,8 +33,16 @@ type Props = {
     initState: State;
 };
 
+const initializer: (initialState: State) => State = (initialValue = initialState) => {
+    return (store.get('state') as State | null) || initialValue;
+};
+
 export const StoreProvider: React.FC<Props> = ({ children, initState }) => {
-    const [globalState, dispatch] = React.useReducer(rootReducer, initState);
+    const [globalState, dispatch] = useReducer(rootReducer, initState, initializer);
+
+    useEffect(() => {
+        store.set('state', globalState);
+    }, [globalState]);
 
     return <Store.Provider value={[globalState, dispatch]}>{children}</Store.Provider>;
 };
