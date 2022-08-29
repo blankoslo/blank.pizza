@@ -12,6 +12,8 @@ try:
 except:
     print("Missing locale nb_NO.utf8 on server")
 
+timezone = pytz.timezone('Europe/Oslo')
+
 PEOPLE_PER_EVENT = 5
 REPLY_DEADLINE_IN_HOURS = 24
 DAYS_IN_ADVANCE_TO_INVITE = 10
@@ -49,7 +51,10 @@ def invite_if_needed():
         print("No users were invited")
         return
 
+    # timestamp (timestamp) is converted to UTC timestamp by psycopg2
     event_id, timestamp, restaurant_id, number_of_already_invited, restaurant_name = event
+    # Convert timestamp to Norwegian timestamp
+    timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
     number_of_employees = sync_db_with_slack_and_return_count()
     number_to_invite = PEOPLE_PER_EVENT - number_of_already_invited
     users_to_invite = db.get_users_to_invite(number_to_invite, event_id, number_of_employees, PEOPLE_PER_EVENT)
@@ -69,7 +74,10 @@ def send_reminders():
     inviations = db.get_unanswered_invitations()
 
     for invitation in inviations:
+        # invited_at and reminded_at (timestamps) are converted to UTC timestamp by psycopg2
         slack_id, invited_at, reminded_at = invitation
+        # all timestamps (such as reminded_at) gets converted to UTC
+        # so comparing it to datetime.now in UTC is correct
         remind_timestamp = datetime.now(pytz.utc) + timedelta(hours=-HOURS_BETWEEN_REMINDERS)
         if(reminded_at < remind_timestamp):
             slack.send_slack_message(slack_id, "Hei du! Jeg hørte ikke noe mer? Er du gira? (ja/nei)")
@@ -81,7 +89,10 @@ def finalize_event_if_complete():
     if event is None:
         print("No events ready to finalize")
     else:
+        # timestamp (timestamp) is converted to UTC timestamp by psycopg2
         event_id, timestamp, place = event
+        # Convert timestamp to Norwegian timestamp
+        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
         sync_db_with_slack_and_return_count()
         slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
