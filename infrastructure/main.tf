@@ -66,7 +66,10 @@ resource "heroku_app" "staging-frontend" {
 
 resource "heroku_build" "staging-backend" {
   app_id = heroku_app.staging-backend.id
-  buildpacks = ["https://github.com/heroku/heroku-buildpack-python"]
+  buildpacks = [
+    "https://github.com/heroku/heroku-buildpack-locale",
+    "https://github.com/heroku/heroku-buildpack-python"
+  ]
 
   source {
     path = "../application/backend"
@@ -75,7 +78,10 @@ resource "heroku_build" "staging-backend" {
 
 resource "heroku_build" "staging-bot" {
   app_id = heroku_app.staging-bot.id
-  buildpacks = ["https://github.com/heroku/heroku-buildpack-python"]
+  buildpacks = [
+    "https://github.com/heroku/heroku-buildpack-locale",
+    "https://github.com/heroku/heroku-buildpack-python"
+  ]
 
   source {
     path = "../application/bot"

@@ -46,9 +46,12 @@ The frontend, backend, bot (worker and batch), and database can all be run with 
 
 As we use Ouath2 for authentication we are forced to use https. Nginx needs valid ssl certificates, so you are gonna need to generate one with the command `openssl req -x509 -nodes -newkey rsa:4096 -keyout nginx-selfsigned.key -out nginx-selfsigned.crt -sha256 -days 365` and add it to `application/containers/development`
 
+### Good to know
+Locales doesnt work properly in the alpine container used, meaning it's not a bug if stuff is localized wrong, such as the time string send in pizza event invites.
+
 ### Production
 #### Heroku
-We are using terraform to describe the infrastructure, which can be found in the `/infrastructure` folder. In addition to this the backend/bot have `Procfile` and `runtime.txt` files that describe the process and heroku runtime. While the frontend have `.static` in the `public` folder to indicate the application folder for the nginx buildpacker, and a `.gitignore` file to keep the files and folder in git.
+We are using terraform to describe the infrastructure, which can be found in the `/infrastructure` folder. In addition to this the backend/bot have `Procfile`, `runtime.txt`, and `.locales` files that describe the process, heroku runtime and additional locales to include. While the frontend have `.static` in the `public` folder to indicate the application folder for the nginx buildpacker, and a `.gitignore` file to keep the files and folder in git.
 
 1. Go into the `infrastructure` folder and run `terraform apply`.
 2. Add the urls from the heroku app to the Google OAuth client settings (the google ouath client should also be configured to be internal and be put into production (to not be limited to test users)).
