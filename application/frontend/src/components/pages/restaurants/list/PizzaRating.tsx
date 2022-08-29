@@ -32,7 +32,6 @@ const PizzaRating: React.FC<Props> = ({ rating }) => {
             {rating ? (
                 <StyledRating
                     defaultValue={rating}
-                    getLabelText={(value: number) => `${value} Pizza Slize${value !== 1 ? 's' : ''}`}
                     precision={0.1}
                     icon={<LocalPizzaIcon fontSize="inherit" />}
                     emptyIcon={<LocalPizzaOutlinedIcon fontSize="inherit" />}
