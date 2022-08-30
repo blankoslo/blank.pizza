@@ -1,5 +1,5 @@
 import Button from '@mui/material/Button';
-import WeekPicker, { getRandomInteger, selectPizzaDay } from './WeekPicker';
+import WeekPicker, { getRandomInteger, setPizzaDay } from './WeekPicker';
 import { useState } from 'react';
 import { useRestaurants } from '../../../../hooks/useRestaurants';
 import { postEvent, ApiEventPost, eventsDefaultQueryKey } from '../../../../api/EventService';
@@ -15,7 +15,7 @@ export const EventCreator: React.FC = () => {
     const queryClient = useQueryClient();
     const [state] = useStore();
 
-    const [selectedDate, setSelectedDate] = useState<Date | null>(selectPizzaDay(new Date()));
+    const [selectedDate, setSelectedDate] = useState<Date | null>(setPizzaDay(new Date()));
     const { isLoading, data: restaurants } = useRestaurants();
 
     const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent, state.user?.token), {

@@ -3,7 +3,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import startOfWeek from 'date-fns/startOfWeek';
 import add from 'date-fns/add';
-import { addDays, Locale } from 'date-fns';
+import { addDays, isSameDay, Locale } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import enLocale from 'date-fns/locale/en-US';
 import nbLocale from 'date-fns/locale/nb';
@@ -73,7 +73,7 @@ const getMinDate = () => {
     return date;
 };
 
-export const selectPizzaDay = (date: Date | null) => {
+export const setPizzaDay = (date: Date | null) => {
     return setTime(selectRandomPizzaDay(date));
 };
 
@@ -162,7 +162,21 @@ const WeekPicker: React.FC<Props> = ({ selectedDate, setSelectedDate }) => {
             <DatePicker
                 selected={selectedDate}
                 onChange={(newValue) => {
-                    setSelectedDate(selectPizzaDay(newValue));
+                    if (newValue === null || selectedDate === null || isSameDay(newValue, selectedDate)) {
+                        setSelectedDate(newValue);
+                    } else {
+                        // `selectRandomPizzaDay` can never return null if the input isnt null
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        const randomDate = selectRandomPizzaDay(newValue)!;
+                        const time = {
+                            hours: selectedDate.getHours(),
+                            minutes: selectedDate.getMinutes(),
+                            seconds: selectedDate.getSeconds(),
+                            milliseconds: selectedDate.getMilliseconds(),
+                        };
+                        const _newDate = set(randomDate, time);
+                        setSelectedDate(_newDate);
+                    }
                 }}
                 showTimeSelect
                 disabledKeyboardNavigation
