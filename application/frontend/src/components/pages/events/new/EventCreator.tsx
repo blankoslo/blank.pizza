@@ -1,11 +1,10 @@
 import Button from '@mui/material/Button';
-import WeekPicker, { getRandomInteger, PIZZA_EVENT_TIME_IN_HOURS_24_HOURS } from './WeekPicker';
+import WeekPicker, { getRandomInteger, selectPizzaDay } from './WeekPicker';
 import { useState } from 'react';
 import { useRestaurants } from '../../../../hooks/useRestaurants';
 import { postEvent, ApiEventPost, eventsDefaultQueryKey } from '../../../../api/EventService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { set } from 'date-fns';
 import { Box, Paper } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +15,7 @@ export const EventCreator: React.FC = () => {
     const queryClient = useQueryClient();
     const [state] = useStore();
 
-    const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(selectPizzaDay(new Date()));
     const { isLoading, data: restaurants } = useRestaurants();
 
     const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent, state.user?.token), {
@@ -51,15 +50,8 @@ export const EventCreator: React.FC = () => {
 
         const restaurant = restaurants.restaurants[randomNumber];
 
-        const date = set(selectedDate, {
-            hours: PIZZA_EVENT_TIME_IN_HOURS_24_HOURS,
-            minutes: 0,
-            seconds: 0,
-            milliseconds: 0,
-        });
-
         addEventMutation.mutate({
-            time: date.toISOString(),
+            time: selectedDate.toISOString(),
             restaurant_id: restaurant.id,
         });
     };
@@ -85,7 +77,7 @@ export const EventCreator: React.FC = () => {
                 {t('events.new.title')}
             </Box>
             <Box>
-                <WeekPicker value={selectedDate} setSelectedDate={setSelectedDate} />
+                <WeekPicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
                 <Button
                     sx={{ marginY: 1 }}
                     color="success"

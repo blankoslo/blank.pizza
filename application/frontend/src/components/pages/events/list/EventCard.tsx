@@ -9,7 +9,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ApiEvent } from '../../../../api/EventService';
 import { useInvitations } from '../../../../hooks/useInvitations';
-import { dateToReadableString } from '../../../utils/dateToReadableString';
+import { datetimeToReadableString } from '../../../utils/dateToReadableString';
 import Stack from '@mui/material/Stack';
 import { InvitationRow } from './InvitationRow';
 
@@ -29,7 +29,7 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
                     <CardContent>
-                        <p>{dateToReadableString(time)}</p>
+                        <p>{datetimeToReadableString(time)}</p>
                         <Typography variant="h5" component="h3">
                             {`${t('events.list.eventCard.normal.place')} ${
                                 restaurant ? restaurant.name : t('events.list.deletedRestaurant')
