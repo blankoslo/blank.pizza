@@ -16,6 +16,7 @@ import {
 import { Menu as MenuIcon } from '@styled-icons/material/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { LocalizationButton } from './LocalizationButton';
 
 const pages = [
     { name: 'header.pages.home.name', link: 'header.pages.home.link' },
@@ -172,7 +173,8 @@ const Header: React.FC = () => {
                         ))}
                     </Box>
 
-                    <Box sx={{ flexGrow: 0 }}>
+                    <Box sx={{ flexGrow: 0, display: 'flex' }}>
+                        <LocalizationButton />
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                                 <Avatar alt="profile picture" />
