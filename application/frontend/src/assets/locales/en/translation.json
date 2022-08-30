@@ -135,7 +135,7 @@
     },
     "list": {
       "title": "List of Restaurants",
-      "noResults": "Ingen restauranter funnet",
+      "noResults": "No restaurants found",
       "optionalValue": "N/A",
       "entry": {
         "name": "Name",

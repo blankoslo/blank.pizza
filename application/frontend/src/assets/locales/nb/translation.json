@@ -1,0 +1,163 @@
+{
+  "login": {
+    "logo": "Pizzabot av",
+    "button": "Logg Inn"
+  },
+  "logout": "Logger deg ut...",
+  "header": {
+    "logo": "Pizzabot Administrasjon",
+    "pages": {
+      "home": {
+        "name": "Hjem",
+        "link": "/"
+      },
+      "restaurants": {
+        "name": "restauranter",
+        "link": "/restaurants/list"
+      },
+      "events": {
+        "name": "arrangementer",
+        "link": "/events/list"
+      },
+      "users": {
+        "name": "brukere",
+        "link": "/users/list"
+      }
+    },
+    "settings": {
+      "logout": {
+        "name": "logg ut",
+        "link": "/logout"
+      }
+    }
+  },
+  "footer": {
+    "logo": "Pizzabot av"
+  },
+  "infinityLoadingList": {
+    "loading": "Laster inn...",
+    "end": "Slutt på listen."
+  },
+  "invitations": {
+    "update": {
+      "validation": {
+        "rsvp": {
+          "required": "Svar er påkrevd"
+        }
+      },
+      "mutation": {
+        "onSuccess": "Nytt svar registrert",
+        "onError": "Registrering av nytt svar var mislykket"
+      }
+    },
+    "list": {
+      "invitedAt": "Invitert den:",
+      "remindedAt": "Påminnet den:"
+    }
+  },
+  "users": {
+    "list": {
+      "title": "List over brukere",
+      "card": {
+        "username": "brukernavn:",
+        "email": "e-post:",
+        "joined": "Ble med den:",
+        "noEmail": "N/A",
+        "priority": "Prioritetsnivå",
+        "active": "Aktiv"
+      },
+      "noResults": "Ingen brukere funnet"
+    },
+    "update": {
+      "mutation": {
+        "onSuccess": "Oppdatering av bruker var vellykket",
+        "onError": "Oppdatering av bruker var mislykket"
+      }
+    }
+  },
+  "events": {
+    "new": {
+      "mutation": {
+        "onSuccess": "Registrering av nytt arrangement var vellykket",
+        "onError": "Registrering av nytt arrangement var mislykket"
+      },
+      "errors": {
+        "noSelectedDate": "Du må velge en uke før du lager et ntt arrangement",
+        "noRestaurantsExists": "Ingen restauranter eksisterer i systemet. Legg til en ny restaurant før du prøver å legge til et nytt arrangement"
+      },
+      "title": "Nytt pizza arrangement 🍕",
+      "button": "Opprett"
+    },
+    "list": {
+      "eventCard": {
+        "extended": {
+          "title": "NESTE PIZZA ARRANGEMENT 🍕"
+        },
+        "normal": {
+          "place": "Pizza hos " 
+        }
+      },
+      "futureEvents": {
+        "title": "Framtidige arrangementer 🍕"
+      },
+      "pastEvents": {
+        "title": "Tidligere arrangementer 🍕"
+      },
+      "deletedRestaurant": "N/A (Restauranten har blitt slettet fra systemet)",
+      "newEventButton": "Nytt arrangement",
+      "noResults":"Ingen arrangementer funnet"
+    }
+  },
+  "restaurants": {
+    "new": {
+      "title": "Ny restaurant",
+      "validation": {
+        "name": {
+          "min": "Navnet må være minst 1 bokstav lang",
+          "required": "Navn er påkrevd"
+        }
+      },
+      "mutation": {
+        "onSuccess": "Registrering av nytt restaurant var vellykket",
+        "onError": "Registrering av nytt restaurant var mislykket"
+      },
+      "form": {
+        "name": "Restaurant navn",
+        "link": "Restaurant nettadresse",
+        "tlf": "Restaurant telefonnummer",
+        "address": "Restaurant adresse",
+        "button": "Opprett"
+      }
+    },
+    "list": {
+      "title": "List over restaurants",
+      "noResults": "Ingen restauranter funnet",
+      "optionalValue": "N/A",
+      "entry": {
+        "name": "Navn",
+        "link": "Nettadresse",
+        "tlf": "Telefonnummer",
+        "address": "Adresse"
+      },
+      "confirmation": {
+        "title": "Slett resturant",
+        "content": {
+          "line1": "Er du sikker på at du vil slette resturanten?",
+          "line2": "Denne handlingen kan ikke bli angret."
+        },
+        "action": {
+          "cancel": "Avbryt",
+          "accept": "Slett"
+        }
+      },
+      "newRestaurantButton": "Ny restaurant",
+      "rating": "Ingen rating"
+    },
+    "delete": {
+      "mutation": {
+        "onSuccess": "Sletting av restauranten var vellykket",
+        "onError": "Sletting av restauranten var mislykket"
+      }
+    }
+  }
+}

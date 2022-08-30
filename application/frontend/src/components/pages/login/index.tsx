@@ -8,6 +8,7 @@ import { useQuery } from '../../../hooks/useQuery';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../../state/store';
 import { loginUser } from '../../../state/reducers';
+import { LocalizationButton } from '../../LocalizationButton';
 
 interface Props {
     callback?: boolean;
@@ -39,19 +40,33 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Box
+            sx={(theme) => ({
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '100vh',
+                backgroundColor: theme.palette.primary.main,
+            })}
+        >
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'end',
+                }}
+            >
+                <LocalizationButton />
+            </Box>
             <Grid
                 flex={1}
-                sx={(theme) => ({
+                sx={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     flexDirection: 'column',
                     padding: 2,
-                    backgroundColor: theme.palette.primary.main,
                     maxHeight: `100vh`,
                     width: '100%',
-                })}
+                }}
             >
                 {callback ? (
                     <LoadingSpinner />
