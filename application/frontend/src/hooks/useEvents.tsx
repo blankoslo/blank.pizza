@@ -4,11 +4,12 @@ import {
     ApiEventsInfinite,
     ApiEventsParams,
     eventsDefaultQueryKey,
-    getEvents,
-    getRestaurantsInfinite,
+    useEventService,
 } from '../api/EventService';
 
 export const useEvents = (params: ApiEventsParams): QueryObserverResult<ApiEvents> => {
+    const { getEvents } = useEventService();
+
     return useQuery<ApiEvents>({
         queryKey: [eventsDefaultQueryKey, params],
         queryFn: () => getEvents(params),
@@ -18,6 +19,8 @@ export const useEvents = (params: ApiEventsParams): QueryObserverResult<ApiEvent
 export const useInfiniteEvents = (
     params?: Omit<ApiEventsParams, 'page'>,
 ): InfiniteQueryObserverResult<ApiEventsInfinite> => {
+    const { getRestaurantsInfinite } = useEventService();
+
     return useInfiniteQuery<ApiEventsInfinite>({
         queryKey: [eventsDefaultQueryKey, params],
         queryFn: ({ pageParam = 1 }) => getRestaurantsInfinite({ ...params, page: pageParam }),

@@ -5,12 +5,33 @@ from flask import views, request, redirect, jsonify, current_app
 from flask_smorest import Blueprint, abort
 from app.models.user import User, UserSchema
 from app.auth import auth
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 
 bp = Blueprint("auth", "auth", url_prefix="/auth", description="Authentication")
 
 def get_google_provider_cfg():
     return requests.get(current_app.config["GOOGLE_DISCOVERY_URL"]).json()
+
+@bp.route("/logout")
+class Auth(views.MethodView):
+  def get(self):
+    pass
+
+@bp.route("/refresh")
+class Auth(views.MethodView):
+  @jwt_required(refresh=True)
+  def post(self):
+    identity = get_jwt_identity()
+    user = User.get_by_id(identity)
+
+    json_user = UserSchema().dump(user)
+    additional_claims = {
+        # TODO handle roles
+        "user": {**json_user, "roles": []}
+    }
+
+    access_token = create_access_token(identity=user, additional_claims=additional_claims)
+    return jsonify(access_token=access_token)
 
 @bp.route("/login")
 class Auth(views.MethodView):
@@ -29,11 +50,6 @@ class Auth(views.MethodView):
         return jsonify({
             'auth_url': request_uri
         });
-
-@bp.route("/logout")
-class Auth(views.MethodView):
-  def get(self):
-    pass
 
 @bp.route("/login/callback")
 class Auth(views.MethodView):
@@ -83,5 +99,6 @@ class Auth(views.MethodView):
                 "user": {**json_user, "roles": []}
             }
             access_token = create_access_token(identity=user, additional_claims=additional_claims)
-            return jsonify(access_token=access_token)
+            refresh_token = create_refresh_token(identity=user, additional_claims=additional_claims)
+            return jsonify(access_token=access_token, refresh_token=refresh_token)
         return abort(400, message = "User email not available or not verified by Google.")

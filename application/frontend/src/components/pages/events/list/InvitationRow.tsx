@@ -13,11 +13,10 @@ import {
     ApiInvitation,
     ApiInvitationPut,
     invitationsDefaultQueryKey,
-    putInvitation,
+    useInvitationService,
 } from '../../../../api/InvitationService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { useStore } from '../../../../state/store';
 
 const validationSchema = yup.object().shape({
     rsvp: yup.string().required(i18n.t('invitations.update.validation.rsvp.required')),
@@ -26,7 +25,7 @@ const validationSchema = yup.object().shape({
 const InvitationRow: React.FC<ApiInvitation> = ({ event_id, slack_id, slack_user, invited_at, reminded_at, rsvp }) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const [state] = useStore();
+    const { putInvitation } = useInvitationService();
 
     const { handleSubmit, watch, ...formMethods } = useForm<ApiInvitationPut>({
         resolver: yupResolver(validationSchema),
@@ -36,8 +35,7 @@ const InvitationRow: React.FC<ApiInvitation> = ({ event_id, slack_id, slack_user
     });
 
     const addUserMutation = useMutation(
-        (updatedInvitation: ApiInvitationPut) =>
-            putInvitation(event_id, slack_id, updatedInvitation, state.user?.token),
+        (updatedInvitation: ApiInvitationPut) => putInvitation(event_id, slack_id, updatedInvitation),
         {
             onSuccess: () => {
                 toast.dismiss();

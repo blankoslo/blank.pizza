@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import WeekPicker, { getRandomInteger, setPizzaDay } from './WeekPicker';
 import { useState } from 'react';
 import { useRestaurants } from '../../../../hooks/useRestaurants';
-import { postEvent, ApiEventPost, eventsDefaultQueryKey } from '../../../../api/EventService';
+import { ApiEventPost, eventsDefaultQueryKey, useEventService } from '../../../../api/EventService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Paper } from '@mui/material';
@@ -13,12 +13,12 @@ import { useStore } from '../../../../state/store';
 export const EventCreator: React.FC = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const [state] = useStore();
+    const { postEvent } = useEventService();
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(setPizzaDay(new Date()));
     const { isLoading, data: restaurants } = useRestaurants();
 
-    const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent, state.user?.token), {
+    const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent), {
         onSuccess: () => {
             toast.success(t('events.new.mutation.onSuccess'));
         },

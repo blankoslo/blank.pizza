@@ -1,6 +1,5 @@
 import { ApiEvent } from './EventService';
-import { httpClient } from './httpClient';
-import { Pagination, Params } from './types';
+import { useHttpClient } from './httpClient';
 import { ApiUser } from './UserService';
 
 const endpoint = '/invitations';
@@ -22,29 +21,29 @@ export interface ApiInvitation extends ApiInvitationBase {
 
 export type ApiInvitationPut = ApiInvitationBase;
 
-export const getInvitationsByEvent: (eventId: string, token?: string) => Promise<Array<ApiInvitation>> = (
-    eventId,
-    token,
-) =>
-    httpClient(token)
-        .get<Array<ApiInvitation>>(`${endpoint}/${eventId}`)
-        .then((response) => {
+export const useInvitationService = () => {
+    const { httpGetClient, httpPutClient } = useHttpClient();
+
+    const getInvitationsByEvent: (eventId: string) => Promise<Array<ApiInvitation>> = (eventId) =>
+        httpGetClient<Array<ApiInvitation>>(`${endpoint}/${eventId}`).then((response) => {
             return response.data;
         });
 
-export const getInvitationByKey = (eventId: string, userId: string, token?: string): Promise<ApiInvitation> =>
-    httpClient(token)
-        .get<ApiInvitation>(`${endpoint}/${eventId}/${userId}`)
-        .then((response) => response.data);
+    const getInvitationByKey = (eventId: string, userId: string): Promise<ApiInvitation> =>
+        httpGetClient<ApiInvitation>(`${endpoint}/${eventId}/${userId}`).then((response) => response.data);
 
-export const putInvitation = (
-    eventId: string,
-    userId: string,
-    updatedInvitation: ApiInvitationPut,
-    token?: string,
-): Promise<ApiInvitation> =>
-    httpClient(token)
-        .put<ApiInvitation>(`${endpoint}/${eventId}/${userId}`, updatedInvitation)
-        .then((response) => {
+    const putInvitation = (
+        eventId: string,
+        userId: string,
+        updatedInvitation: ApiInvitationPut,
+    ): Promise<ApiInvitation> =>
+        httpPutClient<ApiInvitation>(`${endpoint}/${eventId}/${userId}`, updatedInvitation).then((response) => {
             return response.data;
         });
+
+    return {
+        getInvitationsByEvent,
+        getInvitationByKey,
+        putInvitation,
+    };
+};

@@ -5,12 +5,11 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
-import { postRestaurant, ApiRestaurantPost, restaurantsDefaultQueryKey } from '../../../../api/RestaurantService';
+import { ApiRestaurantPost, restaurantsDefaultQueryKey, useRestaurantService } from '../../../../api/RestaurantService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import TextInput from '../../../TextInput';
-import { useStore } from '../../../../state/store';
 
 const validationSchema = yup.object().shape({
     name: yup
@@ -25,7 +24,7 @@ const validationSchema = yup.object().shape({
 export const RestaurantCreator: React.FC = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const [state] = useStore();
+    const { postRestaurant } = useRestaurantService();
 
     const formMethods = useForm<ApiRestaurantPost>({
         resolver: yupResolver(validationSchema),
@@ -37,21 +36,18 @@ export const RestaurantCreator: React.FC = () => {
         },
     });
 
-    const addRestaurantMutation = useMutation(
-        (newRestaurant: ApiRestaurantPost) => postRestaurant(newRestaurant, state.user?.token),
-        {
-            onSuccess: () => {
-                toast.success(t('restaurants.new.mutation.onSuccess'));
-                formMethods.reset();
-            },
-            onError: () => {
-                toast.error(t('restaurants.new.mutation.onError'));
-            },
-            onSettled: () => {
-                queryClient.invalidateQueries([restaurantsDefaultQueryKey]);
-            },
+    const addRestaurantMutation = useMutation((newRestaurant: ApiRestaurantPost) => postRestaurant(newRestaurant), {
+        onSuccess: () => {
+            toast.success(t('restaurants.new.mutation.onSuccess'));
+            formMethods.reset();
         },
-    );
+        onError: () => {
+            toast.error(t('restaurants.new.mutation.onError'));
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries([restaurantsDefaultQueryKey]);
+        },
+    });
 
     const onSubmit = formMethods.handleSubmit(async (data) => {
         const newRestaurant: ApiRestaurantPost = {

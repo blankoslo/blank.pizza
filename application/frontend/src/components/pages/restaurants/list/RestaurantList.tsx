@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { useInfiniteRestaurants } from '../../../../hooks/useRestaurants';
-import { deleteRestaurant, restaurantsDefaultQueryKey } from '../../../../api/RestaurantService';
+import { restaurantsDefaultQueryKey, useRestaurantService } from '../../../../api/RestaurantService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { eventsDefaultQueryKey } from '../../../../api/EventService';
@@ -11,12 +11,11 @@ import { useTranslation } from 'react-i18next';
 import { Button3D } from '../../../Button3D';
 import { useNavigate } from 'react-router-dom';
 import { InfinityList } from '../../../InfinityList';
-import { useStore } from '../../../../state/store';
 
 export const RestaurantList: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const [state] = useStore();
+    const { deleteRestaurant } = useRestaurantService();
 
     const [deleteId, setDeleteId] = useState<string>();
     const { isLoading, data: _restaurants, hasNextPage, fetchNextPage } = useInfiniteRestaurants({ page_size: 10 });
@@ -25,7 +24,7 @@ export const RestaurantList: React.FC = () => {
 
     const queryClient = useQueryClient();
 
-    const addMutation = useMutation((id: string) => deleteRestaurant(id, state.user?.token), {
+    const addMutation = useMutation((id: string) => deleteRestaurant(id), {
         onSuccess: () => {
             toast.success(t('restaurants.delete.mutation.onSuccess'));
         },

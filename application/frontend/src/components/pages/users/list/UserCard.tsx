@@ -10,7 +10,7 @@ import { FormProvider, useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import i18n from 'i18next';
-import { ApiUser, ApiUserPut, updateUser, usersDefaultQueryKey } from '../../../../api/UserService';
+import { ApiUser, ApiUserPut, useUserService, usersDefaultQueryKey } from '../../../../api/UserService';
 import SwitchInput from '../../../SwitchInput';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -29,7 +29,7 @@ const validationSchema = yup.object().shape({
 const UserCard: React.FC<ApiUser> = ({ slack_id, current_username, first_seen, email, active, priority }) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const [state] = useStore();
+    const { updateUser } = useUserService();
 
     const { handleSubmit, watch, ...formMethods } = useForm<ApiUserPut>({
         resolver: yupResolver(validationSchema),
@@ -39,22 +39,19 @@ const UserCard: React.FC<ApiUser> = ({ slack_id, current_username, first_seen, e
         },
     });
 
-    const addUserMutation = useMutation(
-        (updatedUser: ApiUserPut) => updateUser(slack_id, updatedUser, state.user?.token),
-        {
-            onSuccess: () => {
-                toast.dismiss();
-                toast.success(t('users.update.mutation.onSuccess'));
-            },
-            onError: () => {
-                toast.dismiss();
-                toast.error(t('users.update.mutation.onError'));
-            },
-            onSettled: () => {
-                queryClient.invalidateQueries([usersDefaultQueryKey]);
-            },
+    const addUserMutation = useMutation((updatedUser: ApiUserPut) => updateUser(slack_id, updatedUser), {
+        onSuccess: () => {
+            toast.dismiss();
+            toast.success(t('users.update.mutation.onSuccess'));
         },
-    );
+        onError: () => {
+            toast.dismiss();
+            toast.error(t('users.update.mutation.onError'));
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries([usersDefaultQueryKey]);
+        },
+    });
 
     const onSubmit: SubmitHandler<ApiUserPut> = useCallback(
         (data) => {

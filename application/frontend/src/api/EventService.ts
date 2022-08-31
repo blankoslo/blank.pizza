@@ -1,4 +1,4 @@
-import { httpClient } from './httpClient';
+import { useHttpClient } from './httpClient';
 import { ApiRestaurant } from './RestaurantService';
 import { Pagination, Params } from './types';
 
@@ -30,13 +30,23 @@ export interface ApiEventsParams extends Params {
     order?: string;
 }
 
-export const getEvents: (params?: ApiEventsParams, token?: string) => Promise<ApiEvents> = (
-    params = { page: 1, page_size: 10 },
-    token,
-) =>
-    httpClient(token)
-        .get<Array<ApiEvent>>(endpoint, { params })
-        .then((response) => {
+export interface ApiEventsInfinite {
+    data: ApiEvent[];
+    nextPage: number;
+    prevPage: number;
+}
+
+export const useEventService = () => {
+    const { httpGetClient, httpPostClient } = useHttpClient();
+
+    const postEvent = (newEvent: ApiEventPost): Promise<ApiEvent> =>
+        httpPostClient<ApiEvent>(endpoint, newEvent).then((response) => response.data);
+
+    const getEventById = (eventId: number): Promise<ApiEvent> =>
+        httpGetClient<ApiEvent>(`${endpoint}/${eventId}`).then((response) => response.data);
+
+    const getEvents: (params?: ApiEventsParams) => Promise<ApiEvents> = (params = { page: 1, page_size: 10 }) =>
+        httpGetClient<ApiEvent>(endpoint, { params }).then((response) => {
             const pagination = JSON.parse(response.headers['x-pagination']);
             return {
                 ...pagination,
@@ -44,32 +54,19 @@ export const getEvents: (params?: ApiEventsParams, token?: string) => Promise<Ap
             };
         });
 
-export interface ApiEventsInfinite {
-    data: ApiEvent[];
-    nextPage: number;
-    prevPage: number;
-}
+    const getRestaurantsInfinite: (params?: ApiEventsParams) => Promise<ApiEventsInfinite> = async (params) => {
+        const res = await getEvents(params);
+        return {
+            data: res.events,
+            nextPage: res.next_page,
+            prevPage: res.page,
+        };
+    };
 
-export const getRestaurantsInfinite: (params?: ApiEventsParams, token?: string) => Promise<ApiEventsInfinite> = async (
-    params,
-    token,
-) => {
-    const res = await getEvents(params, token);
     return {
-        data: res.events,
-        nextPage: res.next_page,
-        prevPage: res.page,
+        postEvent,
+        getEventById,
+        getEvents,
+        getRestaurantsInfinite,
     };
 };
-
-export const getEventById = (eventId: number, token?: string): Promise<ApiEvent> =>
-    httpClient(token)
-        .get<ApiEvent>(`${endpoint}/${eventId}`)
-        .then((response) => response.data);
-
-export const postEvent = (newEvent: ApiEventPost, token?: string): Promise<ApiEvent> =>
-    httpClient(token)
-        .post<ApiEvent>(endpoint, newEvent)
-        .then((response) => {
-            return response.data;
-        });

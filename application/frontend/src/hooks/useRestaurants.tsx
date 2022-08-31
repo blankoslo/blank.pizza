@@ -2,13 +2,14 @@ import { QueryObserverResult, InfiniteQueryObserverResult, useInfiniteQuery, use
 import {
     ApiRestaurantParams,
     ApiRestaurants,
-    getRestaurants,
-    getRestaurantsInfinite,
+    useRestaurantService,
     ApiRestaurantsInfinite,
     restaurantsDefaultQueryKey,
 } from '../api/RestaurantService';
 
 export const useRestaurants = (params?: ApiRestaurantParams): QueryObserverResult<ApiRestaurants> => {
+    const { getRestaurants } = useRestaurantService();
+
     return useQuery<ApiRestaurants>({
         queryKey: [restaurantsDefaultQueryKey, params],
         queryFn: () => getRestaurants(params),
@@ -18,6 +19,8 @@ export const useRestaurants = (params?: ApiRestaurantParams): QueryObserverResul
 export const useInfiniteRestaurants = (
     params?: Omit<ApiRestaurantParams, 'page'>,
 ): InfiniteQueryObserverResult<ApiRestaurantsInfinite> => {
+    const { getRestaurantsInfinite } = useRestaurantService();
+
     return useInfiniteQuery<ApiRestaurantsInfinite>({
         queryKey: [restaurantsDefaultQueryKey, params],
         queryFn: ({ pageParam = 1 }) => getRestaurantsInfinite({ ...params, page: pageParam }),

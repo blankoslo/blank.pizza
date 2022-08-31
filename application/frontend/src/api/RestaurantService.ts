@@ -1,5 +1,5 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { httpClient } from './httpClient';
+import { httpClient, useHttpClient } from './httpClient';
 import { Pagination, Params } from './types';
 
 const endpoint = '/restaurants';
@@ -28,13 +28,19 @@ export interface ApiRestaurantParams extends Params {
     order?: string;
 }
 
-export const getRestaurants: (params?: ApiRestaurantParams, token?: string) => Promise<ApiRestaurants> = (
-    params = { page: 1, page_size: 10 },
-    token,
-) =>
-    httpClient(token)
-        .get<Array<ApiRestaurant>>(endpoint, { params })
-        .then((response) => {
+export interface ApiRestaurantsInfinite {
+    data: ApiRestaurant[];
+    nextPage: number;
+    prevPage: number;
+}
+
+export const useRestaurantService = () => {
+    const { httpGetClient, httpPostClient, httpDeleteClient } = useHttpClient();
+
+    const getRestaurants: (params?: ApiRestaurantParams) => Promise<ApiRestaurants> = (
+        params = { page: 1, page_size: 10 },
+    ) =>
+        httpGetClient<Array<ApiRestaurant>>(endpoint, { params }).then((response) => {
             const pagination = JSON.parse(response.headers['x-pagination']);
             return {
                 ...pagination,
@@ -42,35 +48,25 @@ export const getRestaurants: (params?: ApiRestaurantParams, token?: string) => P
             };
         });
 
-export interface ApiRestaurantsInfinite {
-    data: ApiRestaurant[];
-    nextPage: number;
-    prevPage: number;
-}
-
-export const getRestaurantsInfinite: (
-    params?: ApiRestaurantParams,
-    token?: string,
-) => Promise<ApiRestaurantsInfinite> = async (params, token) => {
-    const res = await getRestaurants(params, token);
-    return {
-        data: res.restaurants,
-        nextPage: res.next_page,
-        prevPage: res.page,
+    const getRestaurantsInfinite: (params?: ApiRestaurantParams) => Promise<ApiRestaurantsInfinite> = async (
+        params,
+    ) => {
+        const res = await getRestaurants(params);
+        return {
+            data: res.restaurants,
+            nextPage: res.next_page,
+            prevPage: res.page,
+        };
     };
+
+    const getRestaurantById = (restaurantId: string): Promise<ApiRestaurant> =>
+        httpGetClient<ApiRestaurant>(`${endpoint}/${restaurantId}`).then((response) => response.data);
+
+    const postRestaurant = (newRestaurant: ApiRestaurantPost): Promise<ApiRestaurant> =>
+        httpPostClient<ApiRestaurant>(endpoint, newRestaurant).then((response) => response.data);
+
+    const deleteRestaurant = (restaurantId: string): Promise<void> =>
+        httpDeleteClient<ApiRestaurant>(`${endpoint}/${restaurantId}`).then();
+
+    return { getRestaurants, getRestaurantsInfinite, getRestaurantById, postRestaurant, deleteRestaurant };
 };
-
-export const getRestaurantById = (restaurantId: string, token?: string): Promise<ApiRestaurant> =>
-    httpClient(token)
-        .get<ApiRestaurant>(`${endpoint}/${restaurantId}`)
-        .then((response) => response.data);
-
-export const postRestaurant = (newRestaurant: ApiRestaurantPost, token?: string): Promise<ApiRestaurant> =>
-    httpClient(token)
-        .post<ApiRestaurant>(endpoint, newRestaurant)
-        .then((response) => {
-            return response.data;
-        });
-
-export const deleteRestaurant = (restaurantId: string, token?: string): Promise<void> =>
-    httpClient(token).delete<ApiRestaurant>(`${endpoint}/${restaurantId}`).then();

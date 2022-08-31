@@ -1,4 +1,4 @@
-import { httpClient } from './httpClient';
+import { httpClient, useHttpClient } from './httpClient';
 import { Pagination, Params } from './types';
 
 const endpoint = '/users';
@@ -29,13 +29,17 @@ export interface ApiUsersParams extends Params {
     active?: boolean;
 }
 
-export const getUsers: (params?: ApiUsersParams, token?: string) => Promise<ApiUsers> = (
-    params = { page: 1, page_size: 10 },
-    token,
-) =>
-    httpClient(token)
-        .get<Array<ApiUser>>(endpoint, { params })
-        .then((response) => {
+export interface ApiUsersInfinite {
+    data: ApiUser[];
+    nextPage: number;
+    prevPage: number;
+}
+
+export const useUserService = () => {
+    const { httpGetClient, httpPutClient } = useHttpClient();
+
+    const getUsers: (params?: ApiUsersParams) => Promise<ApiUsers> = (params = { page: 1, page_size: 10 }) =>
+        httpGetClient<Array<ApiUser>>(endpoint, { params }).then((response) => {
             const pagination = JSON.parse(response.headers['x-pagination']);
             return {
                 ...pagination,
@@ -43,30 +47,25 @@ export const getUsers: (params?: ApiUsersParams, token?: string) => Promise<ApiU
             };
         });
 
-export interface ApiUsersInfinite {
-    data: ApiUser[];
-    nextPage: number;
-    prevPage: number;
-}
+    const getUsersInfinite: (params?: ApiUsersParams) => Promise<ApiUsersInfinite> = async (params) => {
+        const res = await getUsers(params);
+        return {
+            data: res.users,
+            nextPage: res.next_page,
+            prevPage: res.page,
+        };
+    };
 
-export const getUsersInfinite: (params?: ApiUsersParams, token?: string) => Promise<ApiUsersInfinite> = async (
-    params,
-    token,
-) => {
-    const res = await getUsers(params, token);
+    const getUserById = (userId: string): Promise<ApiUser> =>
+        httpGetClient<ApiUser>(`${endpoint}/${userId}`).then((response) => response.data);
+
+    const updateUser = (userId: string, updatedUser: ApiUserPut): Promise<ApiUser> =>
+        httpPutClient<ApiUser>(`${endpoint}/${userId}`, updatedUser).then((response) => response.data);
+
     return {
-        data: res.users,
-        nextPage: res.next_page,
-        prevPage: res.page,
+        getUsers,
+        getUsersInfinite,
+        getUserById,
+        updateUser,
     };
 };
-
-export const getUserById = (userId: string, token?: string): Promise<ApiUser> =>
-    httpClient(token)
-        .get<ApiUser>(`${endpoint}/${userId}`)
-        .then((response) => response.data);
-
-export const updateUser = (userId: string, updatedUser: ApiUserPut, token?: string): Promise<ApiUser> =>
-    httpClient(token)
-        .put<ApiUser>(`${endpoint}/${userId}`, updatedUser)
-        .then((response) => response.data);

@@ -2,12 +2,10 @@ import { Box, Card, Typography, Button, Grid } from '@mui/material';
 import React, { useEffect } from 'react';
 import Logo from '../../../assets/BlankLogoLight5.svg';
 import { useTranslation } from 'react-i18next';
-import { createLoginURI, getJWT } from '../../../api/AuthService';
+import { useAuthService } from '../../../api/AuthService';
 import { LoadingSpinner } from '../../LoadingSpinner';
 import { useQuery } from '../../../hooks/useQuery';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '../../../state/store';
-import { loginUser } from '../../../state/reducers';
 import { LocalizationButton } from '../../LocalizationButton';
 
 interface Props {
@@ -18,15 +16,14 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
     const { t } = useTranslation();
     const query = useQuery();
     const navigate = useNavigate();
-    const [_, dispatch] = useStore();
+    const { loginUser, createLoginURI } = useAuthService();
 
     useEffect(() => {
         const init = async () => {
             const code = query.get('code');
             const params = Object.fromEntries(query);
             if (callback && code) {
-                const user = await getJWT(params);
-                dispatch(loginUser(user));
+                await loginUser(params);
             } else if (callback && !code) {
                 navigate('/login');
             }

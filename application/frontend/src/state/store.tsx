@@ -12,6 +12,7 @@ export interface User {
     picture: string;
     name: string;
     token: string;
+    refresh_token: string;
     roles: Array<string>;
 }
 
