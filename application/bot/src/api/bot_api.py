@@ -6,6 +6,7 @@ import src.database.interface as db
 import locale
 import pytz
 from datetime import datetime, timedelta
+from src.database.rsvp import RSVP
 
 try:
     locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
@@ -19,8 +20,8 @@ REPLY_DEADLINE_IN_HOURS = 24
 DAYS_IN_ADVANCE_TO_INVITE = 10
 HOURS_BETWEEN_REMINDERS = 4
 
-BUTTONS_ATTACHMENT_OPTION_YES = "attending"
-BUTTONS_ATTACHMENT_OPTION_NO = "not_attending"
+BUTTONS_ATTACHMENT_OPTION_YES = RSVP.attending
+BUTTONS_ATTACHMENT_OPTION_NO = RSVP.not_attending
 
 BUTTONS_ATTACHMENT = [
     {
@@ -33,13 +34,15 @@ BUTTONS_ATTACHMENT = [
                 "name": "option",
                 "text": "Hells yesss!!! 🍕🍕🍕",
                 "type": "button",
-                "value": BUTTONS_ATTACHMENT_OPTION_YES
+                # All values must be a string (possibly number)
+                "value": BUTTONS_ATTACHMENT_OPTION_YES.value
             },
             {
                 "name": "option",
                 "text": "Nah ☹️",
                 "type": "button",
-                "value": BUTTONS_ATTACHMENT_OPTION_NO
+                # All values must be a string (possibly number)
+                "value": BUTTONS_ATTACHMENT_OPTION_NO.value
             }]
     }]
 
@@ -118,6 +121,8 @@ def rsvp(slack_id, answer):
 def send_slack_message(channel_id, text, attachments=None, thread_ts=None):
     return slack.send_slack_message(channel_id, text, attachments, thread_ts)
 
+def update_slack_message(channel_id, ts, text, attachments=None):
+    return slack.update_slack_message(channel_id, ts, text, attachments)
 
 def get_invited_users():
     return db.get_invited_users()

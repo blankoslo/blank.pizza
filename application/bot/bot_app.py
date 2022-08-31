@@ -4,6 +4,7 @@ import src.api.bot_api as api
 import requests
 import base64
 import os
+from src.database.rsvp import RSVP
 
 from time import sleep
 from slack_bolt import App
@@ -37,14 +38,18 @@ def handle_some_action(ack, body):
     answer = body["actions"][0]["value"]
     channel = body["channel"]
     channel_id = channel["id"]
+    original_message = body["original_message"]
     if user_id in api.get_invited_users():
+        ts = original_message['ts']
+        original_text = original_message['text']
+        answer = RSVP(answer)
         if answer == api.BUTTONS_ATTACHMENT_OPTION_YES:
-            api.rsvp(user_id, 'attending')
-            api.send_slack_message(channel_id, u'Sweet! 🤙')
+            api.rsvp(user_id, RSVP.attending)
+            api.update_slack_message(channel_id, ts, original_text, [{'text': u'Sweet! 🤙'}])
             api.finalize_event_if_complete()
         elif answer == api.BUTTONS_ATTACHMENT_OPTION_NO:
-            api.rsvp(user_id, 'not attending')
-            api.send_slack_message(channel_id, u'Ok 😏')
+            api.rsvp(user_id, RSVP.not_attending)
+            api.update_slack_message(channel_id, ts, original_text, [{'text': u'Ok 😏'}])
             api.invite_if_needed()
         else:
             api.send_slack_message(channel_id, u'Hehe jeg er litt dum, jeg. Skjønner jeg ikke helt hva du mener 😳. Kan du være med? (ja/nei)')

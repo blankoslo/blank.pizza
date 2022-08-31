@@ -27,3 +27,15 @@ def send_slack_message(channel_id, text, attachments=None, thread_ts=None):
             "thread_ts": thread_ts
         }
     )
+
+def update_slack_message(channel_id, ts, text, attachments=None):
+    return client.api_call(
+        api_method="chat.update",
+        params={
+            "channel": channel_id,
+            "as_user": True,
+            "text": text,
+            "attachments": attachments,
+            "ts": ts
+        }
+    )
