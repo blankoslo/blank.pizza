@@ -20,33 +20,6 @@ REPLY_DEADLINE_IN_HOURS = 24
 DAYS_IN_ADVANCE_TO_INVITE = 10
 HOURS_BETWEEN_REMINDERS = 4
 
-BUTTONS_ATTACHMENT_OPTION_YES = RSVP.attending
-BUTTONS_ATTACHMENT_OPTION_NO = RSVP.not_attending
-
-BUTTONS_ATTACHMENT = [
-    {
-        "fallback": "Det funket ikke å svare :/",
-        "callback_id": "rsvp",
-        "color": "#3AA3E3",
-        "attachment_type": "default",
-        "actions": [
-            {
-                "name": "option",
-                "text": "Hells yesss!!! 🍕🍕🍕",
-                "type": "button",
-                # All values must be a string (possibly number)
-                "value": BUTTONS_ATTACHMENT_OPTION_YES.value
-            },
-            {
-                "name": "option",
-                "text": "Nah ☹️",
-                "type": "button",
-                # All values must be a string (possibly number)
-                "value": BUTTONS_ATTACHMENT_OPTION_NO.value
-            }]
-    }]
-
-
 def invite_if_needed():
     event = db.get_event_in_need_of_invitations(
         DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
@@ -69,8 +42,7 @@ def invite_if_needed():
     db.save_invitations(users_to_invite, event_id)
 
     for user_id in users_to_invite:
-        slack.send_slack_message(user_id, "Du er invitert til 🍕 på %s, %s. Pls svar innen %d timer 🙏. Kan du?" %
-                                 (restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS), BUTTONS_ATTACHMENT)
+        send_pizza_invite(user_id, event_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS)
         print("%s was invited to event on %s" % (user_id, timestamp))
 
 def send_reminders():
@@ -100,6 +72,7 @@ def finalize_event_if_complete():
         slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
         ids_string = ", ".join(slack_ids)
+        # TODO change this from using pizza name as id to actual id
         slack.send_slack_message('#pizza', "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, place, timestamp.strftime("%A %d. %B kl %H:%M"), slack_ids[0], slack_ids[1]))
 
 def auto_reply():
@@ -118,11 +91,96 @@ def rsvp(slack_id, answer):
     db.rsvp(slack_id, answer)
 
 
-def send_slack_message(channel_id, text, attachments=None, thread_ts=None):
-    return slack.send_slack_message(channel_id, text, attachments, thread_ts)
+def send_slack_message_old(channel_id, text, attachments=None, thread_ts=None):
+    return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
 
-def update_slack_message(channel_id, ts, text, attachments=None):
-    return slack.update_slack_message(channel_id, ts, text, attachments)
+def update_slack_message(channel_id, ts, text=None, blocks=None):
+    return slack.update_slack_message(channel_id, ts, text, blocks)
+
+def send_pizza_invite(channel_id, event_id, place, datetime, deadline):
+    blocks = [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Pizzainvitasjon"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "plain_text",
+                "text": f"Du er invitert til :pizza: på {place}, {datetime}. Pls svar innen {deadline} timer :pray:. Kan du?"
+            }
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Hells yesss!!! 🍕🍕🍕"
+                    },
+                    "value": event_id,
+                    "action_id": "rsvp_yes",
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Nah ☹️"
+                    },
+                    "value": event_id,
+                    "action_id": "rsvp_no",
+                }
+            ]
+        }
+    ]
+    return slack.send_slack_message(channel_id=channel_id, blocks=blocks)
+
+def send_pizza_invite_answered(channel_id, ts, event_id, old_blocks, attending):
+    for block in old_blocks:
+        del block["block_id"]
+        if ("text" in block and "emoji" in block["text"]):
+            del block["text"]["emoji"]
+    new_blocks_common = [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": f"Du har takket {'ja. Sweet! 🤙' if attending else 'nei. Ok 😕'}",
+			}
+		}
+	]
+    new_blocks_yes = [
+        {
+			"type": "divider"
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Hvis noe skulle skje så kan du melde deg av ved å klikke på knappen!"
+			},
+			"accessory": {
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": "Meld meg av"
+				},
+				"value": event_id,
+				"action_id": "rsvp_withdraw"
+			}
+		}
+    ]
+    blocks = old_blocks + new_blocks_common
+    if attending:
+        blocks += new_blocks_yes
+    return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
 def get_invited_users():
     return db.get_invited_users()
