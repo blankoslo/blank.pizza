@@ -8,7 +8,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Paper } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useStore } from '../../../../state/store';
 
 export const EventCreator: React.FC = () => {
     const { t } = useTranslation();

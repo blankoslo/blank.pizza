@@ -1,4 +1,4 @@
-import { Box, Card, Typography, Button, Grid } from '@mui/material';
+import { Box, Typography, Button, Grid } from '@mui/material';
 import React, { useEffect } from 'react';
 import Logo from '../../../assets/BlankLogoLight5.svg';
 import { useTranslation } from 'react-i18next';

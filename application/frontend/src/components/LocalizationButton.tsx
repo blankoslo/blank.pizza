@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageIcon from '@mui/icons-material/Language';
 
 export const LocalizationButton: React.FC = () => {
-    const { t, i18n } = useTranslation();
+    const { i18n } = useTranslation();
 
     const changeLocale = () => {
         i18n.language == 'en' ? i18n.changeLanguage('nb') : i18n.changeLanguage('en');

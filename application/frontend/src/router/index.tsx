@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, BrowserRouter, Outlet } from 'react-router-dom';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { loginUser, logoutUser } from '../state/reducers';
 import { useStore } from '../state/store';
 import Auth from './Auth';
 
 import { Login } from '../components/pages/login';
 import { Logout } from '../components/pages/logout';
-import { Template } from '../components/Template';
 import NewRestaurantPage from '../components/pages/restaurants/new';
 import RestaurantListPage from '../components/pages/restaurants/list';
 import EvenListPage from '../components/pages/events/list';
 import NewEventPage from '../components/pages/events/new';
 import UserListPage from '../components/pages/users/list';
-import { useQuery } from '../hooks/useQuery';
 
 type Props = {
     children?: React.ReactNode;

@@ -1,5 +1,4 @@
-import { InfiniteData } from '@tanstack/react-query';
-import { httpClient, useHttpClient } from './httpClient';
+import { useHttpClient } from './httpClient';
 import { Pagination, Params } from './types';
 
 const endpoint = '/restaurants';

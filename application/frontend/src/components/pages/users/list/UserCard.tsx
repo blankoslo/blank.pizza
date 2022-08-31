@@ -15,7 +15,6 @@ import SwitchInput from '../../../SwitchInput';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { dateToString } from '../../../utils/dateToString';
-import { useStore } from '../../../../state/store';
 
 const validationSchema = yup.object().shape({
     priority: yup

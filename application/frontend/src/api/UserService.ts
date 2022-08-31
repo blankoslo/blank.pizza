@@ -1,4 +1,4 @@
-import { httpClient, useHttpClient } from './httpClient';
+import { useHttpClient } from './httpClient';
 import { Pagination, Params } from './types';
 
 const endpoint = '/users';
