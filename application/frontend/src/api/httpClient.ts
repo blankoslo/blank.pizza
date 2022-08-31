@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse } from 'axios';
-import { refreshUser } from '../state/reducers/userReducer';
+import { toast } from 'react-toastify';
+import { logoutUser, refreshUser } from '../state/reducers/userReducer';
 import { useStore } from '../state/store';
 import { RefreshJWT } from './AuthService';
 
@@ -28,17 +29,16 @@ export const useHttpClient = () => {
     const access_token = state.user?.token;
     const refresh_token = state.user?.refresh_token;
 
-    // TODO: Handle invalid tokens (f.ex. secret key changed)
-    // TODO: Try to make the http[method]Client functions more DRY
     type httpClientType = <T>(
         url: string,
         data?: any,
         config?: AxiosRequestConfig<any>,
     ) => Promise<AxiosResponse<T, any>>;
 
-    const httpGetClient: httpClientType = async <T>(url: string, config?: AxiosRequestConfig<any>) => {
+    const refreshGuard = async <T>(method: (token?: string) => Promise<AxiosResponse<T, any>>) => {
+        // TODO: Handle invalid tokens (f.ex. secret key changed)
         try {
-            const promise = httpClient(access_token).get<T>(url, config);
+            const promise = method(access_token);
             await promise;
             return promise;
         } catch (error) {
@@ -46,14 +46,29 @@ export const useHttpClient = () => {
                 axios.isAxiosError(error) &&
                 (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
             ) {
-                // TODO: Handle refresh token being expired (maybe log them out with a warning about what happened?)
-                const res = await httpClient(refresh_token).post<RefreshJWT>('/auth/refresh');
-                const new_access_token = res.data.access_token;
-                dispatch(refreshUser({ token: new_access_token }));
-                return httpClient(new_access_token).get<T>(url, config);
+                try {
+                    const res = await httpClient(refresh_token).post<RefreshJWT>('/auth/refresh');
+                    const new_access_token = res.data.access_token;
+                    dispatch(refreshUser({ token: new_access_token }));
+                    return method(new_access_token);
+                } catch (error2) {
+                    if (
+                        axios.isAxiosError(error) &&
+                        (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
+                    ) {
+                        toast.warn('Sessjonen din har utløpt, vennligst logg inn på nytt.', { autoClose: 10000 });
+                        dispatch(logoutUser());
+                    }
+                    return Promise.reject(error);
+                }
             }
             return Promise.reject(error);
         }
+    };
+
+    const httpGetClient: httpClientType = async <T>(url: string, config?: AxiosRequestConfig<any>) => {
+        const method = (token?: string) => httpClient(token).get<T>(url, config);
+        return refreshGuard<T>(method);
     };
 
     const httpPostClient: httpClientType = async <T>(
@@ -61,83 +76,23 @@ export const useHttpClient = () => {
         data: any,
         config: AxiosRequestConfig<any> | undefined,
     ) => {
-        try {
-            const promise = httpClient(access_token).post<T>(url, data, config);
-            await promise;
-            return promise;
-        } catch (error) {
-            if (
-                axios.isAxiosError(error) &&
-                (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
-            ) {
-                // TODO: Handle refresh token being expired (maybe log them out with a warning about what happened?)
-                const res = await httpClient(refresh_token).post<RefreshJWT>('/auth/refresh');
-                const new_access_token = res.data.access_token;
-                dispatch(refreshUser({ token: new_access_token }));
-                return httpClient(new_access_token).post<T>(url, data, config);
-            }
-            return Promise.reject(error);
-        }
+        const method = (token?: string) => httpClient(token).post<T>(url, data, config);
+        return refreshGuard<T>(method);
     };
 
     const httpPutClient: httpClientType = async <T>(url: string, data?: any, config?: AxiosRequestConfig<any>) => {
-        try {
-            const promise = httpClient(access_token).put<T>(url, data, config);
-            await promise;
-            return promise;
-        } catch (error) {
-            if (
-                axios.isAxiosError(error) &&
-                (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
-            ) {
-                // TODO: Handle refresh token being expired (maybe log them out with a warning about what happened?)
-                const res = await httpClient(refresh_token).post<RefreshJWT>('/auth/refresh');
-                const new_access_token = res.data.access_token;
-                dispatch(refreshUser({ token: new_access_token }));
-                return httpClient(new_access_token).put<T>(url, data, config);
-            }
-            return Promise.reject(error);
-        }
+        const method = (token?: string) => httpClient(token).put<T>(url, data, config);
+        return refreshGuard<T>(method);
     };
 
     const httpPatchClient: httpClientType = async <T>(url: string, data?: any, config?: AxiosRequestConfig<any>) => {
-        try {
-            const promise = httpClient(access_token).put<T>(url, data, config);
-            await promise;
-            return promise;
-        } catch (error) {
-            if (
-                axios.isAxiosError(error) &&
-                (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
-            ) {
-                // TODO: Handle refresh token being expired (maybe log them out with a warning about what happened?)
-                const res = await httpClient(refresh_token).patch<RefreshJWT>('/auth/refresh');
-                const new_access_token = res.data.access_token;
-                dispatch(refreshUser({ token: new_access_token }));
-                return httpClient(new_access_token).put<T>(url, data, config);
-            }
-            return Promise.reject(error);
-        }
+        const method = (token?: string) => httpClient(token).put<T>(url, data, config);
+        return refreshGuard<T>(method);
     };
 
     const httpDeleteClient: httpClientType = async <T>(url: string, config?: AxiosRequestConfig<any>) => {
-        try {
-            const promise = httpClient(access_token).delete<T>(url, config);
-            await promise;
-            return promise;
-        } catch (error) {
-            if (
-                axios.isAxiosError(error) &&
-                (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
-            ) {
-                // TODO: Handle refresh token being expired (maybe log them out with a warning about what happened?)
-                const res = await httpClient(refresh_token).patch<RefreshJWT>('/auth/refresh');
-                const new_access_token = res.data.access_token;
-                dispatch(refreshUser({ token: new_access_token }));
-                return httpClient(new_access_token).delete<T>(url, config);
-            }
-            return Promise.reject(error);
-        }
+        const method = (token?: string) => httpClient(token).delete<T>(url, config);
+        return refreshGuard<T>(method);
     };
 
     return {
