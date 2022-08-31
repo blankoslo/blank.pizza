@@ -1,4 +1,9 @@
 {
+  "auth": {
+    "refresh": {
+      "expired": "Your session has expired, please log in again" 
+    } 
+  },
   "login": {
     "logo": "Pizzabot By",
     "button": "Login"

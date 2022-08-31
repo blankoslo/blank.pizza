@@ -1,4 +1,9 @@
 {
+  "auth": {
+    "refresh": {
+      "expired": "Sessjonen din har utløpt, vennligst logg inn på nytt" 
+    } 
+  },
   "login": {
     "logo": "Pizzabot av",
     "button": "Logg Inn"

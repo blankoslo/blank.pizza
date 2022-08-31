@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse } from 'axios';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { logoutUser, refreshUser } from '../state/reducers/userReducer';
 import { useStore } from '../state/store';
@@ -25,6 +26,7 @@ type ServerError = { msg: string };
 
 export const useHttpClient = () => {
     const [state, dispatch] = useStore();
+    const { t } = useTranslation();
 
     const access_token = state.user?.token;
     const refresh_token = state.user?.refresh_token;
@@ -56,7 +58,7 @@ export const useHttpClient = () => {
                         axios.isAxiosError(error) &&
                         (error as AxiosError<ServerError>).response?.data.msg == 'Token has expired'
                     ) {
-                        toast.warn('Sessjonen din har utløpt, vennligst logg inn på nytt.', { autoClose: 10000 });
+                        toast.warn(t('token.refresh.expired'), { autoClose: 10000 });
                         dispatch(logoutUser());
                     }
                     return Promise.reject(error);
