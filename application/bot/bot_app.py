@@ -68,7 +68,7 @@ def handle_rsvp_withdraw(ack, body):
     ts = message['ts']
     blocks = message["blocks"][0:3]
     # TODO only allow withdrawal if the event is before NOW
-    api.decline_invitation(event_id, user_id)
+    api.withdraw_invitation(event_id, user_id)
     api.send_pizza_invite_withdraw(channel_id, ts, blocks)
     api.invite_if_needed()
     ack()

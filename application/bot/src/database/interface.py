@@ -144,6 +144,7 @@ def rsvp(slack_id, answer):
             curs.execute(sql, (answer, slack_id, RSVP.unanswered,))
 
 def update_invitation(event_id, slack_id, rsvp):
+    # TODO, add option to only allow update if event is after NOW
     sql = "UPDATE invitations SET rsvp = %s WHERE slack_id = %s AND event_id = %s;"
 
     with pizza_conn:
