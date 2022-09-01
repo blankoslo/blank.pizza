@@ -2,27 +2,22 @@ from psycopg2 import connect, extensions
 import math
 import os
 from urllib.parse import urlparse
-from psycopg2.extensions import adapt, register_adapter, AsIs
+from psycopg2.extensions import register_adapter, AsIs
 
 from src.database.rsvp import RSVP
 
-def adapt_RssTextType(rssTextType: RSVP):
-    return AsIs(f"'{rssTextType.value}'")
+def adapt_RSVP_type(rsvp_type: RSVP):
+    return AsIs(f"'{rsvp_type.value}'")
 
+register_adapter(RSVP, adapt_RSVP_type)
 
-register_adapter(RSVP, adapt_RssTextType)
-
-
-# Deserializer. This does not seem to be triggered
-def cast_RssTextType(value, cur):
-    print("CASTING")
+def cast_RSVP_type(value, cur):
     if value is None:
         return None
-    return RSVP[value]
+    return RSVP(value)
 
-
-type_cast_RssTextType = extensions.new_type((17066, ), "RSVP", cast_RssTextType)
-extensions.register_type(type_cast_RssTextType)
+type_cast_RSVP_type = extensions.new_type((17066, ), "RSVP", cast_RSVP_type)
+extensions.register_type(type_cast_RSVP_type)
 
 def create_connection_string(db_host, db_name, db_user, db_passwd, db_port):
     return f"host='{db_host}' dbname='{db_name}' user='{db_user}' password='{db_passwd}' port='{db_port}'"
