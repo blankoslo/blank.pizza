@@ -90,6 +90,15 @@ def save_image(cloudinary_id, slack_id, title):
 def rsvp(slack_id, answer):
     db.rsvp(slack_id, answer)
 
+def accept_invitation(event_id, slack_id):
+    db.update_invitation(event_id, slack_id, RSVP.attending)
+
+def decline_invitation(event_id, slack_id):
+    db.update_invitation(event_id, slack_id, RSVP.not_attending)
+
+def withdraw_invitation(event_id, slack_id):
+    # TODO: Only do this if the event is before NOW
+    db.update_invitation(event_id, slack_id, RSVP.not_attending)
 
 def send_slack_message_old(channel_id, text, attachments=None, thread_ts=None):
     return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
@@ -142,11 +151,15 @@ def send_pizza_invite(channel_id, event_id, place, datetime, deadline):
     ]
     return slack.send_slack_message(channel_id=channel_id, blocks=blocks)
 
-def send_pizza_invite_answered(channel_id, ts, event_id, old_blocks, attending):
-    for block in old_blocks:
+def clean_blocks(blocks):
+    for block in blocks:
         del block["block_id"]
         if ("text" in block and "emoji" in block["text"]):
             del block["text"]["emoji"]
+    return blocks
+
+def send_pizza_invite_answered(channel_id, ts, event_id, old_blocks, attending):
+    old_blocks = clean_blocks(old_blocks)
     new_blocks_common = [
 		{
 			"type": "section",
@@ -180,6 +193,20 @@ def send_pizza_invite_answered(channel_id, ts, event_id, old_blocks, attending):
     blocks = old_blocks + new_blocks_common
     if attending:
         blocks += new_blocks_yes
+    return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+
+def send_pizza_invite_withdraw(channel_id, ts, old_blocks):
+    old_blocks = clean_blocks(old_blocks)
+    new_blocks = [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "Du har meldt deg av. Ok 😕",
+			}
+		}
+	]
+    blocks = old_blocks + new_blocks
     return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
 def get_invited_users():

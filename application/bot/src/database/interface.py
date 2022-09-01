@@ -143,6 +143,12 @@ def rsvp(slack_id, answer):
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (answer, slack_id, RSVP.unanswered,))
 
+def update_invitation(event_id, slack_id, rsvp):
+    sql = "UPDATE invitations SET rsvp = %s WHERE slack_id = %s AND event_id = %s;"
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql, (rsvp, slack_id, event_id,))
 
 def mark_event_as_finalized(event_id):
     sql = "UPDATE events SET finalized = true WHERE id = %s;"

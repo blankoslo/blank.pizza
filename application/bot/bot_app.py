@@ -39,12 +39,13 @@ def handle_rsvp(body, ack, attending):
     message = body["message"]
     if user_id in api.get_invited_users():
         ts = message['ts']
-        blocks = message["blocks"]
-        actions_blocks = blocks[3]
-        event_id = actions_blocks["elements"][0]["value"]
-        rest_blocks = blocks[0:3]
-        api.rsvp(user_id, RSVP.attending)
-        api.send_pizza_invite_answered(channel_id, ts, event_id, rest_blocks, attending)
+        event_id = body["actions"][0]["value"]
+        blocks = message["blocks"][0:3]
+        if attending:
+            api.accept_invitation(event_id, user_id)
+        else:
+            api.decline_invitation(event_id, user_id)
+        api.send_pizza_invite_answered(channel_id, ts, event_id, blocks, attending)
         api.invite_if_needed()
     ack()
 
@@ -57,12 +58,19 @@ def handle_rsvp_no(ack, body):
     handle_rsvp(body, ack, False)
 
 @app.action("rsvp_withdraw")
-def handle_some_action(ack, body):
+def handle_rsvp_withdraw(ack, body):
     message = body["message"]
-    blocks = message["blocks"]
-    accessory_block = blocks[5]["accessory"]
-    event_id = accessory_block["value"]
-    print(event_id)
+    user = body["user"]
+    user_id = user["id"]
+    channel = body["channel"]
+    channel_id = channel["id"]
+    event_id = body["actions"][0]["value"]
+    ts = message['ts']
+    blocks = message["blocks"][0:3]
+    # TODO only allow withdrawal if the event is before NOW
+    api.decline_invitation(event_id, user_id)
+    api.send_pizza_invite_withdraw(channel_id, ts, blocks)
+    api.invite_if_needed()
     ack()
 
 # We don't use channel messages, but perhaps it'll be useful in the future
