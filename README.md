@@ -57,6 +57,8 @@ We are using terraform to describe the infrastructure, which can be found in the
     *  optionally to only deploy staging run `terraform apply -target=module.staging -target=heroku_pipeline.pizzabot -target=heroku_pipeline_coupling.staging-backend -target=heroku_pipeline_coupling.staging-frontend -target=heroku_pipeline_coupling.staging-bot`
     *  optionally to only deploy production run `terraform apply -target=module.production -target=heroku_pipeline.pizzabot -target=heroku_pipeline_coupling.production-backend -target=heroku_pipeline_coupling.production-frontend -target=heroku_pipeline_coupling.production-bot`
 2. Add the urls from the heroku app to the Google OAuth client settings (the google ouath client should also be configured to be internal and be put into production (to not be limited to test users)).
+3. Go to the app settings of the frontend app in Heroku at `https://dashboard.heroku.com/apps/pizzabot-v2-stag-frontend/settings` (where the text after `/apps/` will be your app's name) and under `Domains` copy the `DNS Target`.
+4. Create a CNAME record with the hostname specified in the main terraform file and point it to the `DNS TARGET` from heroku. After a while routing and SSL should work flawlesly.
 
 Infrastructure:  
 * Backend-app: contains the database, papertrail instance, and backend application  

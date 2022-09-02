@@ -5,13 +5,13 @@
 
   # Wait until the process_tier changes to hobby before attempting to create a cert
   depends_on = [heroku_formation.formation-frontend]
-}
+}*/
 
 resource "heroku_domain" "blank" {
   app_id   = heroku_app.frontend.id
   hostname = var.hostname
   #sni_endpoint_id = heroku_ssl.one.id
-}*/
+}
 
 resource "heroku_app" "backend" {
   name = "${var.prefix}-${var.environment}-backend"
@@ -40,7 +40,7 @@ resource "heroku_app" "bot" {
 # NB: FRONTEND_URI must be set to the ssl custom domain "https://${var.hostname}" for the OAuth to work
 resource "heroku_config" "endpoints" {
     vars = {
-        FRONTEND_URI = heroku_app.frontend.web_url
+        FRONTEND_URI = "https://${heroku_domain.blank.hostname}"
         BACKEND_URI = heroku_app.backend.web_url
     }
 }
