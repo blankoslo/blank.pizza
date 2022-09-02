@@ -1,7 +1,6 @@
 resource "heroku_domain" "blank" {
   app_id   = heroku_app.frontend.id
   hostname = var.hostname
-  sni_endpoint_id = heroku_ssl.one.id
 }
 
 resource "heroku_app" "backend" {
