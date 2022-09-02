@@ -1,3 +1,9 @@
+variable "prefix" {
+  description = "High-level name of this configuration, used as a resource name prefix"
+  type = string
+  default = "pizzabot-v2"
+}
+
 variable "heroku_api_key" {
   type = string
 }
@@ -6,27 +12,52 @@ variable "heroku_api_email" {
   type = string
 }
 
-variable "SLACK_BOT_TOKEN" {
+# ************* STAGING ************* #
+variable "STAGING_SLACK_BOT_TOKEN" {
   type = string
 }
 
-variable "SLACK_APP_TOKEN" {
+variable "STAGING_SLACK_APP_TOKEN" {
   type = string
 }
 
-variable "PIZZA_CHANNEL_ID" {
+variable "STAGING_PIZZA_CHANNEL_ID" {
   type = string
 }
 
-variable "SECRET_KEY_BACKEND" {
+variable "STAGING_SECRET_KEY_BACKEND" {
   type = string
 }
 
-variable "GOOGLE_CLIENT_ID" {
+variable "STAGING_GOOGLE_CLIENT_ID" {
   type = string
 }
 
-variable "GOOGLE_CLIENT_SECRET" {
+variable "STAGING_GOOGLE_CLIENT_SECRET" {
   type = string
 }
 
+# ************* PRODUCTION ************* #
+variable "PRODUCTION_SLACK_BOT_TOKEN" {
+  type = string
+}
+
+variable "PRODUCTION_SLACK_APP_TOKEN" {
+  type = string
+}
+
+variable "PRODUCTION_PIZZA_CHANNEL_ID" {
+  type = string
+}
+
+variable "PRODUCTION_SECRET_KEY_BACKEND" {
+  type = string
+}
+
+variable "PRODUCTION_GOOGLE_CLIENT_ID" {
+  type = string
+}
+
+variable "PRODUCTION_GOOGLE_CLIENT_SECRET" {
+  type = string
+}
