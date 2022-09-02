@@ -138,6 +138,19 @@ def rsvp(slack_id, answer):
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (answer, slack_id, RSVP.unanswered,))
 
+def event_in_past(event_id):
+    sql = """
+        SELECT CAST(CASE WHEN time < NOW() THEN 'true' ELSE 'false' END AS boolean)
+        FROM events
+        WHERE id = %s
+    """
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql, (event_id,))
+            res = curs.fetchone()
+            return res[0]
+
 def update_invitation(event_id, slack_id, rsvp):
     # TODO, add option to only allow update if event is after NOW
     sql = "UPDATE invitations SET rsvp = %s WHERE slack_id = %s AND event_id = %s;"

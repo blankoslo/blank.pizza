@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import src.api.slack as slack
 import src.database.interface as db
 import locale
 import pytz
 from datetime import datetime, timedelta
 from src.database.rsvp import RSVP
+
+pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
 
 try:
     locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
@@ -72,8 +75,7 @@ def finalize_event_if_complete():
         slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
         ids_string = ", ".join(slack_ids)
-        # TODO change this from using pizza name as id to actual id
-        slack.send_slack_message('#pizza', "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, place, timestamp.strftime("%A %d. %B kl %H:%M"), slack_ids[0], slack_ids[1]))
+        slack.send_slack_message(pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, place, timestamp.strftime("%A %d. %B kl %H:%M"), slack_ids[0], slack_ids[1]))
 
 def auto_reply():
     users_that_did_not_reply = db.auto_reply_after_deadline(REPLY_DEADLINE_IN_HOURS)
@@ -97,8 +99,10 @@ def decline_invitation(event_id, slack_id):
     db.update_invitation(event_id, slack_id, RSVP.not_attending)
 
 def withdraw_invitation(event_id, slack_id):
-    # TODO: Only do this if the event is before NOW
-    db.update_invitation(event_id, slack_id, RSVP.not_attending)
+    in_past = db.event_in_past(event_id)
+    if not in_past:
+        db.update_invitation(event_id, slack_id, RSVP.not_attending)
+    return in_past
 
 def send_slack_message_old(channel_id, text, attachments=None, thread_ts=None):
     return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
@@ -203,6 +207,20 @@ def send_pizza_invite_withdraw(channel_id, ts, old_blocks):
 			"text": {
 				"type": "plain_text",
 				"text": "Du har meldt deg av. Ok 😕",
+			}
+		}
+	]
+    blocks = old_blocks + new_blocks
+    return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+
+def send_pizza_invite_withdraw_failure(channel_id, ts, old_blocks):
+    old_blocks = clean_blocks(old_blocks)
+    new_blocks = [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "Pizza arrangementet er over. Avmelding er ikke mulig.",
 			}
 		}
 	]
