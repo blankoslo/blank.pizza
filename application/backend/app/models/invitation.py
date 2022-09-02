@@ -19,7 +19,7 @@ class Invitation(CrudMixin, db.Model):
   event = relationship("Event", backref = "invitations")
   slack_user = relationship("SlackUser", backref = "invitations")
   invited_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
-  rsvp = sa.Column(sa.Enum(RSVP), nullable=False, server_default=RSVP.unanswered)
+  rsvp = sa.Column(sa.Enum(RSVP, values_callable = lambda x: [e.value for e in x]), nullable=False, server_default=RSVP.unanswered)
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
 
   def __repr__(self):

@@ -16,7 +16,7 @@ def get_slack_users():
 def get_real_users(all_users):
     return [u for u in all_users if not u['deleted'] and not u['is_bot'] and not u['is_restricted'] and not u['name'] == "slackbot"] # type : list
 
-def send_slack_message(channel_id, text, attachments=None, thread_ts=None):
+def send_slack_message_old(channel_id, text, attachments=None, thread_ts=None):
     return client.api_call(
         api_method="chat.postMessage",
         params={
@@ -25,5 +25,29 @@ def send_slack_message(channel_id, text, attachments=None, thread_ts=None):
             "text": text,
             "attachments": attachments,
             "thread_ts": thread_ts
+        }
+    )
+
+def send_slack_message(channel_id, text=None, blocks=None, thread_ts=None):
+    return client.api_call(
+        api_method="chat.postMessage",
+        params={
+            "channel": channel_id,
+            "as_user": True,
+            "blocks": blocks,
+            "thread_ts": thread_ts,
+            "text": text,
+        }
+    )
+
+def update_slack_message(channel_id, ts, text=None, blocks=None):
+    return client.api_call(
+        api_method="chat.update",
+        params={
+            "channel": channel_id,
+            "as_user": True,
+            "text": text,
+            "blocks": blocks,
+            "ts": ts
         }
     )

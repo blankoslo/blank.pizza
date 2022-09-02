@@ -35,7 +35,7 @@
 5. Choose `Web application`
 6. Give it a name 
 6. Set the Authorized JavaScript origins 
-    * If testing then set to `https://localhost` and Authorized redirect URIs to `https://localhost/api/auth/login/callback`
+    * If testing then set to `https://localhost` and Authorized redirect URIs to `https://localhost/login/callback`
     * If production then replace `localhost` with your domain
 7. Hit Create and take note of the `client ID` and `client secret`
 

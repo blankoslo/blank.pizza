@@ -43,7 +43,7 @@ export const EventCreator: React.FC = () => {
         }
 
         let randomNumber = Math.floor(getRandomInteger(0, restaurants.restaurants.length));
-        if (restaurants.restaurants.length < 3) {
+        if (restaurants.restaurants.length === 3) {
             randomNumber = Math.random() > 0.5 ? 1 : 0;
         }
 
