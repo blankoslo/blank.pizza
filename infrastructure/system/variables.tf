@@ -1,3 +1,7 @@
+variable "hostname" {
+  type = string
+}
+
 variable "prefix" {
   type = string
 }

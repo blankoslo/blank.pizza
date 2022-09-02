@@ -5,6 +5,7 @@ resource "heroku_pipeline" "pizzabot" {
 module "staging" {
   source = "./system"
 
+  hostname = "staging.bot.blank.pizza"
   prefix = var.prefix
   environment = "stag"
   PAPERTRAIL_PLAN = "papertrail:choklad"
@@ -31,6 +32,7 @@ module "staging" {
 module "production" {
   source = "./system"
 
+hostname = "bot.blank.pizza"
   prefix = var.prefix
   environment = "prod"
   PAPERTRAIL_PLAN = "papertrail:choklad"

@@ -1,3 +1,18 @@
+/*resource "heroku_ssl" "blank" {
+  app_id = heroku_app.frontend.id
+  certificate_chain = file("server.crt")
+  private_key = file("server.key")
+
+  # Wait until the process_tier changes to hobby before attempting to create a cert
+  depends_on = [heroku_formation.formation-frontend]
+}
+
+resource "heroku_domain" "blank" {
+  app_id   = heroku_app.frontend.id
+  hostname = var.hostname
+  #sni_endpoint_id = heroku_ssl.one.id
+}*/
+
 resource "heroku_app" "backend" {
   name = "${var.prefix}-${var.environment}-backend"
   region = "eu"
@@ -22,6 +37,7 @@ resource "heroku_app" "bot" {
   }
 }
 
+# NB: FRONTEND_URI must be set to the ssl custom domain "https://${var.hostname}" for the OAuth to work
 resource "heroku_config" "endpoints" {
     vars = {
         FRONTEND_URI = heroku_app.frontend.web_url
