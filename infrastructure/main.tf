@@ -1,10 +1,16 @@
 resource "heroku_pipeline" "pizzabot" {
   name = var.prefix
+
+  owner {
+    id = var.heroku_team_id
+    type = "team"
+  }
 }
 
 module "staging" {
   source = "./system"
 
+  heroku_team_name = var.heroku_team_name
   hostname = "staging.bot.blank.pizza"
   prefix = var.prefix
   environment = "stag"
@@ -32,7 +38,8 @@ module "staging" {
 module "production" {
   source = "./system"
 
-hostname = "bot.blank.pizza"
+  heroku_team_name = var.heroku_team_name
+  hostname = "bot.blank.pizza"
   prefix = var.prefix
   environment = "prod"
   PAPERTRAIL_PLAN = "papertrail:choklad"

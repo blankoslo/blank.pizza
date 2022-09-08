@@ -12,6 +12,14 @@ variable "heroku_api_email" {
   type = string
 }
 
+variable "heroku_team_id" {
+  type = string
+}
+
+variable "heroku_team_name" {
+  type = string
+}
+
 # ************* STAGING ************* #
 variable "STAGING_SLACK_BOT_TOKEN" {
   type = string

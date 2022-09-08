@@ -1,3 +1,7 @@
+variable "heroku_team_name" {
+  type = string
+}
+
 variable "hostname" {
   type = string
 }
