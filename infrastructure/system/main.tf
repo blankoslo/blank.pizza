@@ -8,6 +8,10 @@ resource "heroku_app" "backend" {
   region = "eu"
   stack = "heroku-22"
 
+  organization {
+    name = var.heroku_team_name
+  }
+
   sensitive_config_vars = {
     "SECRET_KEY" = var.SECRET_KEY_BACKEND
     "GOOGLE_CLIENT_ID" = var.GOOGLE_CLIENT_ID
@@ -19,6 +23,10 @@ resource "heroku_app" "bot" {
   name = "${var.prefix}-${var.environment}-bot"
   region = "eu"
   stack = "heroku-22"
+
+  organization {
+    name = var.heroku_team_name
+  }
 
   sensitive_config_vars = {
     "SLACK_BOT_TOKEN" = var.SLACK_BOT_TOKEN
@@ -56,6 +64,12 @@ resource "heroku_app" "frontend" {
   name = "${var.prefix}-${var.environment}-frontend"
   region = "eu"
   stack = "heroku-22"
+
+  acm = true
+
+  organization {
+    name = var.heroku_team_name
+  }
 
   config_vars = {
     "NGINX_DEFAULT_REQUEST" = "index.html"
