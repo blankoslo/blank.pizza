@@ -43,10 +43,11 @@ def handle_rsvp(body, ack, attending):
         blocks = message["blocks"][0:3]
         if attending:
             api.accept_invitation(event_id, user_id)
+            api.finalize_event_if_complete()
         else:
             api.decline_invitation(event_id, user_id)
+            api.invite_if_needed()
         api.send_pizza_invite_answered(channel_id, ts, event_id, blocks, attending)
-        api.invite_if_needed()
     ack()
 
 @app.action("rsvp_yes")
