@@ -46,7 +46,7 @@ def handle_rsvp(body, ack, attending):
             api.finalize_event_if_complete()
         else:
             api.decline_invitation(event_id, user_id)
-            api.invite_if_needed()
+            api.invite_multiple_if_needed()
         api.send_pizza_invite_answered(channel_id, ts, event_id, blocks, attending)
     ack()
 
@@ -71,7 +71,7 @@ def handle_rsvp_withdraw(ack, body):
     failed_in_past = api.withdraw_invitation(event_id, user_id)
     if not failed_in_past:
         api.send_pizza_invite_withdraw(channel_id, ts, blocks)
-        api.invite_if_needed()
+        api.invite_multiple_if_needed()
     else:
         api.send_pizza_invite_withdraw_failure(channel_id, ts, blocks)
     ack()

@@ -58,7 +58,8 @@
     "list": {
       "invitedAt": "Invitert den:",
       "remindedAt": "Påminnet den:"
-    }
+    },
+    "warning": "Hvis arrangementet er finalized eller fult så vil ikke en endring på en invitasjon føre til nye invitasjoner eller en innkallingsmelding i pizza kanalen"
   },
   "users": {
     "list": {

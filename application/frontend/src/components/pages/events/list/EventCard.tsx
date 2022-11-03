@@ -43,6 +43,16 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
                         paddingBottom: 0,
                     }}
                 >
+                    <Typography 
+                        variant="body1"
+                        sx={(theme) => ({
+                            paddingX: 2,
+                            paddingBottom: 1,
+                            color: theme.palette.error.main
+                        })}
+                    >
+                            {t('invitations.warning')}
+                    </Typography>
                     <Stack>
                         {invitations &&
                             invitations.map((invitation) => (

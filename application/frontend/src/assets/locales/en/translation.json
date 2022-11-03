@@ -58,7 +58,8 @@
     "list": {
       "invitedAt": "Invited at:",
       "remindedAt": "Reminded at:"
-    }
+    },
+    "warning": "If the event is finalized or full then a change on an invitation will not cause new invitations to be sent out or a summons notice to be sent in the pizza channel"
   },
   "users": {
     "list": {
