@@ -162,6 +162,15 @@ def update_invitation(event_id, slack_id, rsvp):
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (rsvp, slack_id, event_id,))
 
+def event_is_finalized(event_id):
+    sql = "SELECT finalized from events WHERE id = %s;"
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql, (event_id,))
+            finalized = curs.fetchone()
+            return finalized[0]
+
 def mark_event_as_finalized(event_id):
     sql = "UPDATE events SET finalized = true WHERE id = %s;"
 
@@ -169,6 +178,12 @@ def mark_event_as_finalized(event_id):
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (event_id,))
 
+def mark_event_as_unfinalized(event_id):
+    sql = "UPDATE events SET finalized = false WHERE id = %s;"
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql, (event_id,))
 
 def get_event_ready_to_finalize(people_per_event):
     sql = """

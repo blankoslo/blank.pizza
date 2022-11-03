@@ -108,6 +108,8 @@ def withdraw_invitation(event_id, slack_id):
     in_past = db.event_in_past(event_id)
     if not in_past:
         db.update_invitation(event_id, slack_id, RSVP.not_attending)
+        if db.event_is_finalized(event_id):
+            db.mark_event_as_unfinalized(event_id)
     return in_past
 
 def send_slack_message_old(channel_id, text, attachments=None, thread_ts=None):
