@@ -103,7 +103,7 @@ def save_invitations(slack_ids, event_id):
                 "INSERT INTO invitations (event_id, slack_id) VALUES (%s, %s);", values)
 
 
-def get_event_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
+def get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
     with pizza_conn:
         with pizza_conn.cursor() as curs:
             # TODO This query might need to be tested
@@ -119,8 +119,11 @@ def get_event_in_need_of_invitations(days_in_advance_to_invite, people_per_event
             """
 
             curs.execute(sql, (RSVP.unanswered, RSVP.attending, days_in_advance_to_invite, people_per_event,))
-            return curs.fetchone()
+            return curs.fetchall()
 
+def get_event_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
+    events = get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event)
+    return events[0]
 
 def get_invited_users():
     sql = "SELECT DISTINCT slack_id FROM invitations WHERE rsvp = %s;"
@@ -232,3 +235,15 @@ def auto_reply_after_deadline(deadline):
     with pizza_conn:
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (RSVP.not_attending, RSVP.unanswered, deadline,))
+
+def get_restaurant(id):
+    sql = "SELECT * from restaurants where id = %s;"
+
+    with pizza_conn:
+        with pizza_conn.cursor() as curs:
+            curs.execute(sql, (id,))
+            return curs.fetchone()
+
+def get_restaurant_name(id):
+    id, name, link, tlf, address, deleted = get_restaurant(id)
+    return name

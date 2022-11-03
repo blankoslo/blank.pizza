@@ -23,9 +23,12 @@ REPLY_DEADLINE_IN_HOURS = 24
 DAYS_IN_ADVANCE_TO_INVITE = 10
 HOURS_BETWEEN_REMINDERS = 4
 
-def invite_if_needed():
-    event = db.get_event_in_need_of_invitations(
-        DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
+def invite_multiple_if_needed():
+    events = db.get_events_in_need_of_invitations(DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
+    for event in events:
+        invite_if_needed(event)
+
+def invite_if_needed(event):
     if event is None:
         print("No users were invited")
         return
@@ -58,7 +61,7 @@ def send_reminders():
         # so comparing it to datetime.now in UTC is correct
         remind_timestamp = datetime.now(pytz.utc) + timedelta(hours=-HOURS_BETWEEN_REMINDERS)
         if(reminded_at < remind_timestamp):
-            slack.send_slack_message(slack_id, "Hei du! Jeg hørte ikke noe mer? Er du gira? (ja/nei)")
+            slack.send_slack_message(slack_id, "Hei du! Jeg hørte ikke noe mer? Er du gira?")
             db.update_reminded_at(slack_id)
             print("%s was reminded about an event." % slack_id)
 
@@ -68,14 +71,17 @@ def finalize_event_if_complete():
         print("No events ready to finalize")
     else:
         # timestamp (timestamp) is converted to UTC timestamp by psycopg2
-        event_id, timestamp, place = event
+        event_id, timestamp, restaurant_id = event
+        restaurant = db.get_restaurant_name(restaurant_id)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
         sync_db_with_slack_and_return_count()
         slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
         ids_string = ", ".join(slack_ids)
-        slack.send_slack_message(pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, place, timestamp.strftime("%A %d. %B kl %H:%M"), slack_ids[0], slack_ids[1]))
+        booker = slack_ids[0]
+        payer = slack_ids[1] if len(slack_ids) > 1 else slack_ids[0]
+        slack.send_slack_message(pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
 def auto_reply():
     users_that_did_not_reply = db.auto_reply_after_deadline(REPLY_DEADLINE_IN_HOURS)
@@ -231,6 +237,7 @@ def get_invited_users():
     return db.get_invited_users()
 
 def sync_db_with_slack_and_return_count():
-  slack_users = slack.get_real_users(slack.get_slack_users())
+  all_slack_users = slack.get_slack_users()
+  slack_users = slack.get_real_users(all_slack_users)
   db.update_slack_users(slack_users)
   return len(slack_users)
