@@ -37,7 +37,7 @@ def invite_if_needed(event):
     event_id, timestamp, restaurant_id, number_of_already_invited, restaurant_name = event
     # Convert timestamp to Norwegian timestamp
     timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
-    number_of_employees = sync_db_with_slack_and_return_count()
+    number_of_employees = db.get_number_of_employees()
     number_to_invite = PEOPLE_PER_EVENT - number_of_already_invited
     users_to_invite = db.get_users_to_invite(number_to_invite, event_id, number_of_employees, PEOPLE_PER_EVENT)
 
@@ -75,7 +75,6 @@ def finalize_event_if_complete():
         restaurant = db.get_restaurant_name(restaurant_id)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
-        sync_db_with_slack_and_return_count()
         slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
         db.mark_event_as_finalized(event_id)
         ids_string = ", ".join(slack_ids)

@@ -93,7 +93,7 @@ def handle_file_share(event, say):
     channel = event["channel"]
     if 'files' in event:
         files = event['files']
-        api.send_slack_message(channel, u'Takk for fil! 🤙')
+        api.send_slack_message_old(channel, u'Takk for fil! 🤙')
         headers = {u'Authorization': u'Bearer %s' % slack_bot_token}
         for file in files:
             r = requests.get(
