@@ -29,9 +29,7 @@ class BotApi:
         self.client = ApiClient()
 
     def invite_multiple_if_needed(self):
-        print("sending message \n")
         response = self.client.call("test")
-        print("response: ")
         print(response)
         events = db.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
         for event in events:

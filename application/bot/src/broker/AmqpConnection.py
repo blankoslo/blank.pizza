@@ -12,7 +12,7 @@ class AmqpConnection:
         self.queue = 'Pizza_Queue'
         self.routing_key = 'pizza'
 
-    def connect(self, connection_name='Neat-App'):
+    def connect(self):
         print('Attempting to connect')
         parameters = pika.URLParameters(self.host)
         self.connection = pika.BlockingConnection(parameters=parameters)
@@ -51,7 +51,6 @@ class AmqpConnection:
                 ),
                 body=payload
             )
-            print("published")
         else:
             print("Connection is not open or channel is not open")
 
