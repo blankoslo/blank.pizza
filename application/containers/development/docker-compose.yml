@@ -12,9 +12,9 @@ x-common-database-variables: &common-database-variables
   DB_PORT: 5432
 
 x-common-slack-variables: &common-slack-variables
-  SLACK_BOT_TOKEN: xoxb-4030397418980-4027859477875-pki6f93GxqQjkGbQbiGMRaWL
-  SLACK_APP_TOKEN: xapp-1-A0416GXG4PK-4040577715041-98d6b8d4f408523acb2ef6a4a29836b4d5ae00eac19cb668264323999e5950aa
-  PIZZA_CHANNEL_ID: C040TQMB9D1
+  SLACK_BOT_TOKEN: xoxb-
+  SLACK_APP_TOKEN: xapp-
+  PIZZA_CHANNEL_ID: C0
 
 x-common-rabbitmq-variables: &common-rabbitmq-variables
   MQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
