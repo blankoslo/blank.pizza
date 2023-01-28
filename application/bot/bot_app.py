@@ -165,6 +165,7 @@ def main():
     mq.connect()
     mq.setup_exchange()
     mq.setup_queues()
+    mq.setup_binding()
     def consume():
         mq.consume(on_message)
     consuming_thread = threading.Thread(target = consume)

@@ -6,8 +6,7 @@ from flask_smorest import Blueprint, abort
 from app.models.user import User, UserSchema
 from app.auth import auth
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
-from app.services.broker import broker
-from rabbitmq_pika_flask.ExchangeType import ExchangeType
+
 bp = Blueprint("auth", "auth", url_prefix="/auth", description="Authentication")
 
 def get_google_provider_cfg():
@@ -17,15 +16,6 @@ def get_google_provider_cfg():
 class Auth(views.MethodView):
   def get(self):
     pass
-
-@bp.route("/test")
-class Auth(views.MethodView):
-    def get(self):
-        test = {
-            "correlation_id": "testID"
-        }
-        broker.send(body='ping', routing_key='rpc', exchange_type = ExchangeType.DIRECT, message_id="testID")
-        return 'pong'
 
 @bp.route("/refresh")
 class Auth(views.MethodView):

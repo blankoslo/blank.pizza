@@ -14,6 +14,7 @@ class ApiClient:
 
         result = self.mq.channel.queue_declare(queue='', exclusive=True)
         self.callback_queue = result.method.queue
+        self.mq.channel.queue_bind(self.callback_queue, exchange=self.mq.exchange)
 
         #self.response = None
         #self.corr_id = None

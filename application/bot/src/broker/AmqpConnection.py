@@ -23,7 +23,9 @@ class AmqpConnection:
         self.channel.exchange_declare(self.exchange, exchange_type='direct')
 
     def setup_queues(self):
-        self.channel.queue_declare(self.queue)
+        return self.channel.queue_declare(self.queue)
+
+    def setup_binding(self):
         self.channel.queue_bind(self.queue, exchange=self.exchange, routing_key=self.routing_key)
 
     def do_async(self, callback, *args, **kwargs):
