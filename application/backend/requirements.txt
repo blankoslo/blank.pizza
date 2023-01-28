@@ -18,3 +18,4 @@ flask_cors==3.0.10
 sqlalchemy_utils==0.38.3
 rabbitmq-pika-flask==1.2.31
 jsonschema==4.17.3
+marshmallow_jsonschema==0.13.0

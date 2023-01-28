@@ -1,19 +1,8 @@
-from jsonschema import validate
+from marshmallow_jsonschema import JSONSchema
+from marshmallow import fields, Schema
 
-MessageTypes = []
+class MessageSchema(Schema):
+    type = fields.Str(required=True)
+    payload = fields.Raw(allow_none=True)
 
-MessageTypeToPayloadMapping = {
-    "Get_Events_In_Need_Of_Invitations": None
-}
-
-Message = {
-    "type": "object",
-    "properties": {
-        "type": {"type": "string"},
-        "payload": {
-            "anyOf": MessageTypes,
-            "default": None
-        },
-    },
-    "required": ["type"],
-}
+message_schema = JSONSchema().dump(MessageSchema())

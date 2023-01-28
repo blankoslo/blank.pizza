@@ -8,3 +8,4 @@ pika
 retry
 injector
 apscheduler
+marshmallow

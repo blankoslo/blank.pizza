@@ -1,7 +1,8 @@
-from src.broker.AmqpConnection import AmqpConnection
 import uuid
-import threading
 import json
+
+from src.broker.AmqpConnection import AmqpConnection
+from src.broker.schemas.MessageRequest import MessageRequestSchema
 
 class ApiClient:
     def __init__(self):
@@ -29,7 +30,14 @@ class ApiClient:
 
         self.mq.publish_rpc("rpc", self.callback_queue, corr_id, json.dumps(payload))
         self.mq.connection.process_data_events(time_limit=30)
-        decoded_response = response.decode('utf8')
-        return decoded_response
+        if response is not None:
+            response = response.decode('utf8')
+        return response
+
+    def get_events_in_need_of_invitations(self):
+        request_data = { "type": "get_events_in_need_of_invitations" }
+        request_schema = MessageRequestSchema()
+        request = request_schema.load(request_data)
+        return self.call(request)
 
 

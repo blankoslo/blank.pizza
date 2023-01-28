@@ -12,7 +12,7 @@ from flask_cors import CORS
 
 from app.api import events_bp, restaurants_bp, users_bp, invitations_bp, images_bp, auth_bp
 
-import app.worker.queue as queue
+import app.services.broker.queue
 
 class ReverseProxied(object):
     def __init__(self, app):
