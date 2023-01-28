@@ -21,3 +21,6 @@ class Base(object):
   # JWT
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
   JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+  # RabbitMQ
+  MQ_URL = os.environ.get('MQ_URL')
+  MQ_EXCHANGE = os.environ.get('MQ_EXCHANGE')

@@ -1,17 +1,18 @@
 from app.db import db, migrate
 from app.api import api, ma
 from app.auth import auth, jwt
+from app.services.broker import broker
 import os
-import sys
+import json
 
 from flask import Flask
 from flask_smorest import Blueprint
 from flask_talisman import Talisman
 from flask_cors import CORS
 
-import logging
-
 from app.api import events_bp, restaurants_bp, users_bp, invitations_bp, images_bp, auth_bp
+
+import app.worker.queue as queue
 
 class ReverseProxied(object):
     def __init__(self, app):
@@ -41,6 +42,14 @@ def create_app(environment):
   
   jwt.init_app(app)
   auth.init_app(app)
+
+  broker.init_app(
+      app,
+      'Pizza_Queue',
+      json.loads,
+      json.dumps,
+      #development=True
+  )
 
   csp = {
       'default-src': ['\'self\''],
