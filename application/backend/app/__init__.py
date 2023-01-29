@@ -1,4 +1,4 @@
-from app.models import db, migrate
+from app.db import db, migrate
 from app.api import api, ma
 from app.auth import auth, jwt
 from app.services.broker import broker
@@ -43,11 +43,14 @@ def create_app(environment):
   jwt.init_app(app)
   auth.init_app(app)
 
+  def dumps_parser(data):
+      return json.dumps(data, default=str)
+
   broker.init_app(
       app,
       'Pizza_Queue',
       json.loads,
-      json.dumps,
+      dumps_parser,
       #development=True
   )
 

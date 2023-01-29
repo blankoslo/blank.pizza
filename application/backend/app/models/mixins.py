@@ -1,7 +1,5 @@
 from copy import deepcopy
-from app.models import db
-from sqlalchemy import desc, asc
-import enum
+from app.db import db
 
 def get_field(schema, field):
     field = deepcopy(schema._declared_fields[field.key])
@@ -20,7 +18,7 @@ class CrudMixin(object):
             query = query.order_by(order_by())
         # If pagination is on, paginate the query
         if (page and per_page):
-            pagination = query.paginate(page, per_page, False)
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             return pagination.total, pagination.items
             
         res = query.count(), query.all()
@@ -37,7 +35,7 @@ class CrudMixin(object):
             query = query.order_by(order_by())
         # If pagination is on, paginate the query
         if (page and per_page):
-            pagination = query.paginate(page, per_page, False)
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             return pagination.total, pagination.items
             
         res = query.count(), query.all()

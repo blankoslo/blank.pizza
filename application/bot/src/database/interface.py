@@ -102,25 +102,6 @@ def save_invitations(slack_ids, event_id):
             curs.executemany(
                 "INSERT INTO invitations (event_id, slack_id) VALUES (%s, %s);", values)
 
-
-def get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            # TODO This query might need to be tested
-            sql = """
-                select events.id, events.time, events.restaurant_id, count(invitations.event_id) AS invited, restaurants.name
-                FROM events
-                left outer join restaurants on events.restaurant_id = restaurants.id
-                LEFT OUTER JOIN invitations on invitations.event_id = events.id
-                AND (invitations.rsvp = %s OR invitations.rsvp = %s)
-                WHERE events.time > NOW() and events.time  < NOW() + interval '%s days'
-                GROUP BY events.id, restaurants.name
-                HAVING count(invitations.event_id) < %s;
-            """
-
-            curs.execute(sql, (RSVP.unanswered, RSVP.attending, days_in_advance_to_invite, people_per_event,))
-            return curs.fetchall()
-
 def get_event_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
     events = get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event)
     return events[0]

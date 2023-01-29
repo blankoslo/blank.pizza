@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import pytz
 import src.api.slack as slack
 import src.database.interface as db
 from datetime import datetime, timedelta
@@ -29,9 +29,9 @@ class BotApi:
         self.client = ApiClient()
 
     def invite_multiple_if_needed(self):
-        response = self.client.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
-        print(response)
-        events = db.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
+        events = self.client.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
+        if events is None:
+            events = []
         for event in events:
             self.invite_if_needed(event)
 
@@ -41,21 +41,20 @@ class BotApi:
             return
 
         # timestamp (timestamp) is converted to UTC timestamp by psycopg2
-        event_id, timestamp, restaurant_id, number_of_already_invited, restaurant_name = event
         # Convert timestamp to Norwegian timestamp
-        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
+        timestamp = pytz.utc.localize(event['event_time'].replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
         number_of_employees = db.get_number_of_employees()
-        number_to_invite = self.PEOPLE_PER_EVENT - number_of_already_invited
-        users_to_invite = db.get_users_to_invite(number_to_invite, event_id, number_of_employees, self.PEOPLE_PER_EVENT)
+        number_to_invite = self.PEOPLE_PER_EVENT - event['number_of_already_invited']
+        users_to_invite = db.get_users_to_invite(number_to_invite, event['event_id'], number_of_employees, self.PEOPLE_PER_EVENT)
 
         if len(users_to_invite) == 0:
             print("Event in need of users, but noone to invite") # TODO: needs to be handled
             return
 
-        db.save_invitations(users_to_invite, event_id)
+        db.save_invitations(users_to_invite, event['event_id'])
 
         for user_id in users_to_invite:
-            self.send_pizza_invite(user_id, event_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+            self.send_pizza_invite(user_id, event['event_id'], event['restaurant_name'], timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
             print("%s was invited to event on %s" % (user_id, timestamp))
 
     def send_reminders(self):

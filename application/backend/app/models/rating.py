@@ -1,11 +1,7 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
-from app.models import db
-from app.models.mixins import get_field, CrudMixin
+from app.db import db
 
-from marshmallow import Schema
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
 class Rating(db.Model):

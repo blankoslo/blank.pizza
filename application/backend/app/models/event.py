@@ -1,11 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.models import db
+from sqlalchemy import func, and_, or_, column
+from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.restaurant import RestaurantSchema
-from app.models.enums import Age
+from app.models.enums import Age, RSVP
 
 from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
@@ -32,11 +33,24 @@ class Event(CrudMixin, db.Model):
             query = query.order_by(order_by())
         # If pagination is on, paginate the query
         if (page and per_page):
-            pagination = query.paginate(page, per_page, False)
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             return pagination.total, pagination.items
             
         res = query.count(), query.all()
         return res
+
+    @classmethod
+    def get_events_in_need_of_invitations(cls, days_in_advance_to_invite, people_per_event, session=db.session):
+        query = session.query(cls.id, cls.time, column("name"), func.count("invitations.event_id").label("invited"))\
+            .outerjoin(cls.restaurant)\
+            .outerjoin(cls.invitations)\
+            .filter(and_(column("event_id") == cls.id,
+                         or_(column("rsvp") == RSVP.unanswered, column("rsvp") == RSVP.attending)
+                         ))\
+            .filter(and_(cls.time > datetime.now(), cls.time < (datetime.now() + timedelta(days=days_in_advance_to_invite))))\
+            .group_by(cls.id, column("name"))\
+            .having(func.count(column("event_id")) < people_per_event)
+        return query.all()
 
     def __repr__(self):
         return "<Event(id={self.id!r})>".format(self=self)

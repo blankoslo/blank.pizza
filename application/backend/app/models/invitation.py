@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.models import db
+from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.enums import RSVP
 from marshmallow_enum import EnumField

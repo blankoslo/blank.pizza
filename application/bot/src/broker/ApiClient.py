@@ -4,7 +4,7 @@ import json
 from marshmallow import Schema
 
 from src.broker.AmqpConnection import AmqpConnection
-from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsSchema
+from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsSchema, GetEventsInNeedOfInvitationsResponseSchema
 from src.broker.schemas.MessageRequest import MessageRequestSchema
 
 class ApiClient:
@@ -34,7 +34,7 @@ class ApiClient:
         self.mq.publish_rpc("rpc", self.callback_queue, corr_id, json.dumps(payload))
         self.mq.connection.process_data_events(time_limit=30)
         if response is not None:
-            response = response.decode('utf8')
+            response = json.loads(response.decode('utf8'))
         return response
 
     def _create_request(self, type: str, payload: Schema):
@@ -52,7 +52,12 @@ class ApiClient:
             "people_per_event": people_per_event
         }
         request_payload_schema = GetEventsInNeedOfInvitationsSchema()
-        response = self._call(self._create_request("get_events_in_need_of_invitations", request_payload_schema.load(request_payload)))
-        return response
+        response_payload = self._call(self._create_request("get_events_in_need_of_invitations", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return None
+        response_schema = GetEventsInNeedOfInvitationsResponseSchema()
+        response = response_schema.load(response_payload)
+        print(response['events'])
+        return response['events']
 
 

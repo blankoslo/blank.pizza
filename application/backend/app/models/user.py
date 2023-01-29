@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from app.models import db
+from app.db import db
 from app.models.mixins import CrudMixin
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 

@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.models import db
+from app.db import db
 from app.models.mixins import get_field, CrudMixin
 
 from flask_smorest import fields
