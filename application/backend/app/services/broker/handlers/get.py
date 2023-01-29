@@ -38,7 +38,7 @@ def get_users(payload: dict, correlation_id: str, reply_to: str):
     respond(response, reply_to, correlation_id)
 
 @MessageHandlers.handle('get_users_to_invite')
-def get_events_in_need_of_invitations(payload: dict, correlation_id: str, reply_to: str):
+def get_users_to_invite(payload: dict, correlation_id: str, reply_to: str):
     schema = GetUsersToInviteRequestSchema()
     request = schema.load(payload)
     number_of_users_to_invite = request.get('number_of_users_to_invite')
