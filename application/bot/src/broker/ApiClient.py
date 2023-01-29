@@ -8,6 +8,7 @@ from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInv
 from src.broker.schemas.MessageRequest import MessageRequestSchema
 from src.broker.schemas.GetUsers import GetUsersResponseSchema
 from src.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, GetUsersToInviteResponseSchema
+from src.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
 
 class ApiClient:
     messages = {}
@@ -85,3 +86,16 @@ class ApiClient:
         response_schema = GetUsersToInviteResponseSchema()
         response = response_schema.load(response_payload)
         return response['users']
+
+    def create_invitations(self, user_ids: [str], event_id: str):
+        request_payload = {
+            "user_ids": user_ids,
+            "event_id": event_id,
+        }
+        request_payload_schema = CreateInvitationsRequestSchema()
+        response_payload = self._call(self._create_request("create_invitations", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = CreateInvitationsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['success']

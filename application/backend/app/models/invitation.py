@@ -17,4 +17,4 @@ class Invitation(CrudMixin, db.Model):
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
 
   def __repr__(self):
-      return "<Invitation(id={self.id!r})>".format(self=self)
+      return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

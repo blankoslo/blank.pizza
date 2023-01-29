@@ -45,15 +45,19 @@ class BotApi:
         number_of_employees = len(users)
         number_to_invite = self.PEOPLE_PER_EVENT - event['number_of_already_invited']
         users_to_invite = self.client.get_users_to_invite(number_to_invite, event['event_id'], number_of_employees, self.PEOPLE_PER_EVENT)
+        users_to_invite = [user['id'] for user in users_to_invite]
 
         if len(users_to_invite) == 0:
             print("Event in need of users, but noone to invite") # TODO: needs to be handled
             return
 
-        db.save_invitations(users_to_invite, event['event_id'])
+        was_created = self.client.create_invitations(users_to_invite, event['event_id'])
+        if not was_created:
+            print("Was unable to create invitations")
+            return
 
         for user_id in users_to_invite:
-            self.send_pizza_invite(user_id, event['event_id'], event['restaurant_name'], timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+            self.send_pizza_invite(user_id, str(event['event_id']), event['restaurant_name'], timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
             print("%s was invited to event on %s" % (user_id, timestamp))
 
     def send_reminders(self):

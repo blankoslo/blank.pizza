@@ -1,14 +1,17 @@
 from rabbitmq_pika_flask.ExchangeType import ExchangeType
 
+from app.services.broker import broker
 from app.services.broker.handlers import MessageHandlers
 from app.services.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsRequestSchema, GetEventsInNeedOfInvitationsResponseSchema
 from app.services.broker.schemas.GetUsers import GetUsersResponseSchema
 from app.services.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, GetUsersToInviteResponseSchema
-from app.services.broker import broker
+from app.services.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
 
 from app.models.event import Event
 from app.models.user import User, UserSchema
 from app.models.slack_user import SlackUser
+from app.models.invitation import Invitation
+from app.models.invitation_schema import InvitationSchema
 
 def respond(response, reply_to, correlation_id):
     broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
@@ -51,5 +54,30 @@ def get_users_to_invite(payload: dict, correlation_id: str, reply_to: str):
 
     response_schema = GetUsersToInviteResponseSchema()
     response = response_schema.load({'users': users})
+
+    respond(response, reply_to, correlation_id)
+
+@MessageHandlers.handle('create_invitations')
+def create_invitations(payload: dict, correlation_id: str, reply_to: str):
+    schema = CreateInvitationsRequestSchema()
+    request = schema.load(payload)
+    user_ids = request.get('user_ids')
+    event_id = request.get('event_id')
+
+    result = True
+    try:
+        for user_id in user_ids:
+            invitation_schema = InvitationSchema()
+            invitation = invitation_schema.load(
+                data={"event_id": event_id, "slack_id": user_id},
+                partial=True
+            )
+            Invitation.upsert(invitation)
+    except Exception as e:
+        print(e)
+        result = False
+
+    response_schema = CreateInvitationsResponseSchema()
+    response = response_schema.load({'success': result})
 
     respond(response, reply_to, correlation_id)

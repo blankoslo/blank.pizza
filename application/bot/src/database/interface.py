@@ -67,15 +67,6 @@ def save_image(cloudinary_id, slack_id, title):
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (cloudinary_id, slack_id, title,))
 
-
-def save_invitations(slack_ids, event_id):
-    values = [(event_id, slack_id) for slack_id in slack_ids]
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.executemany(
-                "INSERT INTO invitations (event_id, slack_id) VALUES (%s, %s);", values)
-
 def get_invited_users():
     sql = "SELECT DISTINCT slack_id FROM invitations WHERE rsvp = %s;"
 
