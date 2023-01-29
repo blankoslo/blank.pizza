@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
-from app.db import db
+from app.models import db
 from app.models.mixins import get_field, CrudMixin
 
 from marshmallow import Schema

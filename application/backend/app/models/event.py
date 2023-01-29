@@ -1,10 +1,8 @@
 from datetime import datetime
-from time import timezone
-import uuid
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.db import db
+from app.models import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.restaurant import RestaurantSchema
 from app.models.enums import Age

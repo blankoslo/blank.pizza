@@ -1,7 +1,10 @@
 import uuid
 import json
 
+from marshmallow import Schema
+
 from src.broker.AmqpConnection import AmqpConnection
+from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsSchema
 from src.broker.schemas.MessageRequest import MessageRequestSchema
 
 class ApiClient:
@@ -14,7 +17,7 @@ class ApiClient:
         self.callback_queue = result.method.queue
         self.mq.channel.queue_bind(self.callback_queue, exchange=self.mq.exchange)
 
-    def call(self, payload):
+    def _call(self, payload):
         response = None
         corr_id = str(uuid.uuid4())
 
@@ -34,10 +37,22 @@ class ApiClient:
             response = response.decode('utf8')
         return response
 
-    def get_events_in_need_of_invitations(self):
-        request_data = { "type": "get_events_in_need_of_invitations" }
+    def _create_request(self, type: str, payload: Schema):
+        request_data = {
+            "type": type,
+            "payload": payload
+        }
         request_schema = MessageRequestSchema()
         request = request_schema.load(request_data)
-        return self.call(request)
+        return request
+
+    def get_events_in_need_of_invitations(self, days_in_advance_to_invite: int, people_per_event: int):
+        request_payload = {
+            "days_in_advance_to_invite": days_in_advance_to_invite,
+            "people_per_event": people_per_event
+        }
+        request_payload_schema = GetEventsInNeedOfInvitationsSchema()
+        response = self._call(self._create_request("get_events_in_need_of_invitations", request_payload_schema.load(request_payload)))
+        return response
 
 

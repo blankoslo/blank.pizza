@@ -1,4 +1,4 @@
-from app.db import db, migrate
+from app.models import db, migrate
 from app.api import api, ma
 from app.auth import auth, jwt
 from app.services.broker import broker

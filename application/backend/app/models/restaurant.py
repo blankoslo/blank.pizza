@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy import func, select
-from app.db import db
+from app.models import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.rating import Rating
 

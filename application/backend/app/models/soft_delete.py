@@ -1,5 +1,5 @@
 from flask_sqlalchemy import BaseQuery
-from app.db import db
+from app.models import db
 
 class QueryWithSoftDelete(BaseQuery):
     _with_deleted = False

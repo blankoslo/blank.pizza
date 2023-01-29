@@ -1,5 +1,5 @@
 from copy import deepcopy
-from app.db import db
+from app.models import db
 from sqlalchemy import desc, asc
 import enum
 
