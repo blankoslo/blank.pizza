@@ -43,7 +43,8 @@ class BotApi:
         # timestamp (timestamp) is converted to UTC timestamp by psycopg2
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(event['event_time'].replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
-        number_of_employees = db.get_number_of_employees()
+        users = self.client.get_users()
+        number_of_employees = len(users)
         number_to_invite = self.PEOPLE_PER_EVENT - event['number_of_already_invited']
         users_to_invite = db.get_users_to_invite(number_to_invite, event['event_id'], number_of_employees, self.PEOPLE_PER_EVENT)
 

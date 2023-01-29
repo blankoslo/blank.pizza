@@ -6,8 +6,11 @@ from marshmallow import Schema
 from src.broker.AmqpConnection import AmqpConnection
 from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsSchema, GetEventsInNeedOfInvitationsResponseSchema
 from src.broker.schemas.MessageRequest import MessageRequestSchema
+from src.broker.schemas.GetUsers import GetUsersResponseSchema
 
 class ApiClient:
+    messages = {}
+
     def __init__(self):
         self.mq = AmqpConnection()
         self.mq.connect()
@@ -17,31 +20,31 @@ class ApiClient:
         self.callback_queue = result.method.queue
         self.mq.channel.queue_bind(self.callback_queue, exchange=self.mq.exchange)
 
+    def on_response(self, ch, method, props, body):
+        self.messages[props.correlation_id] = body
+
     def _call(self, payload):
         response = None
         corr_id = str(uuid.uuid4())
 
-        def on_response(ch, method, props, body):
-            if corr_id == props.correlation_id:
-                nonlocal response
-                response = body
-
         self.mq.channel.basic_consume(
             queue=self.callback_queue,
-            on_message_callback=on_response,
+            on_message_callback=self.on_response,
             auto_ack=True)
 
         self.mq.publish_rpc("rpc", self.callback_queue, corr_id, json.dumps(payload))
         self.mq.connection.process_data_events(time_limit=30)
-        if response is not None:
-            response = json.loads(response.decode('utf8'))
+
+        if corr_id in self.messages:
+            response = json.loads(self.messages[corr_id].decode('utf8'))
         return response
 
-    def _create_request(self, type: str, payload: Schema):
+    def _create_request(self, type: str, payload: Schema = None):
         request_data = {
-            "type": type,
-            "payload": payload
+            "type": type
         }
+        if payload is not None:
+            request_data['payload'] = payload
         request_schema = MessageRequestSchema()
         request = request_schema.load(request_data)
         return request
@@ -57,7 +60,13 @@ class ApiClient:
             return None
         response_schema = GetEventsInNeedOfInvitationsResponseSchema()
         response = response_schema.load(response_payload)
-        print(response['events'])
         return response['events']
 
+    def get_users(self):
+        response_payload = self._call(self._create_request("get_users"))
+        if response_payload is None:
+            return None
+        response_schema = GetUsersResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['users']
 

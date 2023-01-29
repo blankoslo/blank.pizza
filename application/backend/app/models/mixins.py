@@ -8,8 +8,10 @@ def get_field(schema, field):
 
 class CrudMixin(object):
     @classmethod
-    def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
+    def get(cls, filters = None, order_by = None, page = None, per_page = None, session=db.session):
         query = cls.query
+        if filters is None:
+            filters = {}
         # Add filters to the query
         for attr, value in filters.items():
             query = query.filter(getattr(cls, attr) == value)

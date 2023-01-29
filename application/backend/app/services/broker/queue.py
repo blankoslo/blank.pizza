@@ -11,7 +11,6 @@ import app.services.broker.handlers.get
 @broker.queue(routing_key='rpc', exchange_type = ExchangeType.DIRECT, props_needed = ["correlation_id", "reply_to"])
 def rpc(routing_key, body, correlation_id, reply_to):
     try:
-        print(body)
         jsonschema.validate(body, message_schema)
     except (jsonschema.ValidationError, json.JSONDecodeError) as e:
         print(e)

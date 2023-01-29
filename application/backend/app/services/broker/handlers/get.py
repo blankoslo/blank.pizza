@@ -2,9 +2,14 @@ from rabbitmq_pika_flask.ExchangeType import ExchangeType
 
 from app.services.broker.handlers import MessageHandlers
 from app.services.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsRequestSchema, GetEventsInNeedOfInvitationsResponseSchema
+from app.services.broker.schemas.GetUsers import GetUsersResponseSchema
 from app.services.broker import broker
 
 from app.models.event import Event
+from app.models.user import User, UserSchema
+
+def respond(response, reply_to, correlation_id):
+    broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
 
 @MessageHandlers.handle('get_events_in_need_of_invitations')
 def get_events_in_need_of_invitations(payload: dict, correlation_id: str, reply_to: str):
@@ -19,4 +24,13 @@ def get_events_in_need_of_invitations(payload: dict, correlation_id: str, reply_
     response_schema = GetEventsInNeedOfInvitationsResponseSchema()
     response = response_schema.load({'events': events})
 
-    broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
+    respond(response, reply_to, correlation_id)
+
+@MessageHandlers.handle('get_users')
+def get_users(payload: dict, correlation_id: str, reply_to: str):
+    number_of_user, users = User.get()
+    response_schema = GetUsersResponseSchema()
+    user_schema = UserSchema()
+    response = response_schema.load({'users': [user_schema.dump(user) for user in users]})
+    
+    respond(response, reply_to, correlation_id)

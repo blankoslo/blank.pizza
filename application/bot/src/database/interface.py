@@ -244,10 +244,3 @@ def get_restaurant_name(id):
     id, name, link, tlf, address, deleted = get_restaurant(id)
     return name
 
-def get_number_of_employees():
-    sql = "select count(*) from users"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql)
-            return curs.fetchone()[0]
