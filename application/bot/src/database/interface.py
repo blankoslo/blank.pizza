@@ -61,32 +61,6 @@ def update_slack_users(slack_users):
             curs.executemany(
                 "INSERT INTO slack_users (slack_id, current_username, email) VALUES (%s,%s,%s) ON CONFLICT (slack_id) DO UPDATE SET current_username = EXCLUDED.current_username, email = EXCLUDED.email;", usernames)
 
-
-def get_users_to_invite(number_of_users_to_invite, event_id, total_number_of_employees, employees_per_event):
-    number_of_events_regarded = math.ceil(
-        total_number_of_employees / employees_per_event)
-
-    sql = """
-        SELECT slack_users.slack_id, count(rsvp) AS events_attended
-        FROM slack_users
-        LEFT JOIN invitations ON slack_users.slack_id = invitations.slack_id
-        AND invitations.rsvp = %s AND invitations.event_id
-        IN (SELECT id FROM events WHERE time < NOW() AND finalized = true ORDER BY time desc limit %s)
-        WHERE NOT EXISTS (SELECT * FROM invitations WHERE invitations.event_id = %s
-        AND invitations.slack_id = slack_users.slack_id)
-        AND slack_users.active = TRUE
-        GROUP BY slack_users.slack_id ORDER BY events_attended, random()
-        LIMIT %s;
-    """
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.attending, number_of_events_regarded,
-                               event_id, number_of_users_to_invite,))
-            rows = curs.fetchall()
-            return [x[0] for x in rows]
-
-
 def save_image(cloudinary_id, slack_id, title):
     sql = "INSERT INTO images (cloudinary_id, uploaded_by_id, title) VALUES (%s, %s, %s);"
     with pizza_conn:

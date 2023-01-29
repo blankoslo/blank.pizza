@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.event import Event, EventSchema, EventQueryArgsSchema
+from app.models.event import Event
+from app.models.event_schema import EventSchema, EventQueryArgsSchema
 from flask_jwt_extended import jwt_required
 
 bp = Blueprint("events", "events", url_prefix="/events", description="Operations on events")

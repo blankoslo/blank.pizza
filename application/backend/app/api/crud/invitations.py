@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.invitation import Invitation, InvitationSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
+from app.models.invitation import Invitation
+from app.models.invitation_schema import InvitationSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
 from flask_jwt_extended import jwt_required
 
 bp = Blueprint("invitations", "invitations", url_prefix="/invitations", description="Operations on invitations")

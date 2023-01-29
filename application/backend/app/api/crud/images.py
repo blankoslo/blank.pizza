@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.image import Image, ImageSchema, ImageQueryArgsSchema
+from app.models.image import Image
+from app.models.image_schema import ImageSchema, ImageQueryArgsSchema
 from flask_jwt_extended import jwt_required
 
 bp = Blueprint("images", "images", url_prefix="/images", description="Operations on images")

@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.restaurant import Restaurant, RestaurantSchema, RestaurantQueryArgsSchema, RestaurantUpdateSchema
+from app.models.restaurant import Restaurant
+from app.models.restaurant_schema import RestaurantSchema, RestaurantQueryArgsSchema, RestaurantUpdateSchema
 from flask_jwt_extended import jwt_required
 
 bp = Blueprint("restaurants", "restaurants", url_prefix="/restaurants", description="Operations on restaurants")

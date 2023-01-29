@@ -30,8 +30,6 @@ class BotApi:
 
     def invite_multiple_if_needed(self):
         events = self.client.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
-        if events is None:
-            events = []
         for event in events:
             self.invite_if_needed(event)
 
@@ -46,7 +44,7 @@ class BotApi:
         users = self.client.get_users()
         number_of_employees = len(users)
         number_to_invite = self.PEOPLE_PER_EVENT - event['number_of_already_invited']
-        users_to_invite = db.get_users_to_invite(number_to_invite, event['event_id'], number_of_employees, self.PEOPLE_PER_EVENT)
+        users_to_invite = self.client.get_users_to_invite(number_to_invite, event['event_id'], number_of_employees, self.PEOPLE_PER_EVENT)
 
         if len(users_to_invite) == 0:
             print("Event in need of users, but noone to invite") # TODO: needs to be handled

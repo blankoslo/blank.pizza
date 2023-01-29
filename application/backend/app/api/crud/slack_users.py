@@ -1,6 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.slack_user import SlackUser, SlackUserSchema, SlackUserUpdateSchema, SlackUserQueryArgsSchema
+from app.models.slack_user import SlackUser
+from app.models.slack_user_schema import SlackUserSchema, SlackUserUpdateSchema, SlackUserQueryArgsSchema
 from flask_jwt_extended import jwt_required
 
 bp = Blueprint("users", "users", url_prefix="/users", description="Operations on users")
