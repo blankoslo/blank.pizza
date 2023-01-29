@@ -76,10 +76,6 @@ def save_invitations(slack_ids, event_id):
             curs.executemany(
                 "INSERT INTO invitations (event_id, slack_id) VALUES (%s, %s);", values)
 
-def get_event_in_need_of_invitations(days_in_advance_to_invite, people_per_event):
-    events = get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event)
-    return events[0]
-
 def get_invited_users():
     sql = "SELECT DISTINCT slack_id FROM invitations WHERE rsvp = %s;"
 
