@@ -9,3 +9,4 @@ retry
 injector
 apscheduler
 marshmallow
+marshmallow_enum

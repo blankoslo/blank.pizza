@@ -99,13 +99,23 @@ class BotApi:
             slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
     def auto_reply(self):
-        users_that_did_not_reply = db.auto_reply_after_deadline(self.REPLY_DEADLINE_IN_HOURS)
-        if users_that_did_not_reply is None:
-           return
+        invitations = self.client.get_unanswered_invitations()
 
-        for user_id in users_that_did_not_reply:
-            slack.send_slack_message(user_id, "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
-            print("%s didn't answer. Setting RSVP to not attending.")
+        for invitation in invitations:
+            deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
+            if deadline < datetime.now(pytz.utc):
+                was_updated = self.client.update_invitation(
+                    invitation['slack_id'],
+                    invitation['event_id'],
+                    {
+                        "rsvp": RSVP.not_attending
+                    }
+                )
+                if was_updated:
+                    slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
+                    print("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
+                else:
+                    print("failed to update invitation to not attending")
 
     def save_image(self, cloudinary_id, slack_id, title):
         db.save_image(cloudinary_id, slack_id, title)
