@@ -162,15 +162,6 @@ def get_slack_ids_from_emails(emails):
             curs.execute(sql)
             return [t[0] for t in curs.fetchall()]
 
-
-def update_reminded_at(slack_id):
-    sql = "UPDATE invitations SET reminded_at = 'NOW()' where rsvp = %s and slack_id = %s;"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.unanswered, slack_id,))
-
-
 def auto_reply_after_deadline(deadline):
     sql = """
         UPDATE invitations
