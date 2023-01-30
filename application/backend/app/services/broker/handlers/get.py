@@ -6,12 +6,15 @@ from app.services.broker.schemas.GetEventsInNeedOfInvitations import GetEventsIn
 from app.services.broker.schemas.GetUsers import GetUsersResponseSchema
 from app.services.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, GetUsersToInviteResponseSchema
 from app.services.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
+from app.services.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema, GetUnansweredInvitationsDataSchema
+from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 
 from app.models.event import Event
 from app.models.user import User, UserSchema
 from app.models.slack_user import SlackUser
 from app.models.invitation import Invitation
 from app.models.invitation_schema import InvitationSchema
+from app.models.enums import RSVP
 
 def respond(response, reply_to, correlation_id):
     broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
@@ -78,6 +81,39 @@ def create_invitations(payload: dict, correlation_id: str, reply_to: str):
         result = False
 
     response_schema = CreateInvitationsResponseSchema()
+    response = response_schema.load({'success': result})
+
+    respond(response, reply_to, correlation_id)
+
+@MessageHandlers.handle('get_unanswered_invitations')
+def get_unanswered_invitations(payload: dict, correlation_id: str, reply_to: str):
+    invitations = Invitation.get_by_filter({"rsvp": RSVP.unanswered})
+    response_schema = GetUnansweredInvitationsResponseSchema()
+    response_data = [{"slack_id": invitation.slack_id, "event_id": invitation.event_id, "invited_at": invitation.invited_at.isoformat(), "reminded_at": invitation.reminded_at.isoformat() } for invitation in invitations]
+    response = response_schema.load({'invitations': response_data})
+
+    respond(response, reply_to, correlation_id)
+
+@MessageHandlers.handle('update_invitation')
+def get_unanswered_invitations(payload: dict, correlation_id: str, reply_to: str):
+    schema = UpdateInvitationRequestSchema()
+    request = schema.load(payload)
+    slack_id = request.get('slack_id')
+    event_id = request.get('event_id')
+    update_data = request.get('update_data')
+
+    result = True
+    try:
+        invitation = Invitation.get_by_id(event_id, slack_id)
+        if "reminded_at" in update_data:
+            update_data["reminded_at"] = update_data["reminded_at"].isoformat()
+        updated_invitation = InvitationSchema().load(data=update_data, instance=invitation, partial=True)
+        Invitation.upsert(updated_invitation)
+    except Exception as e:
+        print(e)
+        result = False
+
+    response_schema = UpdateInvitationResponseSchema()
     response = response_schema.load({'success': result})
 
     respond(response, reply_to, correlation_id)

@@ -16,5 +16,9 @@ class Invitation(CrudMixin, db.Model):
   rsvp = sa.Column(sa.Enum(RSVP, values_callable = lambda x: [e.value for e in x]), nullable=False, server_default=RSVP.unanswered)
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
 
+  @classmethod
+  def get_by_id(cls, event_id, slack_id, session=db.session):
+    return cls.query.get((event_id, slack_id))
+
   def __repr__(self):
       return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

@@ -61,18 +61,25 @@ class BotApi:
             print("%s was invited to event on %s" % (user_id, timestamp))
 
     def send_reminders(self):
-        inviations = db.get_unanswered_invitations()
+        invitations = self.client.get_unanswered_invitations()
 
-        for invitation in inviations:
-            # invited_at and reminded_at (timestamps) are converted to UTC timestamp by psycopg2
-            slack_id, invited_at, reminded_at = invitation
+        for invitation in invitations:
             # all timestamps (such as reminded_at) gets converted to UTC
             # so comparing it to datetime.now in UTC is correct
             remind_timestamp = datetime.now(pytz.utc) + timedelta(hours =- self.HOURS_BETWEEN_REMINDERS)
-            if reminded_at < remind_timestamp:
-                slack.send_slack_message(slack_id, "Hei du! Jeg hørte ikke noe mer? Er du gira?")
-                db.update_reminded_at(slack_id)
-                print("%s was reminded about an event." % slack_id)
+            if invitation['reminded_at'] < remind_timestamp:
+                slack.send_slack_message(invitation['slack_id'], "Hei du! Jeg hørte ikke noe mer? Er du gira?")
+                was_updated = self.client.update_invitation(
+                    invitation['slack_id'],
+                    invitation['event_id'],
+                    {
+                        "reminded_at": datetime.now().isoformat()
+                    }
+                )
+                if was_updated:
+                    print("%s was reminded about an event." % invitation['slack_id'])
+                else:
+                    print("failed to update invitation")
 
     def finalize_event_if_complete(self):
         event = db.get_event_ready_to_finalize(self.PEOPLE_PER_EVENT)

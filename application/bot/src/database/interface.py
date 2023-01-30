@@ -144,16 +144,6 @@ def get_event_ready_to_finalize(people_per_event):
             curs.execute(sql, (RSVP.attending, people_per_event,))
             return curs.fetchone()
 
-
-def get_unanswered_invitations():
-    sql = "SELECT slack_id, invited_at, reminded_at from invitations where rsvp = %s;"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.unanswered,))
-            return curs.fetchall()
-
-
 def get_attending_users(event_id):
     sql = "SELECT slack_id FROM invitations WHERE rsvp = %s and event_id = %s ORDER BY random();"
 

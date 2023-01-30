@@ -9,6 +9,8 @@ from src.broker.schemas.MessageRequest import MessageRequestSchema
 from src.broker.schemas.GetUsers import GetUsersResponseSchema
 from src.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, GetUsersToInviteResponseSchema
 from src.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
+from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema
+from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 
 class ApiClient:
     messages = {}
@@ -97,5 +99,27 @@ class ApiClient:
         if response_payload is None:
             return False
         response_schema = CreateInvitationsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['success']
+
+    def get_unanswered_invitations(self):
+        response_payload = self._call(self._create_request("get_unanswered_invitations"))
+        if response_payload is None:
+            return []
+        response_schema = GetUnansweredInvitationsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['invitations']
+
+    def update_invitation(self, slack_id: str, event_id: str, update_values: dict):
+        request_payload = {
+            "slack_id": slack_id,
+            "event_id": event_id,
+            "update_data": update_values
+        }
+        request_payload_schema = UpdateInvitationRequestSchema()
+        response_payload = self._call(self._create_request("update_invitation", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = UpdateInvitationResponseSchema()
         response = response_schema.load(response_payload)
         return response['success']

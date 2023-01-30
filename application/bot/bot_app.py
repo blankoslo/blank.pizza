@@ -179,8 +179,8 @@ def main():
     # Set up scheduler
     scheduler = BackgroundScheduler()
     #scheduler.add_job(auto_reply, trigger=IntervalTrigger(minutes=1))
-    scheduler.add_job(invite_multiple_if_needed, trigger=IntervalTrigger(minutes=1))
-    #scheduler.add_job(send_reminders, trigger=IntervalTrigger(minutes=1))
+    #scheduler.add_job(invite_multiple_if_needed, trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(send_reminders, trigger=IntervalTrigger(minutes=1))
     #scheduler.add_job(sync_db_with_slack_and_return_count, trigger=IntervalTrigger(minutes=1))
     scheduler.start()
 
