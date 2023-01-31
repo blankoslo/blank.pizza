@@ -62,16 +62,11 @@ class AmqpConnection:
 
     @retry(pika.exceptions.AMQPConnectionError, delay=1, backoff=2)
     def consume(self, on_message):
-        if self.connection is not None and (self.connection.is_closed or self.channel.is_closed):
+        if self.connection.is_closed or self.channel.is_closed:
             self.connect()
             self.setup_queues()
         try:
             self.channel.basic_consume(queue=self.queue, auto_ack=True, on_message_callback=on_message)
             self.channel.start_consuming()
-        except KeyboardInterrupt:
-            print('Keyboard interrupt received')
-            self.channel.stop_consuming()
-            self.connection.close()
-            os._exit(1)
         except pika.exceptions.ChannelClosedByBroker:
             print('Channel Closed By Broker Exception')

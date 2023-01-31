@@ -1,4 +1,8 @@
-class MessageHandlers:
+from rabbitmq_pika_flask.ExchangeType import ExchangeType
+
+from app.services.broker import broker
+
+class MessageHandler:
     handlers = {}
 
     @classmethod
@@ -13,3 +17,14 @@ class MessageHandlers:
         type_ = message['type']
         payload = message.get('payload')
         cls.handlers[type_](payload, correlation_id, reply_to)
+
+    @classmethod
+    def respond(cls, response, reply_to, correlation_id):
+        broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
+
+# DO NOT REMOVE: Import handlers to initialize them
+# ALSO DO NOT MOVE: having it at the bottom stops circular imports
+import app.services.broker.handlers.get
+import app.services.broker.handlers.update
+import app.services.broker.handlers.create
+import app.services.broker.handlers.action

@@ -83,8 +83,7 @@ class BotApi:
                     print("failed to update invitation")
 
     def finalize_event_if_complete(self):
-        '''self.PEOPLE_PER_EVENT'''
-        response = self.client.finalize_event_if_complete(1)
+        response = self.client.finalize_event_if_complete(self.PEOPLE_PER_EVENT)
         print(response)
         if not response['success']:
             print("No events ready to finalize")
