@@ -105,50 +105,10 @@ def event_is_finalized(event_id):
             finalized = curs.fetchone()
             return finalized[0]
 
-def mark_event_as_finalized(event_id):
-    sql = "UPDATE events SET finalized = true WHERE id = %s;"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (event_id,))
-
 def mark_event_as_unfinalized(event_id):
     sql = "UPDATE events SET finalized = false WHERE id = %s;"
 
     with pizza_conn:
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (event_id,))
-
-def get_slack_ids_from_emails(emails):
-    sql = "select slack_id from slack_users where email in ('%s');" % (
-        "','".join(emails))
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql)
-            return [t[0] for t in curs.fetchall()]
-
-def auto_reply_after_deadline(deadline):
-    sql = """
-        UPDATE invitations
-        SET rsvp = %s
-        WHERE rsvp = %s
-        AND invited_at < NOW() - interval '%s hours' returning slack_id;
-    """
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.not_attending, RSVP.unanswered, deadline,))
-
-def get_restaurant(id):
-    sql = "SELECT * from restaurants where id = %s;"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (id,))
-            return curs.fetchone()
-
-def get_restaurant_name(id):
-    id, name, link, tlf, address, deleted = get_restaurant(id)
-    return name
 
