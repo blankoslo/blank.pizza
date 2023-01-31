@@ -12,6 +12,12 @@ class AmqpConnection:
         self.queue = 'Pizza_Queue'
         self.routing_key = 'pizza'
 
+    def __del__(self):
+        if self.connect() is not None and not self.connection.is_closed:
+            self.channel.stop_consuming()
+        if self.connect() is not None and not self.channel.is_closed:
+            self.connection.close()
+
     def connect(self):
         print('Attempting to connect')
         parameters = pika.URLParameters(self.host)
@@ -56,7 +62,7 @@ class AmqpConnection:
 
     @retry(pika.exceptions.AMQPConnectionError, delay=1, backoff=2)
     def consume(self, on_message):
-        if self.connection.is_closed or self.channel.is_closed:
+        if self.connection is not None and (self.connection.is_closed or self.channel.is_closed):
             self.connect()
             self.setup_queues()
         try:

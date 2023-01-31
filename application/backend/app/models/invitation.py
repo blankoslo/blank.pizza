@@ -20,5 +20,17 @@ class Invitation(CrudMixin, db.Model):
   def get_by_id(cls, event_id, slack_id, session=db.session):
     return cls.query.get((event_id, slack_id))
 
+  @classmethod
+  def get_attending_users(cls, event_id, session=db.session):
+    query = session.query(cls.slack_id)\
+      .filter(
+        sa.and_(
+          cls.rsvp == RSVP.attending,
+          cls.event_id == event_id
+        )
+      )\
+      .order_by(func.random())
+    return query.all()
+
   def __repr__(self):
       return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

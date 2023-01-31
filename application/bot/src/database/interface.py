@@ -75,14 +75,6 @@ def get_invited_users():
             curs.execute(sql, (RSVP.unanswered,))
             return [t[0] for t in curs.fetchall()]
 
-
-def rsvp(slack_id, answer):
-    sql = "UPDATE invitations SET rsvp = %s WHERE slack_id = %s AND rsvp = %s;"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (answer, slack_id, RSVP.unanswered,))
-
 def event_in_past(event_id):
     sql = """
         SELECT CAST(CASE WHEN time < NOW() THEN 'true' ELSE 'false' END AS boolean)
@@ -126,32 +118,6 @@ def mark_event_as_unfinalized(event_id):
     with pizza_conn:
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (event_id,))
-
-def get_event_ready_to_finalize(people_per_event):
-    sql = """
-        SELECT event_id, time, restaurant_id
-        FROM slack_users, invitations, events
-        WHERE  invitations.slack_id = slack_users.slack_id
-        AND invitations.event_id = events.id
-        AND rsvp = %s
-        AND not finalized
-        GROUP BY event_id, time, restaurant_id
-        HAVING count(event_id) = %s;
-    """
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.attending, people_per_event,))
-            return curs.fetchone()
-
-def get_attending_users(event_id):
-    sql = "SELECT slack_id FROM invitations WHERE rsvp = %s and event_id = %s ORDER BY random();"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.attending, event_id,))
-            return [t[0] for t in curs.fetchall()]
-
 
 def get_slack_ids_from_emails(emails):
     sql = "select slack_id from slack_users where email in ('%s');" % (

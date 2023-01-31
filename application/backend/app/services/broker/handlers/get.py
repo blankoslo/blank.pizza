@@ -8,13 +8,16 @@ from app.services.broker.schemas.GetUsersToInvite import GetUsersToInviteRequest
 from app.services.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
 from app.services.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema, GetUnansweredInvitationsDataSchema
 from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
+from app.services.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
 
 from app.models.event import Event
+from app.models.event_schema import EventSchema
 from app.models.user import User, UserSchema
 from app.models.slack_user import SlackUser
 from app.models.invitation import Invitation
 from app.models.invitation_schema import InvitationSchema
 from app.models.enums import RSVP
+from app.models.restaurant import Restaurant
 
 def respond(response, reply_to, correlation_id):
     broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
@@ -115,5 +118,44 @@ def get_unanswered_invitations(payload: dict, correlation_id: str, reply_to: str
 
     response_schema = UpdateInvitationResponseSchema()
     response = response_schema.load({'success': result})
+
+    respond(response, reply_to, correlation_id)
+
+@MessageHandlers.handle('finalize_event_if_complete')
+def finalize_event_if_complete(payload: dict, correlation_id: str, reply_to: str):
+    schema = FinalizeEventIfPossibleRequestSchema()
+    request = schema.load(payload)
+    people_per_event = request.get('people_per_event')
+
+    event_ready_to_finalize = Event.get_event_ready_to_finalize(people_per_event)
+
+    response_data = {
+        "success": True
+    }
+
+    if event_ready_to_finalize is not None:
+        # Get Restaurant
+        restaurant = Restaurant.get_by_id(event_ready_to_finalize.restaurant_id)
+
+        # Update event to be finalized
+        update_data = {
+            'finalized': True
+        }
+        updated_invitation = EventSchema().load(data=update_data, instance=event_ready_to_finalize, partial=True)
+        Event.upsert(updated_invitation)
+
+        # Set response data
+        internal_data = {
+            'event_id': event_ready_to_finalize.id,
+            'timestamp': event_ready_to_finalize.time.isoformat(),
+            'restaurant_name': restaurant.name,
+            'slack_ids': [user[0] for user in Invitation.get_attending_users(event_ready_to_finalize.id)]
+        }
+        response_data['data'] = internal_data
+    else:
+        response_data['success'] = False
+
+    response_schema = FinalizeEventIfPossibleResponseSchema()
+    response = response_schema.load(response_data)
 
     respond(response, reply_to, correlation_id)

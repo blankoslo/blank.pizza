@@ -11,6 +11,7 @@ from src.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, G
 from src.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
 from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema
 from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
+from src.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
 
 class ApiClient:
     messages = {}
@@ -23,6 +24,9 @@ class ApiClient:
         result = self.mq.channel.queue_declare(queue='', exclusive=True)
         self.callback_queue = result.method.queue
         self.mq.channel.queue_bind(self.callback_queue, exchange=self.mq.exchange)
+
+    def __del__(self):
+        self.mq.__del__()
 
     def on_response(self, ch, method, props, body):
         self.messages[props.correlation_id] = body
@@ -123,3 +127,15 @@ class ApiClient:
         response_schema = UpdateInvitationResponseSchema()
         response = response_schema.load(response_payload)
         return response['success']
+
+    def finalize_event_if_complete(self, people_per_event):
+        request_payload = {
+            "people_per_event": people_per_event,
+        }
+        request_payload_schema = FinalizeEventIfPossibleRequestSchema()
+        response_payload = self._call(self._create_request("finalize_event_if_complete", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return None
+        response_schema = FinalizeEventIfPossibleResponseSchema()
+        response = response_schema.load(response_payload)
+        return response

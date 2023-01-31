@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from sqlalchemy import func, and_, or_, column
+from sqlalchemy import func, and_, or_, not_, column
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.enums import Age, RSVP
@@ -62,6 +62,20 @@ class Event(CrudMixin, db.Model):
             .group_by(cls.id, Restaurant.name)\
             .having(func.count(Invitation.event_id) < people_per_event)
         return query.all()
+
+    @classmethod
+    def get_event_ready_to_finalize(cls, people_per_event, session=db.session):
+        query = session.query(cls)\
+            .join(Invitation, Invitation.event_id == cls.id)\
+            .filter(
+                and_(
+                    Invitation.rsvp == RSVP.attending,
+                    not_(cls.finalized)
+                )
+            )\
+            .group_by(cls.id, cls.time, cls.restaurant_id)\
+            .having(func.count(cls.id) == people_per_event)
+        return query.first()
 
     def __repr__(self):
         return "<Event(id={self.id!r})>".format(self=self)

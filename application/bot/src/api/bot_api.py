@@ -5,7 +5,6 @@ import src.api.slack as slack
 import src.database.interface as db
 from datetime import datetime, timedelta
 from src.database.rsvp import RSVP
-from src.broker.AmqpConnection import AmqpConnection
 from injector import inject, noninjectable
 
 from src.broker.ApiClient import ApiClient
@@ -22,11 +21,13 @@ class BotApi:
     HOURS_BETWEEN_REMINDERS = 4
 
     @inject
-    def __init__(self, mq: AmqpConnection, config: BotApiConfiguration):
-        self.mq = mq
+    def __init__(self, config: BotApiConfiguration):
         self.pizza_channel_id = config.pizza_channel_id
         self.timezone = config.timezone
         self.client = ApiClient()
+
+    def __del__(self):
+        self.client.__del__()
 
     def invite_multiple_if_needed(self):
         events = self.client.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
@@ -82,21 +83,26 @@ class BotApi:
                     print("failed to update invitation")
 
     def finalize_event_if_complete(self):
-        event = db.get_event_ready_to_finalize(self.PEOPLE_PER_EVENT)
-        if event is None:
+        '''self.PEOPLE_PER_EVENT'''
+        response = self.client.finalize_event_if_complete(1)
+        print(response)
+        if not response['success']:
             print("No events ready to finalize")
         else:
-            # timestamp (timestamp) is converted to UTC timestamp by psycopg2
-            event_id, timestamp, restaurant_id = event
-            restaurant = db.get_restaurant_name(restaurant_id)
+            timestamp = response['data']['timestamp']
+            restaurant_name = response['data']['restaurant_name']
+            slack_ids = response['data']['slack_ids']
             # Convert timestamp to Norwegian timestamp
             timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
-            slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
-            db.mark_event_as_finalized(event_id)
-            ids_string = ", ".join(slack_ids)
-            booker = slack_ids[0]
-            payer = slack_ids[1] if len(slack_ids) > 1 else slack_ids[0]
-            slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
+            # Create slack @-id-strings
+            users = ['<@%s>' % user for user in slack_ids]
+            ids_string = ", ".join(users)
+            # Get the user to book
+            booker = users[0]
+            # Get the user to pay
+            payer = users[1] if len(users) > 1 else users[0]
+            # Send the Slack message
+            slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
     def auto_reply(self):
         invitations = self.client.get_unanswered_invitations()
@@ -117,17 +123,20 @@ class BotApi:
                 else:
                     print("failed to update invitation to not attending")
 
-    def save_image(self, cloudinary_id, slack_id, title):
-        db.save_image(cloudinary_id, slack_id, title)
-
-    def rsvp(self, slack_id, answer):
-        db.rsvp(slack_id, answer)
+    def update_invitation_answer(self, event_id, slack_id, answer: RSVP):
+        self.client.update_invitation(
+            slack_id,
+            event_id,
+            {
+                "rsvp": answer
+            }
+        )
 
     def accept_invitation(self, event_id, slack_id):
-        db.update_invitation(event_id, slack_id, RSVP.attending)
+        self.update_invitation_answer(event_id, slack_id, RSVP.attending)
 
     def decline_invitation(self, event_id, slack_id):
-        db.update_invitation(event_id, slack_id, RSVP.not_attending)
+        self.update_invitation_answer(event_id, slack_id, RSVP.not_attending)
 
     def withdraw_invitation(self, event_id, slack_id):
         in_past = db.event_in_past(event_id)
@@ -136,6 +145,18 @@ class BotApi:
             if db.event_is_finalized(event_id):
                 db.mark_event_as_unfinalized(event_id)
         return in_past
+
+    def save_image(self, cloudinary_id, slack_id, title):
+        db.save_image(cloudinary_id, slack_id, title)
+
+    def get_invited_users(self):
+        return db.get_invited_users()
+
+    def sync_db_with_slack_and_return_count(self):
+        all_slack_users = slack.get_slack_users()
+        slack_users = slack.get_real_users(all_slack_users)
+        db.update_slack_users(slack_users)
+        return len(slack_users)
 
     def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):
         return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
@@ -259,12 +280,3 @@ class BotApi:
         ]
         blocks = old_blocks + new_blocks
         return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
-
-    def get_invited_users(self):
-        return db.get_invited_users()
-
-    def sync_db_with_slack_and_return_count(self):
-      all_slack_users = slack.get_slack_users()
-      slack_users = slack.get_real_users(all_slack_users)
-      db.update_slack_users(slack_users)
-      return len(slack_users)

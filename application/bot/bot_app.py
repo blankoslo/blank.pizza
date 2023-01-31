@@ -48,7 +48,8 @@ def handle_rsvp(body, ack, attending):
     channel = body["channel"]
     channel_id = channel["id"]
     message = body["message"]
-    if user_id in bot_api.get_invited_users():
+    invited_users = bot_api.get_invited_users()
+    if user_id in invited_users:
         ts = message['ts']
         event_id = body["actions"][0]["value"]
         blocks = message["blocks"][0:3]
@@ -179,9 +180,9 @@ def main():
     # Set up scheduler
     scheduler = BackgroundScheduler()
     scheduler.add_job(auto_reply, trigger=IntervalTrigger(minutes=1))
-    #scheduler.add_job(invite_multiple_if_needed, trigger=IntervalTrigger(minutes=1))
-    #scheduler.add_job(send_reminders, trigger=IntervalTrigger(minutes=1))
-    #scheduler.add_job(sync_db_with_slack_and_return_count, trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(invite_multiple_if_needed, trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(send_reminders, trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(sync_db_with_slack_and_return_count, trigger=IntervalTrigger(minutes=1))
     scheduler.start()
 
     # Set up slack app with socket mode
