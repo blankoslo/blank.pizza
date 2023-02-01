@@ -51,12 +51,6 @@ def connect_to_pizza_db():
 
 pizza_conn = connect_to_pizza_db()
 
-def save_image(cloudinary_id, slack_id, title):
-    sql = "INSERT INTO images (cloudinary_id, uploaded_by_id, title) VALUES (%s, %s, %s);"
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (cloudinary_id, slack_id, title,))
-
 def event_in_past(event_id):
     sql = """
         SELECT CAST(CASE WHEN time < NOW() THEN 'true' ELSE 'false' END AS boolean)

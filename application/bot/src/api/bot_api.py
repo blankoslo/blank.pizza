@@ -146,7 +146,7 @@ class BotApi:
         return in_past
 
     def save_image(self, cloudinary_id, slack_id, title):
-        db.save_image(cloudinary_id, slack_id, title)
+        self.client.create_image(cloudinary_id, slack_id, title)
 
     def get_invited_users(self):
         return self.client.get_invited_unanswered_user_ids()

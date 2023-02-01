@@ -173,7 +173,6 @@ def main():
     consuming_thread.start()
 
     # Set up injector and bind rabbitmq
-    injector.binder.bind(AmqpConnection, to=mq)
     api_config = BotApiConfiguration(pizza_channel_id, pytz.timezone('Europe/Oslo'))
     injector.binder.bind(BotApiConfiguration, to=api_config)
 

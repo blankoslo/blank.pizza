@@ -14,6 +14,7 @@ from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, U
 from src.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
 from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
 from src.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
+from src.broker.schemas.CreateImage import CreateImageRequestSchema, CreateImageResponseSchema
 
 class ApiClient:
     messages = {}
@@ -167,5 +168,19 @@ class ApiClient:
         if response_payload is None:
             return False
         response_schema = UpdateSlackUserResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['success']
+
+    def create_image(self, cloudinary_id, slack_id, title):
+        request_payload = {
+            "cloudinary_id": cloudinary_id,
+            "slack_id": slack_id,
+            'title': title
+        }
+        request_payload_schema = CreateImageRequestSchema()
+        response_payload = self._call(self._create_request("create_image", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = CreateImageResponseSchema()
         response = response_schema.load(response_payload)
         return response['success']
