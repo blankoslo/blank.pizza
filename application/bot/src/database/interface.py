@@ -67,14 +67,6 @@ def save_image(cloudinary_id, slack_id, title):
         with pizza_conn.cursor() as curs:
             curs.execute(sql, (cloudinary_id, slack_id, title,))
 
-def get_invited_users():
-    sql = "SELECT DISTINCT slack_id FROM invitations WHERE rsvp = %s;"
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.execute(sql, (RSVP.unanswered,))
-            return [t[0] for t in curs.fetchall()]
-
 def event_in_past(event_id):
     sql = """
         SELECT CAST(CASE WHEN time < NOW() THEN 'true' ELSE 'false' END AS boolean)

@@ -69,5 +69,16 @@ class SlackUser(CrudMixin, db.Model):
             .limit(number_of_users_to_invite)
         return query.all()
 
+    @classmethod
+    def get_invited_unanswered_user_ids(cls, session=db.session):
+        query = session.query(cls.slack_id) \
+            .join(
+                Invitation,
+                cls.slack_id == Invitation.slack_id
+            )\
+            .filter(Invitation.rsvp == RSVP.unanswered)\
+            .distinct()
+        return query.all()
+
     def __repr__(self):
       return "<SlackUsers(id={self.id!r})".format(self=self)

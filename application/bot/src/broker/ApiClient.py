@@ -12,6 +12,7 @@ from src.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema,
 from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema
 from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from src.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
+from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
 
 class ApiClient:
     messages = {}
@@ -139,3 +140,11 @@ class ApiClient:
         response_schema = FinalizeEventIfPossibleResponseSchema()
         response = response_schema.load(response_payload)
         return response
+
+    def get_invited_unanswered_user_ids(self):
+        response_payload = self._call(self._create_request("get_invited_unanswered_user_ids"))
+        if response_payload is None:
+            return []
+        response_schema = GetInvitedUnansweredUserIdsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['user_ids']

@@ -149,7 +149,7 @@ class BotApi:
         db.save_image(cloudinary_id, slack_id, title)
 
     def get_invited_users(self):
-        return db.get_invited_users()
+        return self.client.get_invited_unanswered_user_ids()
 
     def sync_db_with_slack_and_return_count(self):
         all_slack_users = slack.get_slack_users()
