@@ -1,11 +1,14 @@
 from app.services.broker.handlers import MessageHandler
 from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
+from app.services.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 
 from app.models.invitation import Invitation
+from app.models.slack_user import SlackUser
+from app.models.slack_user_schema import SlackUserSchema
 from app.models.invitation_schema import InvitationSchema
 
 @MessageHandler.handle('update_invitation')
-def get_unanswered_invitations(payload: dict, correlation_id: str, reply_to: str):
+def update_invitation(payload: dict, correlation_id: str, reply_to: str):
     schema = UpdateInvitationRequestSchema()
     request = schema.load(payload)
     slack_id = request.get('slack_id')
@@ -25,5 +28,32 @@ def get_unanswered_invitations(payload: dict, correlation_id: str, reply_to: str
 
     response_schema = UpdateInvitationResponseSchema()
     response = response_schema.load({'success': result})
+
+    MessageHandler.respond(response, reply_to, correlation_id)
+
+@MessageHandler.handle('update_slack_user')
+def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
+    schema = UpdateSlackUserRequestSchema()
+    request = schema.load(payload)
+    slack_id = request['slack_id']
+    update_data = request['update_data']
+
+    response = False
+    try:
+        updated_slack_user_id = SlackUserSchema().load(
+            data = {
+                'slack_id': slack_id,
+                'current_username': update_data['current_username'],
+                'email': update_data['email']
+            },
+            partial=True
+        )
+        SlackUser.upsert(updated_slack_user_id)
+    except Exception as e:
+        print(e)
+        response = True
+
+    response_schema = UpdateSlackUserResponseSchema()
+    response = response_schema.load({'success': response})
 
     MessageHandler.respond(response, reply_to, correlation_id)

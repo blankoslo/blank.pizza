@@ -13,6 +13,7 @@ from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitations
 from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from src.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
 from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
+from src.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 
 class ApiClient:
     messages = {}
@@ -148,3 +149,23 @@ class ApiClient:
         response_schema = GetInvitedUnansweredUserIdsResponseSchema()
         response = response_schema.load(response_payload)
         return response['user_ids']
+
+    def update_slack_user(self, slack_user):
+        slack_id = slack_user['id']
+        current_username = slack_user['name']
+        email = slack_user['profile']['email']
+
+        request_payload = {
+            "slack_id": slack_id,
+            "update_data": {
+                'current_username': current_username,
+                'email': email,
+            }
+        }
+        request_payload_schema = UpdateSlackUserRequestSchema()
+        response_payload = self._call(self._create_request("update_slack_user", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = UpdateSlackUserResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['success']

@@ -51,16 +51,6 @@ def connect_to_pizza_db():
 
 pizza_conn = connect_to_pizza_db()
 
-
-def update_slack_users(slack_users):
-    usernames = [(u['id'], u['name'], u['profile']['email'])
-                 for u in slack_users]
-
-    with pizza_conn:
-        with pizza_conn.cursor() as curs:
-            curs.executemany(
-                "INSERT INTO slack_users (slack_id, current_username, email) VALUES (%s,%s,%s) ON CONFLICT (slack_id) DO UPDATE SET current_username = EXCLUDED.current_username, email = EXCLUDED.email;", usernames)
-
 def save_image(cloudinary_id, slack_id, title):
     sql = "INSERT INTO images (cloudinary_id, uploaded_by_id, title) VALUES (%s, %s, %s);"
     with pizza_conn:

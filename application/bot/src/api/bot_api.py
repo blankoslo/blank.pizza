@@ -154,7 +154,12 @@ class BotApi:
     def sync_db_with_slack_and_return_count(self):
         all_slack_users = slack.get_slack_users()
         slack_users = slack.get_real_users(all_slack_users)
-        db.update_slack_users(slack_users)
+        for slack_user in slack_users:
+            success = self.client.update_slack_user(slack_user)
+            if not success:
+                print("Updated user %s" % slack_user['id'])
+            else:
+                print("Was unable to update %s" % slack_user['id'])
         return len(slack_users)
 
     def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):
