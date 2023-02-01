@@ -15,6 +15,7 @@ from src.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRe
 from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
 from src.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 from src.broker.schemas.CreateImage import CreateImageRequestSchema, CreateImageResponseSchema
+from src.broker.schemas.WithdrawInvitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
 
 class ApiClient:
     messages = {}
@@ -117,10 +118,11 @@ class ApiClient:
         response = response_schema.load(response_payload)
         return response['invitations']
 
-    def update_invitation(self, slack_id: str, event_id: str, update_values: dict):
+    def update_invitation(self, slack_id: str, event_id: str, people_per_event: int, update_values: dict):
         request_payload = {
             "slack_id": slack_id,
             "event_id": event_id,
+            "people_per_event": people_per_event,
             "update_data": update_values
         }
         request_payload_schema = UpdateInvitationRequestSchema()
@@ -130,18 +132,6 @@ class ApiClient:
         response_schema = UpdateInvitationResponseSchema()
         response = response_schema.load(response_payload)
         return response['success']
-
-    def finalize_event_if_complete(self, people_per_event):
-        request_payload = {
-            "people_per_event": people_per_event,
-        }
-        request_payload_schema = FinalizeEventIfPossibleRequestSchema()
-        response_payload = self._call(self._create_request("finalize_event_if_complete", request_payload_schema.load(request_payload)))
-        if response_payload is None:
-            return None
-        response_schema = FinalizeEventIfPossibleResponseSchema()
-        response = response_schema.load(response_payload)
-        return response
 
     def get_invited_unanswered_user_ids(self):
         response_payload = self._call(self._create_request("get_invited_unanswered_user_ids"))
@@ -182,5 +172,18 @@ class ApiClient:
         if response_payload is None:
             return False
         response_schema = CreateImageResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['success']
+
+    def withdraw_invitation(self, event_id, slack_id):
+        request_payload = {
+            "slack_id": slack_id,
+            'event_id': event_id
+        }
+        request_payload_schema = WithdrawInvitationRequestSchema()
+        response_payload = self._call(self._create_request("withdraw_invitation", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = WithdrawInvitationResponseSchema()
         response = response_schema.load(response_payload)
         return response['success']

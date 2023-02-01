@@ -22,6 +22,11 @@ class MessageHandler:
     def respond(cls, response, reply_to, correlation_id):
         broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
 
+    @classmethod
+    def publish(cls, response):
+        # TODO get queue/routin_key from env variable or something
+        broker.sync_send(response, "Pizza_Queue", ExchangeType.DIRECT, 5, "v1.0.0")
+
 # DO NOT REMOVE: Import handlers to initialize them
 # ALSO DO NOT MOVE: having it at the bottom stops circular imports
 import app.services.broker.handlers.get

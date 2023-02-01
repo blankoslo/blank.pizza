@@ -55,7 +55,6 @@ def handle_rsvp(body, ack, attending):
         blocks = message["blocks"][0:3]
         if attending:
             bot_api.accept_invitation(event_id, user_id)
-            bot_api.finalize_event_if_complete()
         else:
             bot_api.decline_invitation(event_id, user_id)
             bot_api.invite_multiple_if_needed()
@@ -82,10 +81,9 @@ def handle_rsvp_withdraw(ack, body):
     event_id = body["actions"][0]["value"]
     ts = message['ts']
     blocks = message["blocks"][0:3]
-    failed_in_past = bot_api.withdraw_invitation(event_id, user_id)
-    if not failed_in_past:
+    success = bot_api.withdraw_invitation(event_id, user_id)
+    if success:
         bot_api.send_pizza_invite_withdraw(channel_id, ts, blocks)
-        bot_api.invite_multiple_if_needed()
     else:
         bot_api.send_pizza_invite_withdraw_failure(channel_id, ts, blocks)
     ack()
@@ -130,10 +128,6 @@ def handle_file_share(event, say):
 def handle_file_shared_events(body, logger):
     logger.info(body)
 
-def on_message(channel, method, properties, body):
-    msg = body.decode('utf8')
-    print(f'Time: {int(time.time()) % 1000} --- Message: {msg}')
-
 def auto_reply():
     print("Auto replying on scheduled task")
     bot_api: BotApi = injector.get(BotApi)
@@ -153,6 +147,10 @@ def sync_db_with_slack_and_return_count():
     print("Syncing db with slack on scheduled task")
     bot_api: BotApi = injector.get(BotApi)
     bot_api.sync_db_with_slack_and_return_count()
+
+def on_message(channel, method, properties, body):
+    msg = body.decode('utf8')
+    print(f'Time: {int(time.time()) % 1000} --- Message: {msg}')
 
 def main():
     # Try setting locale

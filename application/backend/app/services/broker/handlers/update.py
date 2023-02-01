@@ -1,11 +1,31 @@
 from app.services.broker.handlers import MessageHandler
 from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from app.services.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
+from app.services.broker.schemas.FinalizationEventEventSchema import FinalizationEventEventSchema
 
 from app.models.invitation import Invitation
 from app.models.slack_user import SlackUser
 from app.models.slack_user_schema import SlackUserSchema
 from app.models.invitation_schema import InvitationSchema
+from app.models.enums import RSVP
+from app.models.event import Event
+from app.models.event_schema import EventSchema
+from app.models.restaurant import Restaurant
+
+def finalize_event_if_complete(event_id, people_per_event):
+    # TODO finalize event by id
+    event_ready_to_finalize = Event.get_event_ready_to_finalize(people_per_event)
+
+    if event_ready_to_finalize is not None:
+        # Update event to be finalized
+        update_data = {
+            'finalized': True
+        }
+        updated_invitation = EventSchema().load(data=update_data, instance=event_ready_to_finalize, partial=True)
+        Event.upsert(updated_invitation)
+        return True
+    return False
+
 
 @MessageHandler.handle('update_invitation')
 def update_invitation(payload: dict, correlation_id: str, reply_to: str):
@@ -13,15 +33,33 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
     request = schema.load(payload)
     slack_id = request.get('slack_id')
     event_id = request.get('event_id')
+    people_per_event = request.get('people_per_event')
     update_data = request.get('update_data')
 
     result = True
     try:
+        # Update invitation to either accepted or declined
         invitation = Invitation.get_by_id(event_id, slack_id)
         if "reminded_at" in update_data:
             update_data["reminded_at"] = update_data["reminded_at"].isoformat()
         updated_invitation = InvitationSchema().load(data=update_data, instance=invitation, partial=True)
         Invitation.upsert(updated_invitation)
+        if 'rsvp' in update_data and people_per_event is not None and update_data['rsvp'] == RSVP.attending:
+            # Check if event is ready to be finalized and finalize if it is
+            was_finalized = finalize_event_if_complete(event_id, people_per_event)
+            # Publish event that event is finalized
+            if was_finalized:
+                event = Event.get_by_id(event_id)
+                restaurant = Restaurant.get_by_id(event.restaurant_id)
+                queue_event_schema = FinalizationEventEventSchema()
+                queue_event = queue_event_schema.load({
+                    'is_finalized': True,
+                    'event_id': event.id,
+                    'timestamp': event.time,
+                    'restaurant_name': restaurant.name,
+                    'slack_ids': [user[0] for user in Invitation.get_attending_users(event.id)]
+                })
+                MessageHandler.publish(queue_event)
     except Exception as e:
         print(e)
         result = False
