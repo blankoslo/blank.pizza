@@ -27,8 +27,8 @@ class ApiClient:
         self.callback_queue = result.method.queue
         self.mq.channel.queue_bind(self.callback_queue, exchange=self.mq.exchange)
 
-    def __del__(self):
-        self.mq.__del__()
+    def disconnect(self):
+        self.mq.disconnect()
 
     def on_response(self, ch, method, props, body):
         self.messages[props.correlation_id] = body

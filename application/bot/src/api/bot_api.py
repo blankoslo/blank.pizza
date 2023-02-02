@@ -21,10 +21,13 @@ class BotApi:
         self.HOURS_BETWEEN_REMINDERS = os.environ["HOURS_BETWEEN_REMINDERS"]
         self.pizza_channel_id = config.pizza_channel_id
         self.timezone = config.timezone
-        self.client = ApiClient()
 
-    def __del__(self):
-        self.client.__del__()
+    def __enter__(self):
+        self.client = ApiClient()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.client.disconnect()
 
     def invite_multiple_if_needed(self):
         events = self.client.invite_multiple_if_needed()

@@ -12,18 +12,16 @@ class AmqpConnection:
         self.queue = os.environ.get('MQ_EVENT_QUEUE')
         self.routing_key = os.environ.get('MQ_EVENT_KEY')
 
-    def __del__(self):
-        if self.connect() is not None and not self.connection.is_closed:
+    def disconnect(self):
+        if self.channel is not None and not self.channel.is_closed:
             self.channel.stop_consuming()
-        if self.connect() is not None and not self.channel.is_closed:
+        if self.connection is not None and not self.connection.is_closed:
             self.connection.close()
 
     def connect(self):
-        print('Attempting to connect')
         parameters = pika.URLParameters(self.host)
         self.connection = pika.BlockingConnection(parameters=parameters)
         self.channel = self.connection.channel()
-        print('Connected Successfully')
 
     def setup_exchange(self):
         self.channel.exchange_declare(self.exchange, exchange_type='direct')
