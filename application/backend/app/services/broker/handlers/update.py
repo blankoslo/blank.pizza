@@ -1,7 +1,7 @@
 from app.services.broker.handlers import MessageHandler
 from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from app.services.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
-from app.services.broker.schemas.FinalizationEventEventSchema import FinalizationEventEventSchema
+from app.services.broker.schemas.FinalizationEventEvent import FinalizationEventEventSchema
 
 from app.models.invitation import Invitation
 from app.models.slack_user import SlackUser
@@ -55,11 +55,11 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
                 queue_event = queue_event_schema.load({
                     'is_finalized': True,
                     'event_id': event.id,
-                    'timestamp': event.time,
+                    'timestamp': event.time.isoformat(),
                     'restaurant_name': restaurant.name,
                     'slack_ids': [user[0] for user in Invitation.get_attending_users(event.id)]
                 })
-                MessageHandler.publish(queue_event)
+                MessageHandler.publish("finalization", queue_event)
     except Exception as e:
         print(e)
         result = False

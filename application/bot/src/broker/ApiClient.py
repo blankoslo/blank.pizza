@@ -5,13 +5,12 @@ from marshmallow import Schema
 
 from src.broker.AmqpConnection import AmqpConnection
 from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsSchema, GetEventsInNeedOfInvitationsResponseSchema
-from src.broker.schemas.MessageRequest import MessageRequestSchema
+from src.broker.schemas.Message import MessageSchema
 from src.broker.schemas.GetUsers import GetUsersResponseSchema
 from src.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, GetUsersToInviteResponseSchema
 from src.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
 from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema
 from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
-from src.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
 from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
 from src.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 from src.broker.schemas.CreateImage import CreateImageRequestSchema, CreateImageResponseSchema
@@ -57,7 +56,7 @@ class ApiClient:
         }
         if payload is not None:
             request_data['payload'] = payload
-        request_schema = MessageRequestSchema()
+        request_schema = MessageSchema()
         request = request_schema.load(request_data)
         return request
 

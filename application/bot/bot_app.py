@@ -3,7 +3,6 @@
 import requests
 import base64
 import os
-import time
 import locale
 import threading
 import pytz
@@ -12,18 +11,18 @@ from src.api.bot_api import BotApi, BotApiConfiguration
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-from injector import Injector, inject
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
+from src.injector import injector
 from src.broker.AmqpConnection import AmqpConnection
+from src.broker.handlers import on_message
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
 slack_bot_token = os.environ["SLACK_BOT_TOKEN"]
 slack_app_token = os.environ["SLACK_APP_TOKEN"]
 
 app = App(token=slack_bot_token)
-injector = Injector()
 
 @app.event("message")
 def handle_event(body, say, logger):
@@ -147,10 +146,6 @@ def sync_db_with_slack_and_return_count():
     print("Syncing db with slack on scheduled task")
     bot_api: BotApi = injector.get(BotApi)
     bot_api.sync_db_with_slack_and_return_count()
-
-def on_message(channel, method, properties, body):
-    msg = body.decode('utf8')
-    print(f'Time: {int(time.time()) % 1000} --- Message: {msg}')
 
 def main():
     # Try setting locale

@@ -14,7 +14,7 @@ class BotApiConfiguration:
         self.timezone = timezone
 
 class BotApi:
-    PEOPLE_PER_EVENT = 5
+    PEOPLE_PER_EVENT = 1
     REPLY_DEADLINE_IN_HOURS = 24
     DAYS_IN_ADVANCE_TO_INVITE = 10
     HOURS_BETWEEN_REMINDERS = 4
@@ -72,6 +72,7 @@ class BotApi:
                 was_updated = self.client.update_invitation(
                     invitation['slack_id'],
                     invitation['event_id'],
+                    self.PEOPLE_PER_EVENT,
                     {
                         "reminded_at": datetime.now().isoformat()
                     }
@@ -96,15 +97,28 @@ class BotApi:
 
     def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
         # TODO send message about unfinalization
+        # Convert timestamp to Norwegian timestamp
+        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
+        # Create slack @-id-strings
+        users = ['<@%s>' % user for user in slack_ids]
+        ids_string = ", ".join(users)
         print("unfinalized")
+        print(timestamp)
+        print(restaurant_name)
+        print(slack_ids)
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
-        self.invite_if_needed()
+        self.invite_multiple_if_needed()
         pass
-    def send_user_withdrew_after_finalization(self, user_id):
+    def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name):
         # TODO send message that user withdrew
         print("user withdrew")
+        print(user_id)
+        print(timestamp)
+        print(restaurant_name)
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
-        self.invite_if_needed()
+        self.invite_multiple_if_needed()
         pass
 
     def auto_reply(self):

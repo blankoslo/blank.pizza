@@ -1,6 +1,7 @@
 from rabbitmq_pika_flask.ExchangeType import ExchangeType
 
 from app.services.broker import broker
+from app.services.broker.schemas.Message import MessageSchema
 
 class MessageHandler:
     handlers = {}
@@ -23,9 +24,14 @@ class MessageHandler:
         broker.sync_send(response, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
 
     @classmethod
-    def publish(cls, response):
+    def publish(cls, type, response):
+        message_schema = MessageSchema()
+        message = message_schema.load({
+            'type': type,
+            'payload': response
+        })
         # TODO get queue/routin_key from env variable or something
-        broker.sync_send(response, "Pizza_Queue", ExchangeType.DIRECT, 5, "v1.0.0")
+        broker.sync_send(message, "pizza", ExchangeType.DIRECT, 5, "v1.0.0")
 
 # DO NOT REMOVE: Import handlers to initialize them
 # ALSO DO NOT MOVE: having it at the bottom stops circular imports

@@ -1,10 +1,11 @@
 from datetime import datetime
+import pytz
 
 from app.services.broker.handlers import MessageHandler
 
-from app.services.broker.schemas.FinalizationEventEventSchema import FinalizationEventEventSchema
+from app.services.broker.schemas.FinalizationEventEvent import FinalizationEventEventSchema
 from app.services.broker.schemas.WithdrawInvitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
-from app.services.broker.schemas.UserWithdrewAfterFinalizationEventSchema import UserWithdrewAfterFinalizationEventSchema
+from app.services.broker.schemas.UserWithdrewAfterFinalizationEvent import UserWithdrewAfterFinalizationEventSchema
 
 from app.models.event import Event
 from app.models.event_schema import EventSchema
@@ -24,7 +25,7 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
     result = True
     try:
         event = Event.get_by_id(event_id)
-        if event.time < datetime.now():
+        if event.time < datetime.now(pytz.utc):
             result = False
         else:
             # Update invitation to not attending
@@ -41,11 +42,11 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
                 queue_event_schema = UserWithdrewAfterFinalizationEventSchema()
                 queue_event = queue_event_schema.load({
                     'event_id': event.id,
-                    'timestamp': event.time,
-                    'restaurant_name': restaurant.name,
-                    'slack_ids': attending_users
+                    'slack_id': slack_id,
+                    'timestamp': event.time.isoformat(),
+                    'restaurant_name': restaurant.name
                 })
-                MessageHandler.publish(queue_event)
+                MessageHandler.publish("user_withdrew_after_finalization", queue_event)
                 # Mark event as unfinalized
                 update_data = {
                     'finalized': False
@@ -57,11 +58,11 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
                 queue_event = queue_event_schema.load({
                     'is_finalized': False,
                     'event_id': event.id,
-                    'timestamp': event.time,
+                    'timestamp': event.time.isoformat(),
                     'restaurant_name': restaurant.name,
                     'slack_ids': attending_users
                 })
-                MessageHandler.publish(queue_event)
+                MessageHandler.publish("finalization", queue_event)
     except Exception as e:
         print(e)
         result = False
