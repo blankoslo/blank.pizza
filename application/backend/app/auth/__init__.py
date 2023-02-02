@@ -19,7 +19,6 @@ jwt = JWTManager()
 # identity when creating JWTs and converts it to a JSON serializable format.
 @jwt.user_identity_loader
 def user_identity_lookup(user):
-    print(user)
     return user.id
 
 # Register a callback function that loads a user from your database whenever

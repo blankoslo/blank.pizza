@@ -1,3 +1,5 @@
+import os
+
 from app.services.broker.handlers import MessageHandler
 from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from app.services.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
@@ -32,8 +34,8 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
     request = schema.load(payload)
     slack_id = request.get('slack_id')
     event_id = request.get('event_id')
-    people_per_event = request.get('people_per_event')
     update_data = request.get('update_data')
+    people_per_event = os.environ["PEOPLE_PER_EVENT"]
 
     result = True
     try:

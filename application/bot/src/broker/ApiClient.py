@@ -5,11 +5,8 @@ import os
 from marshmallow import Schema
 
 from src.broker.AmqpConnection import AmqpConnection
-from src.broker.schemas.GetEventsInNeedOfInvitations import GetEventsInNeedOfInvitationsSchema, GetEventsInNeedOfInvitationsResponseSchema
 from src.broker.schemas.Message import MessageSchema
-from src.broker.schemas.GetUsers import GetUsersResponseSchema
-from src.broker.schemas.GetUsersToInvite import GetUsersToInviteRequestSchema, GetUsersToInviteResponseSchema
-from src.broker.schemas.CreateInvitations import CreateInvitationsRequestSchema, CreateInvitationsResponseSchema
+from src.broker.schemas.InviteMultipleIfNeeded import InviteMultipleIfNeededResponseSchema
 from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema
 from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
@@ -62,54 +59,13 @@ class ApiClient:
         request = request_schema.load(request_data)
         return request
 
-    def get_events_in_need_of_invitations(self, days_in_advance_to_invite: int, people_per_event: int):
-        request_payload = {
-            "days_in_advance_to_invite": days_in_advance_to_invite,
-            "people_per_event": people_per_event
-        }
-        request_payload_schema = GetEventsInNeedOfInvitationsSchema()
-        response_payload = self._call(self._create_request("get_events_in_need_of_invitations", request_payload_schema.load(request_payload)))
+    def invite_multiple_if_needed(self):
+        response_payload = self._call(self._create_request("invite_multiple_if_needed"))
         if response_payload is None:
             return []
-        response_schema = GetEventsInNeedOfInvitationsResponseSchema()
+        response_schema = InviteMultipleIfNeededResponseSchema()
         response = response_schema.load(response_payload)
         return response['events']
-
-    def get_users(self):
-        response_payload = self._call(self._create_request("get_users"))
-        if response_payload is None:
-            return []
-        response_schema = GetUsersResponseSchema()
-        response = response_schema.load(response_payload)
-        return response['users']
-
-    def get_users_to_invite(self, number_of_users_to_invite: int, event_id: uuid.UUID, total_number_of_employees: int, employees_per_event: int):
-        request_payload = {
-            "number_of_users_to_invite": number_of_users_to_invite,
-            "event_id": event_id,
-            "total_number_of_employees": total_number_of_employees,
-            "employees_per_event": employees_per_event
-        }
-        request_payload_schema = GetUsersToInviteRequestSchema()
-        response_payload = self._call(self._create_request("get_users_to_invite", request_payload_schema.load(request_payload)))
-        if response_payload is None:
-            return []
-        response_schema = GetUsersToInviteResponseSchema()
-        response = response_schema.load(response_payload)
-        return response['users']
-
-    def create_invitations(self, user_ids: [str], event_id: str):
-        request_payload = {
-            "user_ids": user_ids,
-            "event_id": event_id,
-        }
-        request_payload_schema = CreateInvitationsRequestSchema()
-        response_payload = self._call(self._create_request("create_invitations", request_payload_schema.load(request_payload)))
-        if response_payload is None:
-            return False
-        response_schema = CreateInvitationsResponseSchema()
-        response = response_schema.load(response_payload)
-        return response['success']
 
     def get_unanswered_invitations(self):
         response_payload = self._call(self._create_request("get_unanswered_invitations"))
@@ -119,11 +75,10 @@ class ApiClient:
         response = response_schema.load(response_payload)
         return response['invitations']
 
-    def update_invitation(self, slack_id: str, event_id: str, people_per_event: int, update_values: dict):
+    def update_invitation(self, slack_id: str, event_id: str, update_values: dict):
         request_payload = {
             "slack_id": slack_id,
             "event_id": event_id,
-            "people_per_event": people_per_event,
             "update_data": update_values
         }
         request_payload_schema = UpdateInvitationRequestSchema()

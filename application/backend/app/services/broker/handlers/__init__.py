@@ -32,7 +32,6 @@ class MessageHandler:
             'type': type,
             'payload': response
         })
-        # TODO get queue/routin_key from env variable or something
         broker.sync_send(message, os.environ["MQ_EVENT_KEY"], ExchangeType.DIRECT, 5, "v1.0.0")
 
 # DO NOT REMOVE: Import handlers to initialize them

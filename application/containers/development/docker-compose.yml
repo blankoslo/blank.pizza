@@ -4,13 +4,6 @@ x-common-variables: &common-variables
   PYTHONUNBUFFERED: 1
   PYTHONPATH: /srv/bot
 
-x-common-database-variables: &common-database-variables
-  DB_HOST: database
-  DB_NAME: pizza
-  DB_USER: postgres
-  DB_PASSWD: postgres
-  DB_PORT: 5432
-
 x-common-slack-variables: &common-slack-variables
   SLACK_BOT_TOKEN: xoxb-
   SLACK_APP_TOKEN: xapp-
@@ -54,7 +47,13 @@ services:
     volumes:
       - ../../backend:/srv/backend
     environment:
-      <<: *common-database-variables
+      DB_HOST: "database"
+      DB_NAME: "pizza"
+      DB_USER: "postgres"
+      DB_PASSWD: "postgres"
+      DB_PORT: "5432"
+      PEOPLE_PER_EVENT: "5"
+      DAYS_IN_ADVANCE_TO_INVITE: "10"
       <<: *common-variables
       <<: *common-rabbitmq-variables
       SECRET_KEY: "V3ryS3cr3tK3y"
@@ -76,10 +75,11 @@ services:
     volumes:
       - ../../bot:/srv/bot
     environment:
-      <<: *common-database-variables
       <<: *common-slack-variables
       <<: *common-variables
       <<: *common-rabbitmq-variables
+      REPLY_DEADLINE_IN_HOURS: "24"
+      HOURS_BETWEEN_REMINDERS: "4"
     restart: always
     depends_on:
       database:

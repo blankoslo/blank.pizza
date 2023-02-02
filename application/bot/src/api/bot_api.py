@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pytz
+import os
 from injector import inject
 
 import src.api.slack_api as slack
@@ -14,13 +15,10 @@ class BotApiConfiguration:
         self.timezone = timezone
 
 class BotApi:
-    PEOPLE_PER_EVENT = 1
-    REPLY_DEADLINE_IN_HOURS = 24
-    DAYS_IN_ADVANCE_TO_INVITE = 10
-    HOURS_BETWEEN_REMINDERS = 4
-
     @inject
     def __init__(self, config: BotApiConfiguration):
+        self.REPLY_DEADLINE_IN_HOURS = os.environ["REPLY_DEADLINE_IN_HOURS"]
+        self.HOURS_BETWEEN_REMINDERS = os.environ["HOURS_BETWEEN_REMINDERS"]
         self.pizza_channel_id = config.pizza_channel_id
         self.timezone = config.timezone
         self.client = ApiClient()
@@ -29,35 +27,22 @@ class BotApi:
         self.client.__del__()
 
     def invite_multiple_if_needed(self):
-        events = self.client.get_events_in_need_of_invitations(self.DAYS_IN_ADVANCE_TO_INVITE, self.PEOPLE_PER_EVENT)
+        events = self.client.invite_multiple_if_needed()
         for event in events:
             self.invite_if_needed(event)
 
     def invite_if_needed(self, event):
-        if event is None:
-            print("No users were invited")
-            return
+        invited_users = event['invited_users']
+        event_time = event['event_time']
+        event_id = event['event_id']
+        restaurant_name = event['restaurant_name']
 
         # timestamp (timestamp) is converted to UTC timestamp by psycopg2
         # Convert timestamp to Norwegian timestamp
-        timestamp = pytz.utc.localize(event['event_time'].replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
-        users = self.client.get_users()
-        number_of_employees = len(users)
-        number_to_invite = self.PEOPLE_PER_EVENT - event['number_of_already_invited']
-        users_to_invite = self.client.get_users_to_invite(number_to_invite, event['event_id'], number_of_employees, self.PEOPLE_PER_EVENT)
-        users_to_invite = [user['id'] for user in users_to_invite]
+        timestamp = pytz.utc.localize(event_time.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
 
-        if len(users_to_invite) == 0:
-            print("Event in need of users, but noone to invite") # TODO: needs to be handled
-            return
-
-        was_created = self.client.create_invitations(users_to_invite, event['event_id'])
-        if not was_created:
-            print("Was unable to create invitations")
-            return
-
-        for user_id in users_to_invite:
-            self.send_pizza_invite(user_id, str(event['event_id']), event['restaurant_name'], timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+        for user_id in invited_users:
+            self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
             print("%s was invited to event on %s" % (user_id, timestamp))
 
     def send_reminders(self):
@@ -72,7 +57,6 @@ class BotApi:
                 was_updated = self.client.update_invitation(
                     invitation['slack_id'],
                     invitation['event_id'],
-                    self.PEOPLE_PER_EVENT,
                     {
                         "reminded_at": datetime.now().isoformat()
                     }
@@ -135,7 +119,6 @@ class BotApi:
         return self.client.update_invitation(
             slack_id,
             event_id,
-            self.PEOPLE_PER_EVENT,
             {
                 "rsvp": answer
             }
