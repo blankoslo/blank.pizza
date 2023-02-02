@@ -1,3 +1,5 @@
+import os
+
 from rabbitmq_pika_flask.ExchangeType import ExchangeType
 
 from app.services.broker import broker
@@ -31,7 +33,7 @@ class MessageHandler:
             'payload': response
         })
         # TODO get queue/routin_key from env variable or something
-        broker.sync_send(message, "pizza", ExchangeType.DIRECT, 5, "v1.0.0")
+        broker.sync_send(message, os.environ["MQ_EVENT_KEY"], ExchangeType.DIRECT, 5, "v1.0.0")
 
 # DO NOT REMOVE: Import handlers to initialize them
 # ALSO DO NOT MOVE: having it at the bottom stops circular imports

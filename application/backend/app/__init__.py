@@ -48,10 +48,9 @@ def create_app(environment):
 
   broker.init_app(
       app,
-      'Pizza_Queue',
+      os.environ.get('MQ_EVENT_QUEUE'),
       json.loads,
-      dumps_parser,
-      #development=True
+      dumps_parser
   )
 
   csp = {

@@ -1,5 +1,6 @@
 import uuid
 import json
+import os
 
 from marshmallow import Schema
 
@@ -20,6 +21,7 @@ class ApiClient:
     messages = {}
 
     def __init__(self):
+        self.rpc_key = os.environ["MQ_RPC_KEY"]
         self.mq = AmqpConnection()
         self.mq.connect()
         self.mq.setup_exchange()
@@ -43,7 +45,7 @@ class ApiClient:
             on_message_callback=self.on_response,
             auto_ack=True)
 
-        self.mq.publish_rpc("rpc", self.callback_queue, corr_id, json.dumps(payload, default=str))
+        self.mq.publish_rpc(self.rpc_key, self.callback_queue, corr_id, json.dumps(payload, default=str))
         self.mq.connection.process_data_events(time_limit=30)
 
         if corr_id in self.messages:

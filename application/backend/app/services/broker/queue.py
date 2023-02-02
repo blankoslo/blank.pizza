@@ -1,4 +1,5 @@
 import json
+import os
 from marshmallow import ValidationError
 
 from app.services.broker import broker
@@ -7,7 +8,7 @@ from app.services.broker.schemas.Message import MessageSchema
 
 from app.services.broker.handlers import MessageHandler
 
-@broker.queue(routing_key='rpc', exchange_type = ExchangeType.DIRECT, props_needed = ["correlation_id", "reply_to"])
+@broker.queue(routing_key = os.environ["MQ_RPC_KEY"], exchange_type = ExchangeType.DIRECT, props_needed = ["correlation_id", "reply_to"])
 def rpc(routing_key, body, correlation_id, reply_to):
     try:
         schema = MessageSchema()

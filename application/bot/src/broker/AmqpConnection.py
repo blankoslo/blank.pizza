@@ -9,8 +9,8 @@ class AmqpConnection:
         self.exchange = exchange if exchange is not None else os.environ.get('MQ_EXCHANGE')
         self.connection = None
         self.channel = None
-        self.queue = 'Pizza_Queue'
-        self.routing_key = 'pizza'
+        self.queue = os.environ.get('MQ_EVENT_QUEUE')
+        self.routing_key = os.environ.get('MQ_EVENT_KEY')
 
     def __del__(self):
         if self.connect() is not None and not self.connection.is_closed:

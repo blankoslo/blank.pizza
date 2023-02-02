@@ -19,6 +19,9 @@ x-common-slack-variables: &common-slack-variables
 x-common-rabbitmq-variables: &common-rabbitmq-variables
   MQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
   MQ_EXCHANGE: Pizza_Exchange
+  MQ_EVENT_QUEUE: Pizza_Queue
+  MQ_RPC_KEY: rpc
+  MQ_EVENT_KEY: pizza
 
 services:
   frontend:
