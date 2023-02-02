@@ -9,6 +9,7 @@ class InvitationUpdate(Schema):
 class UpdateInvitationRequestSchema(Schema):
     slack_id = fields.Str(required=True)
     event_id = fields.UUID(required=True)
+    people_per_event = fields.Int()
     update_data = fields.Nested(InvitationUpdate, required=True)
 
 class UpdateInvitationResponseSchema(Schema):

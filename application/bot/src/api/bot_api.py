@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pytz
-import src.api.slack as slack
-import src.database.interface as db
-from datetime import datetime, timedelta
-from src.database.rsvp import RSVP
-from injector import inject, noninjectable
+from injector import inject
 
+import src.api.slack_api as slack
+from datetime import datetime, timedelta
+from src.rsvp import RSVP
 from src.broker.ApiClient import ApiClient
 
 class BotApiConfiguration:
@@ -15,7 +14,7 @@ class BotApiConfiguration:
         self.timezone = timezone
 
 class BotApi:
-    PEOPLE_PER_EVENT = 5
+    PEOPLE_PER_EVENT = 1
     REPLY_DEADLINE_IN_HOURS = 24
     DAYS_IN_ADVANCE_TO_INVITE = 10
     HOURS_BETWEEN_REMINDERS = 4
@@ -73,6 +72,7 @@ class BotApi:
                 was_updated = self.client.update_invitation(
                     invitation['slack_id'],
                     invitation['event_id'],
+                    self.PEOPLE_PER_EVENT,
                     {
                         "reminded_at": datetime.now().isoformat()
                     }
@@ -82,26 +82,37 @@ class BotApi:
                 else:
                     print("failed to update invitation")
 
-    def finalize_event_if_complete(self):
-        response = self.client.finalize_event_if_complete(self.PEOPLE_PER_EVENT)
-        print(response)
-        if not response['success']:
-            print("No events ready to finalize")
-        else:
-            timestamp = response['data']['timestamp']
-            restaurant_name = response['data']['restaurant_name']
-            slack_ids = response['data']['slack_ids']
-            # Convert timestamp to Norwegian timestamp
-            timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
-            # Create slack @-id-strings
-            users = ['<@%s>' % user for user in slack_ids]
-            ids_string = ", ".join(users)
-            # Get the user to book
-            booker = users[0]
-            # Get the user to pay
-            payer = users[1] if len(users) > 1 else users[0]
-            # Send the Slack message
-            slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
+    def send_event_finalized(self, timestamp, restaurant_name, slack_ids):
+        # Convert timestamp to Norwegian timestamp
+        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
+        # Create slack @-id-strings
+        users = ['<@%s>' % user for user in slack_ids]
+        ids_string = ", ".join(users)
+        # Get the user to book
+        booker = users[0]
+        # Get the user to pay
+        payer = users[1] if len(users) > 1 else users[0]
+        # Send the finalization Slack message
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
+
+    def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
+        # TODO send message about unfinalization
+        # Convert timestamp to Norwegian timestamp
+        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
+        # Create slack @-id-strings
+        users = ['<@%s>' % user for user in slack_ids]
+        ids_string = ", ".join(users)
+        # Send message that the event unfinalized
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
+        # Invite more users for the event
+        self.invite_multiple_if_needed()
+        pass
+    def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name):
+        # Send message that the user withdrew
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
+        # Invite more users for the event
+        self.invite_multiple_if_needed()
+        pass
 
     def auto_reply(self):
         invitations = self.client.get_unanswered_invitations()
@@ -109,12 +120,10 @@ class BotApi:
         for invitation in invitations:
             deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
             if deadline < datetime.now(pytz.utc):
-                was_updated = self.client.update_invitation(
+                was_updated = self.update_invitation_answer(
                     invitation['slack_id'],
                     invitation['event_id'],
-                    {
-                        "rsvp": RSVP.not_attending
-                    }
+                    RSVP.not_attending
                 )
                 if was_updated:
                     slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
@@ -123,9 +132,10 @@ class BotApi:
                     print("failed to update invitation to not attending")
 
     def update_invitation_answer(self, event_id, slack_id, answer: RSVP):
-        self.client.update_invitation(
+        return self.client.update_invitation(
             slack_id,
             event_id,
+            self.PEOPLE_PER_EVENT,
             {
                 "rsvp": answer
             }
@@ -138,12 +148,7 @@ class BotApi:
         self.update_invitation_answer(event_id, slack_id, RSVP.not_attending)
 
     def withdraw_invitation(self, event_id, slack_id):
-        in_past = db.event_in_past(event_id)
-        if not in_past:
-            db.update_invitation(event_id, slack_id, RSVP.not_attending)
-            if db.event_is_finalized(event_id):
-                db.mark_event_as_unfinalized(event_id)
-        return in_past
+        return self.client.withdraw_invitation(event_id, slack_id)
 
     def save_image(self, cloudinary_id, slack_id, title):
         self.client.create_image(cloudinary_id, slack_id, title)

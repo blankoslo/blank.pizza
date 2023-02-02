@@ -1,47 +1,73 @@
+from datetime import datetime
+import pytz
+
 from app.services.broker.handlers import MessageHandler
 
-from app.services.broker.schemas.FinalizeEventIfPossible import FinalizeEventIfPossibleRequestSchema, FinalizeEventIfPossibleResponseSchema
+from app.services.broker.schemas.FinalizationEventEvent import FinalizationEventEventSchema
+from app.services.broker.schemas.WithdrawInvitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
+from app.services.broker.schemas.UserWithdrewAfterFinalizationEvent import UserWithdrewAfterFinalizationEventSchema
 
 from app.models.event import Event
 from app.models.event_schema import EventSchema
 from app.models.invitation import Invitation
+from app.models.invitation_schema import InvitationSchema
+from app.models.enums import RSVP
 from app.models.restaurant import Restaurant
 
-@MessageHandler.handle('finalize_event_if_complete')
-def finalize_event_if_complete(payload: dict, correlation_id: str, reply_to: str):
-    schema = FinalizeEventIfPossibleRequestSchema()
+@MessageHandler.handle('withdraw_invitation')
+def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
+    schema = WithdrawInvitationRequestSchema()
     request = schema.load(payload)
-    people_per_event = request.get('people_per_event')
+    event_id = request.get('event_id')
+    slack_id = request.get('slack_id')
 
-    event_ready_to_finalize = Event.get_event_ready_to_finalize(people_per_event)
+    #Check if event is in past
+    result = True
+    try:
+        event = Event.get_by_id(event_id)
+        if event.time < datetime.now(pytz.utc):
+            result = False
+        else:
+            # Update invitation to not attending
+            invitation = Invitation.get_by_id(event_id, slack_id)
+            update_data = {
+                'rsvp': RSVP.not_attending
+            }
+            updated_invitation = InvitationSchema().load(data=update_data, instance=invitation, partial=True)
+            Invitation.upsert(updated_invitation)
+            if event.finalized:
+                restaurant = Restaurant.get_by_id(event.restaurant_id)
+                attending_users = [user[0] for user in Invitation.get_attending_users(event.id)]
+                # Publish event that user withdrew after finalization
+                queue_event_schema = UserWithdrewAfterFinalizationEventSchema()
+                queue_event = queue_event_schema.load({
+                    'event_id': event.id,
+                    'slack_id': slack_id,
+                    'timestamp': event.time.isoformat(),
+                    'restaurant_name': restaurant.name
+                })
+                MessageHandler.publish("user_withdrew_after_finalization", queue_event)
+                # Mark event as unfinalized
+                update_data = {
+                    'finalized': False
+                }
+                updated_invitation = EventSchema().load(data=update_data, instance=event, partial=True)
+                Event.upsert(updated_invitation)
+                # Publish event that event is unfinalized
+                queue_event_schema = FinalizationEventEventSchema()
+                queue_event = queue_event_schema.load({
+                    'is_finalized': False,
+                    'event_id': event.id,
+                    'timestamp': event.time.isoformat(),
+                    'restaurant_name': restaurant.name,
+                    'slack_ids': attending_users
+                })
+                MessageHandler.publish("finalization", queue_event)
+    except Exception as e:
+        print(e)
+        result = False
 
-    response_data = {
-        "success": True
-    }
-
-    if event_ready_to_finalize is not None:
-        # Get Restaurant
-        restaurant = Restaurant.get_by_id(event_ready_to_finalize.restaurant_id)
-
-        # Update event to be finalized
-        update_data = {
-            'finalized': True
-        }
-        updated_invitation = EventSchema().load(data=update_data, instance=event_ready_to_finalize, partial=True)
-        Event.upsert(updated_invitation)
-
-        # Set response data
-        internal_data = {
-            'event_id': event_ready_to_finalize.id,
-            'timestamp': event_ready_to_finalize.time.isoformat(),
-            'restaurant_name': restaurant.name,
-            'slack_ids': [user[0] for user in Invitation.get_attending_users(event_ready_to_finalize.id)]
-        }
-        response_data['data'] = internal_data
-    else:
-        response_data['success'] = False
-
-    response_schema = FinalizeEventIfPossibleResponseSchema()
-    response = response_schema.load(response_data)
+    response_schema = WithdrawInvitationResponseSchema()
+    response = response_schema.load({'success': result})
 
     MessageHandler.respond(response, reply_to, correlation_id)

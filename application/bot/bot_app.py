@@ -3,7 +3,6 @@
 import requests
 import base64
 import os
-import time
 import locale
 import threading
 import pytz
@@ -12,18 +11,18 @@ from src.api.bot_api import BotApi, BotApiConfiguration
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-from injector import Injector, inject
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
+from src.injector import injector
 from src.broker.AmqpConnection import AmqpConnection
+from src.broker.handlers import on_message
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
 slack_bot_token = os.environ["SLACK_BOT_TOKEN"]
 slack_app_token = os.environ["SLACK_APP_TOKEN"]
 
 app = App(token=slack_bot_token)
-injector = Injector()
 
 @app.event("message")
 def handle_event(body, say, logger):
@@ -55,7 +54,6 @@ def handle_rsvp(body, ack, attending):
         blocks = message["blocks"][0:3]
         if attending:
             bot_api.accept_invitation(event_id, user_id)
-            bot_api.finalize_event_if_complete()
         else:
             bot_api.decline_invitation(event_id, user_id)
             bot_api.invite_multiple_if_needed()
@@ -82,10 +80,9 @@ def handle_rsvp_withdraw(ack, body):
     event_id = body["actions"][0]["value"]
     ts = message['ts']
     blocks = message["blocks"][0:3]
-    failed_in_past = bot_api.withdraw_invitation(event_id, user_id)
-    if not failed_in_past:
+    success = bot_api.withdraw_invitation(event_id, user_id)
+    if success:
         bot_api.send_pizza_invite_withdraw(channel_id, ts, blocks)
-        bot_api.invite_multiple_if_needed()
     else:
         bot_api.send_pizza_invite_withdraw_failure(channel_id, ts, blocks)
     ack()
@@ -129,10 +126,6 @@ def handle_file_share(event, say):
 @app.event("file_shared")
 def handle_file_shared_events(body, logger):
     logger.info(body)
-
-def on_message(channel, method, properties, body):
-    msg = body.decode('utf8')
-    print(f'Time: {int(time.time()) % 1000} --- Message: {msg}')
 
 def auto_reply():
     print("Auto replying on scheduled task")
