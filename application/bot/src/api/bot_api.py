@@ -7,7 +7,7 @@ from injector import inject
 import src.api.slack_api as slack
 from datetime import datetime, timedelta
 from src.rsvp import RSVP
-from src.broker.ApiClient import ApiClient
+from src.broker.api_client import ApiClient
 
 class BotApiConfiguration:
     def __init__(self, pizza_channel_id, timezone):
@@ -17,8 +17,8 @@ class BotApiConfiguration:
 class BotApi:
     @inject
     def __init__(self, config: BotApiConfiguration):
-        self.REPLY_DEADLINE_IN_HOURS = os.environ["REPLY_DEADLINE_IN_HOURS"]
-        self.HOURS_BETWEEN_REMINDERS = os.environ["HOURS_BETWEEN_REMINDERS"]
+        self.REPLY_DEADLINE_IN_HOURS = int(os.environ["REPLY_DEADLINE_IN_HOURS"])
+        self.HOURS_BETWEEN_REMINDERS = int(os.environ["HOURS_BETWEEN_REMINDERS"])
         self.pizza_channel_id = config.pizza_channel_id
         self.timezone = config.timezone
 

@@ -4,10 +4,10 @@ import os
 
 from app.services.broker.handlers import MessageHandler
 
-from app.services.broker.schemas.FinalizationEventEvent import FinalizationEventEventSchema
-from app.services.broker.schemas.WithdrawInvitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
-from app.services.broker.schemas.UserWithdrewAfterFinalizationEvent import UserWithdrewAfterFinalizationEventSchema
-from app.services.broker.schemas.InviteMultipleIfNeeded import InviteMultipleIfNeededResponseSchema
+from app.services.broker.schemas.finalization_event_event import FinalizationEventEventSchema
+from app.services.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
+from app.services.broker.schemas.user_withdrew_after_finalization_event import UserWithdrewAfterFinalizationEventSchema
+from app.services.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
 
 from app.models.event import Event
 from app.models.user import User

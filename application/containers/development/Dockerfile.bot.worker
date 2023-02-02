@@ -13,4 +13,4 @@ RUN \
 
 WORKDIR /srv/bot
 
-CMD python bot_app.py
+CMD python main.py

@@ -52,8 +52,8 @@ services:
       DB_USER: "postgres"
       DB_PASSWD: "postgres"
       DB_PORT: "5432"
-      PEOPLE_PER_EVENT: "5"
-      DAYS_IN_ADVANCE_TO_INVITE: "10"
+      PEOPLE_PER_EVENT: 5
+      DAYS_IN_ADVANCE_TO_INVITE: 10
       <<: *common-variables
       <<: *common-rabbitmq-variables
       SECRET_KEY: "V3ryS3cr3tK3y"
@@ -78,8 +78,8 @@ services:
       <<: *common-slack-variables
       <<: *common-variables
       <<: *common-rabbitmq-variables
-      REPLY_DEADLINE_IN_HOURS: "24"
-      HOURS_BETWEEN_REMINDERS: "4"
+      REPLY_DEADLINE_IN_HOURS: 24
+      HOURS_BETWEEN_REMINDERS: 4
     restart: always
     depends_on:
       database:

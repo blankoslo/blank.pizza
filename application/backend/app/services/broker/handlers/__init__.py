@@ -3,7 +3,7 @@ import os
 from rabbitmq_pika_flask.ExchangeType import ExchangeType
 
 from app.services.broker import broker
-from app.services.broker.schemas.Message import MessageSchema
+from app.services.broker.schemas.message import MessageSchema
 
 class MessageHandler:
     handlers = {}

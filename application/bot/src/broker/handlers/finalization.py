@@ -1,5 +1,5 @@
 from src.broker.handlers import MessageHandler
-from src.broker.schemas.FinalizationEventEvent import FinalizationEventEventSchema
+from src.broker.schemas.finalization_event_event import FinalizationEventEventSchema
 from src.api.bot_api import BotApi
 from src.injector import injector
 

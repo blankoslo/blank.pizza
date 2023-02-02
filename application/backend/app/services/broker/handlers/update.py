@@ -1,9 +1,9 @@
 import os
 
 from app.services.broker.handlers import MessageHandler
-from app.services.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
-from app.services.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
-from app.services.broker.schemas.FinalizationEventEvent import FinalizationEventEventSchema
+from app.services.broker.schemas.update_invitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
+from app.services.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
+from app.services.broker.schemas.finalization_event_event import FinalizationEventEventSchema
 
 from app.models.invitation import Invitation
 from app.models.slack_user import SlackUser

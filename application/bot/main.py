@@ -15,7 +15,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from src.injector import injector
-from src.broker.AmqpConnection import AmqpConnection
+from src.broker.amqp_connection import AmqpConnection
 from src.broker.handlers import on_message
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]

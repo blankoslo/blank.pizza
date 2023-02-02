@@ -4,15 +4,15 @@ import os
 
 from marshmallow import Schema
 
-from src.broker.AmqpConnection import AmqpConnection
-from src.broker.schemas.Message import MessageSchema
-from src.broker.schemas.InviteMultipleIfNeeded import InviteMultipleIfNeededResponseSchema
-from src.broker.schemas.GetUnansweredInvitations import GetUnansweredInvitationsResponseSchema
-from src.broker.schemas.UpdateInvitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
-from src.broker.schemas.GetInvitedUnansweredUserIds import GetInvitedUnansweredUserIdsResponseSchema
-from src.broker.schemas.UpdateSlackUser import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
-from src.broker.schemas.CreateImage import CreateImageRequestSchema, CreateImageResponseSchema
-from src.broker.schemas.WithdrawInvitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
+from src.broker.amqp_connection import AmqpConnection
+from src.broker.schemas.message import MessageSchema
+from src.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
+from src.broker.schemas.get_unanswered_invitations import GetUnansweredInvitationsResponseSchema
+from src.broker.schemas.update_invitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
+from src.broker.schemas.get_invited_unanswered_user_ids import GetInvitedUnansweredUserIdsResponseSchema
+from src.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
+from src.broker.schemas.create_image import CreateImageRequestSchema, CreateImageResponseSchema
+from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
 
 class ApiClient:
     messages = {}

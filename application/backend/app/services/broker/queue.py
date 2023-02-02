@@ -4,7 +4,7 @@ from marshmallow import ValidationError
 
 from app.services.broker import broker
 from rabbitmq_pika_flask.ExchangeType import ExchangeType
-from app.services.broker.schemas.Message import MessageSchema
+from app.services.broker.schemas.message import MessageSchema
 
 from app.services.broker.handlers import MessageHandler
 

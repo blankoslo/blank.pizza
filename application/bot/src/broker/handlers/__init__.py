@@ -1,5 +1,4 @@
-from src.broker.schemas.Message import MessageSchema
-import time
+from src.broker.schemas.message import MessageSchema
 import json
 
 class MessageHandler:

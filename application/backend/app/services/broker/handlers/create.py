@@ -1,6 +1,6 @@
 from app.services.broker.handlers import MessageHandler
 
-from app.services.broker.schemas.CreateImage import CreateImageRequestSchema, CreateImageResponseSchema
+from app.services.broker.schemas.create_image import CreateImageRequestSchema, CreateImageResponseSchema
 
 from app.models.image import Image
 from app.models.image_schema import ImageSchema
