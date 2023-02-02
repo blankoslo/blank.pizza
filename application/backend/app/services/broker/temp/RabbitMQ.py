@@ -18,9 +18,9 @@ from pika.exceptions import AMQPConnectionError
 from retry import retry
 from retry.api import retry_call
 
-from app.services.temp.ExchangeType import ExchangeType
-from app.services.temp.QueueParams import QueueParams
-from app.services.temp.RabbitConsumerMiddleware import (
+from app.services.broker.temp.ExchangeType import ExchangeType
+from app.services.broker.temp.QueueParams import QueueParams
+from app.services.broker.temp.RabbitConsumerMiddleware import (
     RabbitConsumerMessage,
     RabbitConsumerMiddleware,
     call_middlewares,

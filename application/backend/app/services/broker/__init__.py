@@ -1,3 +1,3 @@
-from app.services.temp.RabbitMQ import RabbitMQ
+from app.services.broker.temp.RabbitMQ import RabbitMQ
 
 broker = RabbitMQ()
