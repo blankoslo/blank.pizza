@@ -77,5 +77,22 @@ class Event(CrudMixin, db.Model):
             .having(func.count(cls.id) == people_per_event)
         return query.first()
 
+    @classmethod
+    def get_event_by_id_if_ready_to_finalize(cls, event_id, people_per_event, session=db.session):
+        query = session.query(cls) \
+            .join(Invitation, Invitation.event_id == cls.id) \
+            .filter(
+                and_(
+                    and_(
+                        Invitation.rsvp == RSVP.attending,
+                        not_(cls.finalized)
+                    ),
+                    Invitation.event_id == event_id
+                )
+            )\
+            .group_by(cls.id, cls.time, cls.restaurant_id) \
+            .having(func.count(cls.id) == people_per_event)
+        return query.first()
+
     def __repr__(self):
         return "<Event(id={self.id!r})>".format(self=self)

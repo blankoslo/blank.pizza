@@ -13,16 +13,15 @@ from app.models.event_schema import EventSchema
 from app.models.restaurant import Restaurant
 
 def finalize_event_if_complete(event_id, people_per_event):
-    # TODO finalize event by id
-    event_ready_to_finalize = Event.get_event_ready_to_finalize(people_per_event)
+    event_ready_to_finalize = Event.get_event_by_id_if_ready_to_finalize(event_id, people_per_event)
 
     if event_ready_to_finalize is not None:
         # Update event to be finalized
         update_data = {
             'finalized': True
         }
-        updated_invitation = EventSchema().load(data=update_data, instance=event_ready_to_finalize, partial=True)
-        Event.upsert(updated_invitation)
+        updated_event = EventSchema().load(data=update_data, instance=event_ready_to_finalize, partial=True)
+        Event.upsert(updated_event)
         return True
     return False
 

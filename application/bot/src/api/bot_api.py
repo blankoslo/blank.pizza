@@ -92,7 +92,7 @@ class BotApi:
         booker = users[0]
         # Get the user to pay
         payer = users[1] if len(users) > 1 else users[0]
-        # Send the Slack message
+        # Send the finalization Slack message
         slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
     def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
@@ -102,20 +102,13 @@ class BotApi:
         # Create slack @-id-strings
         users = ['<@%s>' % user for user in slack_ids]
         ids_string = ", ".join(users)
-        print("unfinalized")
-        print(timestamp)
-        print(restaurant_name)
-        print(slack_ids)
+        # Send message that the event unfinalized
         slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
         self.invite_multiple_if_needed()
         pass
     def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name):
-        # TODO send message that user withdrew
-        print("user withdrew")
-        print(user_id)
-        print(timestamp)
-        print(restaurant_name)
+        # Send message that the user withdrew
         slack.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
         self.invite_multiple_if_needed()

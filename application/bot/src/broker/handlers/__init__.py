@@ -20,7 +20,6 @@ class MessageHandler:
 
 def on_message(channel, method, properties, body):
     msg = body.decode('utf8')
-    print(f'Time: {int(time.time()) % 1000} --- Message: {msg}')
     schema = MessageSchema()
     message = schema.load(json.loads(msg))
 
