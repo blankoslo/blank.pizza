@@ -28,5 +28,14 @@ class EventService:
         updated_invitation = EventSchema().load(data=update_data, instance=event, partial=True)
         Event.upsert(updated_invitation)
 
+    def get(self, filters, page, per_page):
+        return Event.get(filters = filters, page = page, per_page = per_page)
+
     def get_by_id(self, event_id):
         return Event.get_by_id(event_id)
+
+    def delete(self, event_id):
+        Event.delete(event_id)
+
+    def add(self, data):
+        return Event.upsert(data)

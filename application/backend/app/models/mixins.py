@@ -65,6 +65,8 @@ class CrudMixin(object):
     def upsert(cls, schema, session=db.session):
         session.add(schema)
         session.commit()
+        session.refresh(schema)
+        return schema
     
     @classmethod
     def count(cls, session=db.session):

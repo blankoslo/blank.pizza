@@ -1,8 +1,9 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.event import Event
 from app.models.event_schema import EventSchema, EventQueryArgsSchema
 from flask_jwt_extended import jwt_required
+from app.services.injector import injector
+from app.services.event_service import EventService
 
 bp = Blueprint("events", "events", url_prefix="/events", description="Operations on events")
 
@@ -13,7 +14,8 @@ class Events(views.MethodView):
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """List events"""
-        total, events = Event.get(filters = args, page = pagination_parameters.page, per_page = pagination_parameters.page_size)
+        event_service = injector.get(EventService)
+        total, events = event_service.get(args, pagination_parameters.page, pagination_parameters.page_size)
         pagination_parameters.item_count = total
         return events
 
@@ -22,16 +24,18 @@ class Events(views.MethodView):
     @jwt_required()
     def post(self, new_data):
         """Add an event"""
-        Event.upsert(new_data)
-        return new_data
+        event_service = injector.get(EventService)
+        new_event = event_service.add(new_data)
+        return new_event
 
 @bp.route("/<event_id>")
 class EventsById(views.MethodView):
     @bp.response(200, EventSchema)
     def get(self, event_id):
         """Get event by ID"""
-        event = Event.get_by_id(event_id)
-        if event == None:
+        event_service = injector.get(EventService)
+        event = event_service.get_by_id(event_id)
+        if event is None:
             abort(404, message = "Event not found.")
         return event
 
@@ -39,4 +43,5 @@ class EventsById(views.MethodView):
     @jwt_required()
     def delete(self, event_id):
         """Delete event"""
-        Event.delete(event_id)
+        event_service = injector.get(EventService)
+        event_service.delete(event_id)
