@@ -27,7 +27,7 @@ class CrudMixin(object):
         return res
 
     @classmethod
-    def get_like(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
+    def get_like(cls, filters = {}, order_by = None, page = None, per_page = None, session=db.session):
         query = cls.query
         # Add filters to the query
         for attr, value in filters.items():
