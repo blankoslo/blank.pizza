@@ -40,6 +40,8 @@ module "staging" {
   MQ_RPC_KEY = "rpc"
   PEOPLE_PER_EVENT = 5
   DAYS_IN_ADVANCE_TO_INVITE = 10
+  HOURS_BETWEEN_REMINDERS = 4
+  REPLY_DEADLINE_IN_HOURS = 24
 }
 
 module "production" {
@@ -75,6 +77,8 @@ module "production" {
   MQ_RPC_KEY = "rpc"
   PEOPLE_PER_EVENT = 5
   DAYS_IN_ADVANCE_TO_INVITE = 10
+  HOURS_BETWEEN_REMINDERS = 4
+  REPLY_DEADLINE_IN_HOURS = 24
 }
 
 # Add staging apps to pipeline under staging stage

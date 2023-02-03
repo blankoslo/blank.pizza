@@ -42,8 +42,8 @@ resource "heroku_app" "bot" {
     "MQ_EVENT_QUEUE" = var.MQ_EVENT_QUEUE
     "MQ_RPC_KEY" = var.MQ_RPC_KEY
     "MQ_EVENT_KEY" =  var.MQ_EVENT_KEY
-    "REPLY_DEADLINE_IN_HOURS" = 24
-    "HOURS_BETWEEN_REMINDERS" = 4
+    "REPLY_DEADLINE_IN_HOURS" = var.REPLY_DEADLINE_IN_HOURS
+    "HOURS_BETWEEN_REMINDERS" = var.HOURS_BETWEEN_REMINDERS
   }
 
   sensitive_config_vars = {

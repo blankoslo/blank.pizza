@@ -38,6 +38,14 @@ variable "DAYS_IN_ADVANCE_TO_INVITE" {
   type = number
 }
 
+variable "REPLY_DEADLINE_IN_HOURS" {
+  type = number
+}
+
+variable "HOURS_BETWEEN_REMINDERS" {
+  type = number
+}
+
 variable "SLACK_BOT_TOKEN" {
   type = string
 }
