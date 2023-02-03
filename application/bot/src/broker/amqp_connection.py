@@ -5,7 +5,9 @@ from retry import retry
 
 class AmqpConnection:
     def __init__(self, host = None, exchange = None):
-        self.host = host if host is not None else os.environ.get('MQ_URL')
+        # CLOUDAMQP_URL is the environment variable created by heroku during production deployment
+        mq_url = os.environ.get('MQ_URL') if 'MQ_URL' in os.environ else os.environ.get('CLOUDAMQP_URL')
+        self.host = host if host is not None else mq_url
         self.exchange = exchange if exchange is not None else os.environ.get('MQ_EXCHANGE')
         self.connection = None
         self.channel = None

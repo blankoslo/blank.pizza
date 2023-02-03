@@ -12,6 +12,15 @@ resource "heroku_app" "backend" {
     name = var.heroku_team_name
   }
 
+  config_vars = {
+    "MQ_EXCHANGE" = var.MQ_EXCHANGE
+    "MQ_EVENT_QUEUE" = var.MQ_EVENT_QUEUE
+    "MQ_RPC_KEY" = var.MQ_RPC_KEY
+    "MQ_EVENT_KEY" =  var.MQ_EVENT_KEY
+    "PEOPLE_PER_EVENT" = var.PEOPLE_PER_EVENT
+    "DAYS_IN_ADVANCE_TO_INVITE" = var.DAYS_IN_ADVANCE_TO_INVITE
+  }
+
   sensitive_config_vars = {
     "SECRET_KEY" = var.SECRET_KEY_BACKEND
     "GOOGLE_CLIENT_ID" = var.GOOGLE_CLIENT_ID
@@ -26,6 +35,15 @@ resource "heroku_app" "bot" {
 
   organization {
     name = var.heroku_team_name
+  }
+
+  config_vars = {
+    "MQ_EXCHANGE" = var.MQ_EXCHANGE
+    "MQ_EVENT_QUEUE" = var.MQ_EVENT_QUEUE
+    "MQ_RPC_KEY" = var.MQ_RPC_KEY
+    "MQ_EVENT_KEY" =  var.MQ_EVENT_KEY
+    "REPLY_DEADLINE_IN_HOURS" = 24
+    "HOURS_BETWEEN_REMINDERS" = 4
   }
 
   sensitive_config_vars = {
@@ -117,6 +135,17 @@ resource "heroku_build" "frontend" {
   ]
 }
 
+resource "heroku_addon" "cloudamqp-backend" {
+  name = "${var.prefix}-${var.environment}-cloudamqp"
+  app_id = heroku_app.backend.id
+  plan = var.CLOUDAMQP_PLAN
+}
+
+resource "heroku_addon_attachment" "cloudamqp-bot" {
+  app_id  = heroku_app.bot.id
+  addon_id = heroku_addon.cloudamqp-backend.id
+}
+
 resource "heroku_addon" "papertrail-backend" {
   name = "${var.prefix}-${var.environment}-papertrail"
   app_id = heroku_app.backend.id
@@ -141,20 +170,10 @@ resource "heroku_addon_attachment" "database-attachment" {
   addon_id = heroku_addon.database.id
 }
 
-resource "heroku_addon" "batch-scheduler" {
-  name = "${var.prefix}-${var.environment}-scheduler-bot"
-  app_id = heroku_app.bot.id
-  plan = var.SCHEDULER_PLAN
-}
-
-resource "herokux_scheduler_job" "batch-scheduler-job" {
-  app_id = heroku_app.bot.id
-  command = "python batch.py"
-  dyno_size = var.SCHEDULER_JOB_DYNO
-  frequency = var.SCHEDULER_JOB_FREQUENCY
-
-  # required in order for Terraform to wait for scheduler addon creation before creating jobs.
-  depends_on = [heroku_addon.batch-scheduler]
+resource "herokux_postgres_backup_schedule" "database_backup" {
+  postgres_id = heroku_addon.database.id
+  hour        = 23
+  timezone    = "Europe/Oslo"
 }
 
 resource "heroku_formation" "formation-backend" {
@@ -167,17 +186,9 @@ resource "heroku_formation" "formation-backend" {
 
 resource "heroku_formation" "formation-bot-worker" {
   app_id     = heroku_app.bot.id
-  type       = "batch"
+  type       = "worker"
   quantity   = var.FORMATION_QUANTITY_BOT_WORKER
   size       = var.FORMATION_SIZE_BOT_WORKER
-  depends_on = [heroku_build.bot]
-}
-
-resource "heroku_formation" "formation-bot-batch" {
-  app_id     = heroku_app.bot.id
-  type       = "worker"
-  quantity   = var.FORMATION_QUANTITY_BOT_BATCH
-  size       = var.FORMATION_SIZE_BOT_BATCH
   depends_on = [heroku_build.bot]
 }
 
