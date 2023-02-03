@@ -9,6 +9,7 @@ from app.services.injector import injector
 from app.services.invitation_service import InvitationService
 from app.services.event_service import EventService
 from app.services.restaurant_service import RestaurantService
+from app.services.image_service import ImageService
 
 from flask import Flask
 from flask_smorest import Blueprint
@@ -68,9 +69,11 @@ def create_app(environment):
     event_service = EventService()
     restaurant_service = RestaurantService()
     invitation_service = InvitationService(event_service, restaurant_service)
+    image_service = ImageService()
     injector.binder.bind(EventService, to=event_service)
     injector.binder.bind(InvitationService, to=invitation_service)
     injector.binder.bind(RestaurantService, to=restaurant_service)
+    injector.binder.bind(ImageService, to=image_service)
 
     # Setup Talisman
     csp = {
