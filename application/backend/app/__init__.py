@@ -1,5 +1,7 @@
 import os
 import json
+import logging
+import sys
 
 from app.db import db, migrate
 from app.api import api, ma
@@ -41,6 +43,9 @@ def create_app(environment):
     app.secret_key = os.environ.get("SECRET_KEY")
     app.config.from_object(environment.get("base"))
     FRONTEND_URI = os.environ.get("FRONTEND_URI").rstrip('/')
+    # Logging for heroku
+    app.logger.addHandler(logging.StreamHandler(sys.stdout))
+    app.logger.setLevel(logging.DEBUG)
 
     # Set up database (sqlalchemy) and migration
     db.init_app(app)

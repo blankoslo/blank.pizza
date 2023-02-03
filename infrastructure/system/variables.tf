@@ -82,15 +82,7 @@ variable "POSTGRES_PLAN" {
   type = string
 }
 
-variable "SCHEDULER_PLAN" {
-  type = string
-}
-
-variable "SCHEDULER_JOB_DYNO" {
-  type = string
-}
-
-variable "SCHEDULER_JOB_FREQUENCY" {
+variable "FLASK_ENV" {
   type = string
 }
 

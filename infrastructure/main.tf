@@ -17,9 +17,6 @@ module "staging" {
   CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
   POSTGRES_PLAN = "heroku-postgresql:mini"
-  SCHEDULER_PLAN = "scheduler:standard"
-  SCHEDULER_JOB_DYNO = "Free"
-  SCHEDULER_JOB_FREQUENCY = "every_ten_minutes"
   FORMATION_SIZE_FRONTEND = "hobby"
   FORMATION_SIZE_BACKEND = "hobby"
   FORMATION_SIZE_BOT_WORKER = "hobby"
@@ -42,6 +39,7 @@ module "staging" {
   DAYS_IN_ADVANCE_TO_INVITE = 10
   HOURS_BETWEEN_REMINDERS = 4
   REPLY_DEADLINE_IN_HOURS = 24
+  FLASK_ENV = "production"
 }
 
 module "production" {
@@ -54,9 +52,6 @@ module "production" {
   CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
   POSTGRES_PLAN = "heroku-postgresql:mini"
-  SCHEDULER_PLAN = "scheduler:standard"
-  SCHEDULER_JOB_DYNO = "Free"
-  SCHEDULER_JOB_FREQUENCY = "every_ten_minutes"
   FORMATION_SIZE_FRONTEND = "hobby"
   FORMATION_SIZE_BACKEND = "hobby"
   FORMATION_SIZE_BOT_WORKER = "hobby"
@@ -79,6 +74,7 @@ module "production" {
   DAYS_IN_ADVANCE_TO_INVITE = 10
   HOURS_BETWEEN_REMINDERS = 4
   REPLY_DEADLINE_IN_HOURS = 24
+  FLASK_ENV = "production"
 }
 
 # Add staging apps to pipeline under staging stage

@@ -19,6 +19,7 @@ resource "heroku_app" "backend" {
     "MQ_EVENT_KEY" =  var.MQ_EVENT_KEY
     "PEOPLE_PER_EVENT" = var.PEOPLE_PER_EVENT
     "DAYS_IN_ADVANCE_TO_INVITE" = var.DAYS_IN_ADVANCE_TO_INVITE
+    "FLASK_ENV" = var.FLASK_ENV
   }
 
   sensitive_config_vars = {
