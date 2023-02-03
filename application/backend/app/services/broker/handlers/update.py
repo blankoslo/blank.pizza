@@ -38,15 +38,21 @@ def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
     slack_id = request['slack_id']
     update_data = request['update_data']
 
-    response = False
+    response = True
     try:
-        slack_user_service.update(slack_id, {
+        result = slack_user_service.update(slack_id, {
             'current_username': update_data['current_username'],
             'email': update_data['email']
         })
+        if result is None:
+            slack_user_service.add({
+                'slack_id': slack_id,
+                'current_username': update_data['current_username'],
+                'email': update_data['email']
+            })
     except Exception as e:
         print(e)
-        response = True
+        response = False
 
     response_schema = UpdateSlackUserResponseSchema()
     response = response_schema.load({'success': response})

@@ -11,11 +11,12 @@ module "staging" {
   source = "./system"
 
   heroku_team_name = var.heroku_team_name
-  hostname = "staging.bot.blank.pizza"
+  hostname = "dev.bot.blank.pizza"
   prefix = var.prefix
-  environment = "stag"
+  environment = "dev"
+  CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
-  POSTGRES_PLAN = "heroku-postgresql:hobby-dev"
+  POSTGRES_PLAN = "heroku-postgresql:mini"
   SCHEDULER_PLAN = "scheduler:standard"
   SCHEDULER_JOB_DYNO = "Free"
   SCHEDULER_JOB_FREQUENCY = "every_ten_minutes"
@@ -33,6 +34,14 @@ module "staging" {
   SECRET_KEY_BACKEND = var.STAGING_SECRET_KEY_BACKEND
   GOOGLE_CLIENT_ID = var.STAGING_GOOGLE_CLIENT_ID
   GOOGLE_CLIENT_SECRET = var.STAGING_GOOGLE_CLIENT_SECRET
+  MQ_EVENT_KEY = "pizza"
+  MQ_EVENT_QUEUE = "Pizza_Queue"
+  MQ_EXCHANGE = "Pizza_Exchange"
+  MQ_RPC_KEY = "rpc"
+  PEOPLE_PER_EVENT = 5
+  DAYS_IN_ADVANCE_TO_INVITE = 10
+  HOURS_BETWEEN_REMINDERS = 4
+  REPLY_DEADLINE_IN_HOURS = 24
 }
 
 module "production" {
@@ -42,8 +51,9 @@ module "production" {
   hostname = "bot.blank.pizza"
   prefix = var.prefix
   environment = "prod"
+  CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
-  POSTGRES_PLAN = "heroku-postgresql:hobby-dev"
+  POSTGRES_PLAN = "heroku-postgresql:mini"
   SCHEDULER_PLAN = "scheduler:standard"
   SCHEDULER_JOB_DYNO = "Free"
   SCHEDULER_JOB_FREQUENCY = "every_ten_minutes"
@@ -61,6 +71,14 @@ module "production" {
   SECRET_KEY_BACKEND = var.PRODUCTION_SECRET_KEY_BACKEND
   GOOGLE_CLIENT_ID = var.PRODUCTION_GOOGLE_CLIENT_ID
   GOOGLE_CLIENT_SECRET = var.PRODUCTION_GOOGLE_CLIENT_SECRET
+  MQ_EVENT_KEY = "pizza"
+  MQ_EVENT_QUEUE = "Pizza_Queue"
+  MQ_EXCHANGE = "Pizza_Exchange"
+  MQ_RPC_KEY = "rpc"
+  PEOPLE_PER_EVENT = 5
+  DAYS_IN_ADVANCE_TO_INVITE = 10
+  HOURS_BETWEEN_REMINDERS = 4
+  REPLY_DEADLINE_IN_HOURS = 24
 }
 
 # Add staging apps to pipeline under staging stage

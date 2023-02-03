@@ -17,6 +17,14 @@ class InvitationService:
         self.event_service = event_service
         self.restaurant_service = restaurant_service
 
+    def add(self, event_id, user_id):
+        invitation_schema = InvitationSchema()
+        invitation = invitation_schema.load(
+            data={"event_id": event_id, "slack_id": user_id},
+            partial=True
+        )
+        Invitation.upsert(invitation)
+
     def get(self, filters, page, per_page):
         return Invitation.get(filters = filters, page = page, per_page = per_page)
 

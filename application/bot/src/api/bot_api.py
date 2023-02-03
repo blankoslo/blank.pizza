@@ -83,7 +83,6 @@ class BotApi:
         slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
     def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
-        # TODO send message about unfinalization
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
         # Create slack @-id-strings
@@ -147,7 +146,7 @@ class BotApi:
         slack_users = slack.get_real_users(all_slack_users)
         for slack_user in slack_users:
             success = self.client.update_slack_user(slack_user)
-            if not success:
+            if success:
                 print("Updated user %s" % slack_user['id'])
             else:
                 print("Was unable to update %s" % slack_user['id'])

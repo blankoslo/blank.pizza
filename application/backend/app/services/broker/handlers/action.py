@@ -1,5 +1,4 @@
 from datetime import datetime
-import pytz
 import os
 
 from app.services.broker import BrokerService
@@ -8,14 +7,11 @@ from app.services.broker.handlers.message_handler import MessageHandler
 from app.services.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
 from app.services.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
 
-from app.models.event import Event
-from app.models.user import User
-from app.models.slack_user import SlackUser
-from app.models.invitation import Invitation
-from app.models.invitation_schema import InvitationSchema
 from app.models.enums import RSVP
 from app.services.injector import injector
 from app.services.invitation_service import InvitationService
+from app.services.slack_user_service import SlackUserService
+from app.services.event_service import EventService
 
 @MessageHandler.handle('withdraw_invitation')
 def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
@@ -40,19 +36,20 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
 
 @MessageHandler.handle('invite_multiple_if_needed')
 def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str):
+    invitation_service = injector.get(InvitationService)
+    slack_user_service = injector.get(SlackUserService)
+    event_service = injector.get(EventService)
     # Get events in need of invitation
-    days_in_advance_to_invite = int(os.environ["DAYS_IN_ADVANCE_TO_INVITE"])
     people_per_event = int(os.environ["PEOPLE_PER_EVENT"])
-    events = Event.get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event)
+    events = event_service.get_events_in_need_of_invitations()
     events = [{"event_id": event[0], "event_time": event[1].isoformat(), "restaurant_name": event[2], "number_of_already_invited": event[3]} for event in events]
 
     # Get numbers of users to invite
     events_where_users_were_invited = []
     for event in events:
-        number_of_user, users = User.get()
+        number_of_user, users = slack_user_service.get()
         number_to_invite = people_per_event - event['number_of_already_invited']
-        users_to_invite = SlackUser.get_users_to_invite(number_to_invite, event['event_id'], number_of_user, people_per_event)
-        user_ids_to_invite = [user[0] for user in users_to_invite]
+        user_ids_to_invite = slack_user_service.get_user_ids_to_invite(number_to_invite, event['event_id'], number_of_user, people_per_event)
 
         if len(user_ids_to_invite) == 0:
             print("Event %s in need of users, but noone to invite" % event['event_id']) # TODO: needs to be handled
@@ -66,12 +63,7 @@ def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str)
         }
         try:
             for user_id in user_ids_to_invite:
-                invitation_schema = InvitationSchema()
-                invitation = invitation_schema.load(
-                    data={"event_id": event['event_id'], "slack_id": user_id},
-                    partial=True
-                )
-                Invitation.upsert(invitation)
+                invitation_service.add(event['event_id'], user_id)
                 event_where_users_were_invited['invited_users'].append(user_id)
         except Exception as e:
             print(e)
