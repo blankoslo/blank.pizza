@@ -170,11 +170,11 @@ resource "heroku_addon_attachment" "database-attachment" {
   addon_id = heroku_addon.database.id
 }
 
-resource "herokux_postgres_backup_schedule" "database_backup" {
-  postgres_id = heroku_addon.database.id
-  hour        = 23
-  timezone    = "Europe/Oslo"
-}
+#resource "herokux_postgres_backup_schedule" "database_backup" {
+#  postgres_id = heroku_addon.database.id
+#  hour        = 23
+#  timezone    = "Europe/Oslo"
+#}
 
 resource "heroku_formation" "formation-backend" {
   app_id     = heroku_app.backend.id

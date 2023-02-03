@@ -20,3 +20,7 @@ class SlackUserService:
 
         updated_slack_user = SlackUserSchema().load(data=data, instance=slack_user, partial=True)
         return SlackUser.upsert(updated_slack_user)
+
+    def get_user_ids_to_invite(self, number_to_invite, event_id, number_of_user, people_per_event):
+        users_to_invite = SlackUser.get_users_to_invite(number_to_invite, event_id, number_of_user, people_per_event)
+        return [user[0] for user in users_to_invite]

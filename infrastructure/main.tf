@@ -11,12 +11,12 @@ module "staging" {
   source = "./system"
 
   heroku_team_name = var.heroku_team_name
-  hostname = "staging.bot.blank.pizza"
+  hostname = "dev.bot.blank.pizza"
   prefix = var.prefix
-  environment = "stag"
+  environment = "dev"
   CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
-  POSTGRES_PLAN = "heroku-postgresql:hobby-dev"
+  POSTGRES_PLAN = "heroku-postgresql:mini"
   SCHEDULER_PLAN = "scheduler:standard"
   SCHEDULER_JOB_DYNO = "Free"
   SCHEDULER_JOB_FREQUENCY = "every_ten_minutes"
@@ -53,7 +53,7 @@ module "production" {
   environment = "prod"
   CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
-  POSTGRES_PLAN = "heroku-postgresql:hobby-dev"
+  POSTGRES_PLAN = "heroku-postgresql:mini"
   SCHEDULER_PLAN = "scheduler:standard"
   SCHEDULER_JOB_DYNO = "Free"
   SCHEDULER_JOB_FREQUENCY = "every_ten_minutes"
