@@ -1,74 +1,35 @@
-import os
-
-from app.services.broker.handlers import MessageHandler
+from app.services.broker import BrokerService
+from app.services.broker.handlers.message_handler import MessageHandler
 from app.services.broker.schemas.update_invitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from app.services.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
-from app.services.broker.schemas.finalization_event_event import FinalizationEventEventSchema
 
-from app.models.invitation import Invitation
 from app.models.slack_user import SlackUser
 from app.models.slack_user_schema import SlackUserSchema
-from app.models.invitation_schema import InvitationSchema
-from app.models.enums import RSVP
-from app.models.event import Event
-from app.models.event_schema import EventSchema
-from app.models.restaurant import Restaurant
-
-def finalize_event_if_complete(event_id, people_per_event):
-    event_ready_to_finalize = Event.get_event_by_id_if_ready_to_finalize(event_id, people_per_event)
-
-    if event_ready_to_finalize is not None:
-        # Update event to be finalized
-        update_data = {
-            'finalized': True
-        }
-        updated_event = EventSchema().load(data=update_data, instance=event_ready_to_finalize, partial=True)
-        Event.upsert(updated_event)
-        return True
-    return False
-
+from app.services.injector import injector
+from app.services.invitation_service import InvitationService
 
 @MessageHandler.handle('update_invitation')
 def update_invitation(payload: dict, correlation_id: str, reply_to: str):
+    invitation_service = injector.get(InvitationService)
     schema = UpdateInvitationRequestSchema()
     request = schema.load(payload)
     slack_id = request.get('slack_id')
     event_id = request.get('event_id')
     update_data = request.get('update_data')
-    people_per_event = os.environ["PEOPLE_PER_EVENT"]
 
-    result = True
-    try:
-        # Update invitation to either accepted or declined
-        invitation = Invitation.get_by_id(event_id, slack_id)
-        if "reminded_at" in update_data:
-            update_data["reminded_at"] = update_data["reminded_at"].isoformat()
-        updated_invitation = InvitationSchema().load(data=update_data, instance=invitation, partial=True)
-        Invitation.upsert(updated_invitation)
-        if 'rsvp' in update_data and people_per_event is not None and update_data['rsvp'] == RSVP.attending:
-            # Check if event is ready to be finalized and finalize if it is
-            was_finalized = finalize_event_if_complete(event_id, people_per_event)
-            # Publish event that event is finalized
-            if was_finalized:
-                event = Event.get_by_id(event_id)
-                restaurant = Restaurant.get_by_id(event.restaurant_id)
-                queue_event_schema = FinalizationEventEventSchema()
-                queue_event = queue_event_schema.load({
-                    'is_finalized': True,
-                    'event_id': event.id,
-                    'timestamp': event.time.isoformat(),
-                    'restaurant_name': restaurant.name,
-                    'slack_ids': [user[0] for user in Invitation.get_attending_users(event.id)]
-                })
-                MessageHandler.publish("finalization", queue_event)
-    except Exception as e:
-        print(e)
-        result = False
+    result = False
+    if "reminded_at" in update_data:
+        result = invitation_service.update_reminded_at(event_id, slack_id, update_data["reminded_at"].isoformat())
+
+    # Update invitation to either accepted or declined
+    if 'rsvp' in update_data:
+        invitation = invitation_service.update_invitation_status(event_id, slack_id, update_data["rsvp"])
+        result = True if invitation is not None else False
 
     response_schema = UpdateInvitationResponseSchema()
     response = response_schema.load({'success': result})
 
-    MessageHandler.respond(response, reply_to, correlation_id)
+    BrokerService.respond(response, reply_to, correlation_id)
 
 @MessageHandler.handle('update_slack_user')
 def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
@@ -95,4 +56,4 @@ def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
     response_schema = UpdateSlackUserResponseSchema()
     response = response_schema.load({'success': response})
 
-    MessageHandler.respond(response, reply_to, correlation_id)
+    BrokerService.respond(response, reply_to, correlation_id)

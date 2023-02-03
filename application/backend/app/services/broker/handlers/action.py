@@ -2,71 +2,33 @@ from datetime import datetime
 import pytz
 import os
 
-from app.services.broker.handlers import MessageHandler
+from app.services.broker import BrokerService
+from app.services.broker.handlers.message_handler import MessageHandler
 
-from app.services.broker.schemas.finalization_event_event import FinalizationEventEventSchema
 from app.services.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
-from app.services.broker.schemas.user_withdrew_after_finalization_event import UserWithdrewAfterFinalizationEventSchema
 from app.services.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
 
 from app.models.event import Event
 from app.models.user import User
 from app.models.slack_user import SlackUser
-from app.models.event_schema import EventSchema
 from app.models.invitation import Invitation
 from app.models.invitation_schema import InvitationSchema
 from app.models.enums import RSVP
-from app.models.restaurant import Restaurant
+from app.services.injector import injector
+from app.services.invitation_service import InvitationService
 
 @MessageHandler.handle('withdraw_invitation')
 def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
+    invitation_service = injector.get(InvitationService)
+
     schema = WithdrawInvitationRequestSchema()
     request = schema.load(payload)
     event_id = request.get('event_id')
     slack_id = request.get('slack_id')
 
-    #Check if event is in past
-    result = True
     try:
-        event = Event.get_by_id(event_id)
-        if event.time < datetime.now(pytz.utc):
-            result = False
-        else:
-            # Update invitation to not attending
-            invitation = Invitation.get_by_id(event_id, slack_id)
-            update_data = {
-                'rsvp': RSVP.not_attending
-            }
-            updated_invitation = InvitationSchema().load(data=update_data, instance=invitation, partial=True)
-            Invitation.upsert(updated_invitation)
-            if event.finalized:
-                restaurant = Restaurant.get_by_id(event.restaurant_id)
-                attending_users = [user[0] for user in Invitation.get_attending_users(event.id)]
-                # Publish event that user withdrew after finalization
-                queue_event_schema = UserWithdrewAfterFinalizationEventSchema()
-                queue_event = queue_event_schema.load({
-                    'event_id': event.id,
-                    'slack_id': slack_id,
-                    'timestamp': event.time.isoformat(),
-                    'restaurant_name': restaurant.name
-                })
-                MessageHandler.publish("user_withdrew_after_finalization", queue_event)
-                # Mark event as unfinalized
-                update_data = {
-                    'finalized': False
-                }
-                updated_invitation = EventSchema().load(data=update_data, instance=event, partial=True)
-                Event.upsert(updated_invitation)
-                # Publish event that event is unfinalized
-                queue_event_schema = FinalizationEventEventSchema()
-                queue_event = queue_event_schema.load({
-                    'is_finalized': False,
-                    'event_id': event.id,
-                    'timestamp': event.time.isoformat(),
-                    'restaurant_name': restaurant.name,
-                    'slack_ids': attending_users
-                })
-                MessageHandler.publish("finalization", queue_event)
+        updated_invite = invitation_service.update_invitation_status(event_id, slack_id, RSVP.not_attending)
+        result = True if updated_invite is not None else False
     except Exception as e:
         print(e)
         result = False
@@ -74,7 +36,7 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
     response_schema = WithdrawInvitationResponseSchema()
     response = response_schema.load({'success': result})
 
-    MessageHandler.respond(response, reply_to, correlation_id)
+    BrokerService.respond(response, reply_to, correlation_id)
 
 @MessageHandler.handle('invite_multiple_if_needed')
 def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str):
@@ -118,4 +80,4 @@ def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str)
     response_schema = InviteMultipleIfNeededResponseSchema()
     response = response_schema.load({'events': events_where_users_were_invited})
 
-    MessageHandler.respond(response, reply_to, correlation_id)
+    BrokerService.respond(response, reply_to, correlation_id)
