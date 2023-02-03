@@ -28,17 +28,23 @@ class InvitationService:
 
     def update_invitation_status(self, event_id, user_id, rsvp):
         invitation = Invitation.get_by_id(event_id, user_id)
+        event = self.event_service.get_by_id(invitation.event_id)
 
+        # If invitation doesnt exist then we cant update it
         if invitation is None:
+            return None
+
+        # If event is in the past then updating invites doesnt make sense
+        if event.time < datetime.now(pytz.utc):
             return None
 
         try:
             # If their current status is Attending, and they change it then it's a withdrawal that needs to be handled
             if invitation.rsvp == RSVP.attending:
-                return self._withdraw_invitation(rsvp, invitation)
+                return self._withdraw_invitation(rsvp, invitation, event)
             # If they accept an invitation then we need to check if the event is to be finalized
             elif rsvp == RSVP.attending:
-                return self._accept_invitation(invitation)
+                return self._accept_invitation(invitation, event)
             # In other cases we simply update the invitation
             else:
                 return self._update_invitation(
@@ -62,40 +68,40 @@ class InvitationService:
         except:
             return None
 
-    def _withdraw_invitation(self, rsvp, invitation):
-        event = self.event_service.get_by_id(invitation.event_id)
-        if event.time < datetime.now(pytz.utc):
-            return None
-        else:
-            # Update invitation to not attending
-            updated_invitation = self._update_invitation({'rsvp': RSVP.not_attending}, invitation)
-            if event.finalized:
-                restaurant = self.restaurant_service.get_by_id(event.restaurant_id)
-                attending_users = [user[0] for user in Invitation.get_attending_users(event.id)]
-                # Publish event that user withdrew after finalization
-                queue_event_schema = UserWithdrewAfterFinalizationEventSchema()
-                queue_event = queue_event_schema.load({
-                    'event_id': updated_invitation.event_id,
-                    'slack_id': updated_invitation.slack_id,
-                    'timestamp': event.time.isoformat(),
-                    'restaurant_name': restaurant.name
-                })
-                BrokerService.publish("user_withdrew_after_finalization", queue_event)
-                # Mark event as unfinalized
-                self.event_service.unfinalize_event(event.id)
-                # Publish event that event is unfinalized
-                queue_event_schema = FinalizationEventEventSchema()
-                queue_event = queue_event_schema.load({
-                    'is_finalized': False,
-                    'event_id': event.id,
-                    'timestamp': event.time.isoformat(),
-                    'restaurant_name': restaurant.name,
-                    'slack_ids': attending_users
-                })
-                BrokerService.publish("finalization", queue_event)
-            return updated_invitation
+    def _withdraw_invitation(self, rsvp, invitation, event):
+        # Update invitation to not attending
+        updated_invitation = self._update_invitation({'rsvp': rsvp}, invitation)
+        if event.finalized:
+            restaurant = self.restaurant_service.get_by_id(event.restaurant_id)
+            attending_users = [user[0] for user in Invitation.get_attending_users(event.id)]
+            # Publish event that user withdrew after finalization
+            queue_event_schema = UserWithdrewAfterFinalizationEventSchema()
+            queue_event = queue_event_schema.load({
+                'event_id': updated_invitation.event_id,
+                'slack_id': updated_invitation.slack_id,
+                'timestamp': event.time.isoformat(),
+                'restaurant_name': restaurant.name
+            })
+            BrokerService.publish("user_withdrew_after_finalization", queue_event)
+            # Mark event as unfinalized
+            self.event_service.unfinalize_event(event.id)
+            # Publish event that event is unfinalized
+            queue_event_schema = FinalizationEventEventSchema()
+            queue_event = queue_event_schema.load({
+                'is_finalized': False,
+                'event_id': event.id,
+                'timestamp': event.time.isoformat(),
+                'restaurant_name': restaurant.name,
+                'slack_ids': attending_users
+            })
+            BrokerService.publish("finalization", queue_event)
+        return updated_invitation
 
-    def _accept_invitation(self, invitation):
+    def _accept_invitation(self, invitation, event):
+        # If event is finalized then we won't accept more invites
+        if event.finalized:
+            return None
+
         updated_invitation = self._update_invitation(
             {'rsvp': RSVP.attending},
             invitation
