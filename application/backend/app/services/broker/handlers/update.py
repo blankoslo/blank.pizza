@@ -3,10 +3,9 @@ from app.services.broker.handlers.message_handler import MessageHandler
 from app.services.broker.schemas.update_invitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
 from app.services.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 
-from app.models.slack_user import SlackUser
-from app.models.slack_user_schema import SlackUserSchema
 from app.services.injector import injector
 from app.services.invitation_service import InvitationService
+from app.services.slack_user_service import SlackUserService
 
 @MessageHandler.handle('update_invitation')
 def update_invitation(payload: dict, correlation_id: str, reply_to: str):
@@ -33,6 +32,7 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
 
 @MessageHandler.handle('update_slack_user')
 def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
+    slack_user_service = injector.get(SlackUserService)
     schema = UpdateSlackUserRequestSchema()
     request = schema.load(payload)
     slack_id = request['slack_id']
@@ -40,15 +40,10 @@ def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
 
     response = False
     try:
-        updated_slack_user_id = SlackUserSchema().load(
-            data = {
-                'slack_id': slack_id,
-                'current_username': update_data['current_username'],
-                'email': update_data['email']
-            },
-            partial=True
-        )
-        SlackUser.upsert(updated_slack_user_id)
+        slack_user_service.update(slack_id, {
+            'current_username': update_data['current_username'],
+            'email': update_data['email']
+        })
     except Exception as e:
         print(e)
         response = True
