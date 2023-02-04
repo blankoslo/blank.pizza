@@ -21,13 +21,15 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
 
     result = False
     if "reminded_at" in update_data:
-        result = invitation_service.update_reminded_at(event_id, slack_id, update_data["reminded_at"].isoformat())
+        response = invitation_service.update_reminded_at(event_id, slack_id, update_data["reminded_at"].isoformat())
+        result = True if response is not None else False
         logger.info("Updated reminded_at for (%s,%s)", event_id, slack_id)
 
     # Update invitation to either accepted or declined
     if 'rsvp' in update_data:
-        invitation = invitation_service.update_invitation_status(event_id, slack_id, update_data["rsvp"])
-        result = True if invitation is not None else False
+        response = invitation_service.update_invitation_status(event_id, slack_id, update_data["rsvp"])
+        result = True if response is not None else False
+        logger.info("Updated rsvp for (%s,%s)", event_id, slack_id)
 
     response_schema = UpdateInvitationResponseSchema()
     response = response_schema.load({'success': result})
