@@ -4,3 +4,9 @@ requests
 slack_sdk
 slack_bolt
 pytz
+pika
+retry
+injector
+apscheduler
+marshmallow
+marshmallow_enum

@@ -1,7 +1,9 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.restaurant import Restaurant, RestaurantSchema, RestaurantQueryArgsSchema, RestaurantUpdateSchema
+from app.models.restaurant_schema import RestaurantSchema, RestaurantQueryArgsSchema, RestaurantUpdateSchema
 from flask_jwt_extended import jwt_required
+from app.services.injector import injector
+from app.services.restaurant_service import RestaurantService
 
 bp = Blueprint("restaurants", "restaurants", url_prefix="/restaurants", description="Operations on restaurants")
 
@@ -12,7 +14,8 @@ class Restaurants(views.MethodView):
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """List restaurants"""
-        total, restaurants = Restaurant.get(filters = args, page = pagination_parameters.page, per_page = pagination_parameters.page_size)
+        restaurant_service = injector.get(RestaurantService)
+        total, restaurants = restaurant_service.get(args, pagination_parameters.page, pagination_parameters.page_size)
         pagination_parameters.item_count = total
         return restaurants
     
@@ -20,17 +23,18 @@ class Restaurants(views.MethodView):
     @bp.response(201, RestaurantSchema)
     @jwt_required()
     def post(self, new_data):
-        """Add an restaurant"""
-        Restaurant.upsert(new_data)
-        return new_data
+        """Add a restaurant"""
+        restaurant_service = injector.get(RestaurantService)
+        return restaurant_service.add(new_data)
 
 @bp.route("/<restaurant_id>")
 class RestaurantsById(views.MethodView):
     @bp.response(200, RestaurantSchema)
     def get(self, restaurant_id):
         """Get restaurant by ID"""
-        restaurant = Restaurant.get_by_id(restaurant_id)
-        if restaurant == None:
+        restaurant_service = injector.get(RestaurantService)
+        restaurant = restaurant_service.get_by_id(restaurant_id)
+        if restaurant is None:
             abort(404, message = "Restaurant not found.")
         return restaurant
     
@@ -39,19 +43,15 @@ class RestaurantsById(views.MethodView):
     @jwt_required()
     def put(self, update_data, restaurant_id):
         """Update existing restaurant"""
-        restaurant = Restaurant.get_by_id(restaurant_id)
-        if restaurant == None:
+        restaurant_service = injector.get(RestaurantService)
+        updated_restaurant = restaurant_service.update(restaurant_id, update_data)
+        if updated_restaurant is None:
             abort(422, message = "Restaurant not found.")
-        updated_restaurant = RestaurantSchema().load(data=update_data, instance=restaurant, partial=True)
-        Restaurant.upsert(updated_restaurant)
         return updated_restaurant
 
     @bp.response(204)
     @jwt_required()
     def delete(self, restaurant_id):
         """Delete restaurant"""
-        restaurant = Restaurant.get_by_id(restaurant_id)
-        if restaurant == None:
-            abort(422, message = "Restaurant not found.")
-        updated_restaurant = RestaurantSchema().load(data={"deleted": True}, instance=restaurant, partial=True)
-        Restaurant.upsert(updated_restaurant)
+        restaurant_service = injector.get(RestaurantService)
+        restaurant_service.delete(restaurant_id)

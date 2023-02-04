@@ -1,4 +1,4 @@
-FROM python:3.6-alpine
+FROM python:3.9-alpine
 
 WORKDIR /srv/bot
 
@@ -13,4 +13,4 @@ RUN \
 
 WORKDIR /srv/bot
 
-CMD python bot_app.py
+CMD python main.py

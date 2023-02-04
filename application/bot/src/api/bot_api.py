@@ -1,244 +1,282 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
-import src.api.slack as slack
-import src.database.interface as db
-import locale
 import pytz
+import os
+from injector import inject
+
+import src.api.slack_api as slack
 from datetime import datetime, timedelta
-from src.database.rsvp import RSVP
+from src.rsvp import RSVP
+from src.broker.api_client import ApiClient
+from src.injector import injector
+import logging
 
-pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
+class BotApiConfiguration:
+    def __init__(self, pizza_channel_id, timezone):
+        self.pizza_channel_id = pizza_channel_id
+        self.timezone = timezone
 
-try:
-    locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
-except:
-    print("Missing locale nb_NO.utf8 on server")
+class BotApi:
+    @inject
+    def __init__(self, config: BotApiConfiguration, logger: logging.Logger):
+        self.REPLY_DEADLINE_IN_HOURS = int(os.environ["REPLY_DEADLINE_IN_HOURS"])
+        self.HOURS_BETWEEN_REMINDERS = int(os.environ["HOURS_BETWEEN_REMINDERS"])
+        self.pizza_channel_id = config.pizza_channel_id
+        self.timezone = config.timezone
+        self.logger = logger
 
-timezone = pytz.timezone('Europe/Oslo')
+    def __enter__(self):
+        self.client = ApiClient()
+        return self
 
-PEOPLE_PER_EVENT = 5
-REPLY_DEADLINE_IN_HOURS = 24
-DAYS_IN_ADVANCE_TO_INVITE = 10
-HOURS_BETWEEN_REMINDERS = 4
+    def __exit__(self, type, value, traceback):
+        self.client.disconnect()
 
-def invite_multiple_if_needed():
-    events = db.get_events_in_need_of_invitations(DAYS_IN_ADVANCE_TO_INVITE, PEOPLE_PER_EVENT)
-    for event in events:
-        invite_if_needed(event)
+    def invite_multiple_if_needed(self):
+        events = self.client.invite_multiple_if_needed()
+        for event in events:
+            self.invite_if_needed(event)
 
-def invite_if_needed(event):
-    if event is None:
-        print("No users were invited")
-        return
+    def invite_if_needed(self, event):
+        self.logger.info("Inviting users for %s", event['event_id'])
+        invited_users = event['invited_users']
+        event_time = event['event_time']
+        event_id = event['event_id']
+        restaurant_name = event['restaurant_name']
 
-    # timestamp (timestamp) is converted to UTC timestamp by psycopg2
-    event_id, timestamp, restaurant_id, number_of_already_invited, restaurant_name = event
-    # Convert timestamp to Norwegian timestamp
-    timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
-    number_of_employees = db.get_number_of_employees()
-    number_to_invite = PEOPLE_PER_EVENT - number_of_already_invited
-    users_to_invite = db.get_users_to_invite(number_to_invite, event_id, number_of_employees, PEOPLE_PER_EVENT)
-
-    if len(users_to_invite) == 0:
-        print("Event in need of users, but noone to invite") # TODO: needs to be handled
-        return
-
-    db.save_invitations(users_to_invite, event_id)
-
-    for user_id in users_to_invite:
-        send_pizza_invite(user_id, event_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), REPLY_DEADLINE_IN_HOURS)
-        print("%s was invited to event on %s" % (user_id, timestamp))
-
-def send_reminders():
-    inviations = db.get_unanswered_invitations()
-
-    for invitation in inviations:
-        # invited_at and reminded_at (timestamps) are converted to UTC timestamp by psycopg2
-        slack_id, invited_at, reminded_at = invitation
-        # all timestamps (such as reminded_at) gets converted to UTC
-        # so comparing it to datetime.now in UTC is correct
-        remind_timestamp = datetime.now(pytz.utc) + timedelta(hours=-HOURS_BETWEEN_REMINDERS)
-        if(reminded_at < remind_timestamp):
-            slack.send_slack_message(slack_id, "Hei du! Jeg hørte ikke noe mer? Er du gira?")
-            db.update_reminded_at(slack_id)
-            print("%s was reminded about an event." % slack_id)
-
-def finalize_event_if_complete():
-    event = db.get_event_ready_to_finalize(PEOPLE_PER_EVENT)
-    if event is None:
-        print("No events ready to finalize")
-    else:
         # timestamp (timestamp) is converted to UTC timestamp by psycopg2
-        event_id, timestamp, restaurant_id = event
-        restaurant = db.get_restaurant_name(restaurant_id)
         # Convert timestamp to Norwegian timestamp
-        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(timezone)
-        slack_ids = ['<@%s>' % user for user in db.get_attending_users(event_id)]
-        db.mark_event_as_finalized(event_id)
-        ids_string = ", ".join(slack_ids)
-        booker = slack_ids[0]
-        payer = slack_ids[1] if len(slack_ids) > 1 else slack_ids[0]
-        slack.send_slack_message(pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
+        timestamp = pytz.utc.localize(event_time.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
 
-def auto_reply():
-    users_that_did_not_reply = db.auto_reply_after_deadline(REPLY_DEADLINE_IN_HOURS)
-    if users_that_did_not_reply is None:
-       return
+        for user_id in invited_users:
+            self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+            self.logger.info("%s was invited to event on %s" % (user_id, timestamp))
 
-    for user_id in users_that_did_not_reply:
-        slack.send_slack_message(user_id, "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
-        print("%s didn't answer. Setting RSVP to not attending.")
+    def send_reminders(self):
+        invitations = self.client.get_unanswered_invitations()
 
-def save_image(cloudinary_id, slack_id, title):
-    db.save_image(cloudinary_id, slack_id, title)
+        for invitation in invitations:
+            # all timestamps (such as reminded_at) gets converted to UTC
+            # so comparing it to datetime.now in UTC is correct
+            remind_timestamp = datetime.now(pytz.utc) + timedelta(hours =- self.HOURS_BETWEEN_REMINDERS)
+            if invitation['reminded_at'] < remind_timestamp:
+                slack.send_slack_message(invitation['slack_id'], "Hei du! Jeg hørte ikke noe mer? Er du gira?")
+                was_updated = self.client.update_invitation(
+                    invitation['slack_id'],
+                    invitation['event_id'],
+                    {
+                        "reminded_at": datetime.now().isoformat()
+                    }
+                )
+                if was_updated:
+                    self.logger.info("%s was reminded about an event." % invitation['slack_id'])
+                else:
+                    self.logger.warning("failed to update invitation")
 
-def rsvp(slack_id, answer):
-    db.rsvp(slack_id, answer)
+    def send_event_finalized(self, timestamp, restaurant_name, slack_ids):
+        self.logger.info("Finalizing event %s %s", timestamp, restaurant_name)
+        # Convert timestamp to Norwegian timestamp
+        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
+        # Create slack @-id-strings
+        users = ['<@%s>' % user for user in slack_ids]
+        ids_string = ", ".join(users)
+        # Get the user to book
+        booker = users[0]
+        # Get the user to pay
+        payer = users[1] if len(users) > 1 else users[0]
+        # Send the finalization Slack message
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
-def accept_invitation(event_id, slack_id):
-    db.update_invitation(event_id, slack_id, RSVP.attending)
+    def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
+        self.logger.info("Unfinalizing event %s %s", timestamp, restaurant_name)
+        # Convert timestamp to Norwegian timestamp
+        timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
+        # Create slack @-id-strings
+        users = ['<@%s>' % user for user in slack_ids]
+        ids_string = ", ".join(users)
+        # Send message that the event unfinalized
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
+        # Invite more users for the event
+        self.invite_multiple_if_needed()
 
-def decline_invitation(event_id, slack_id):
-    db.update_invitation(event_id, slack_id, RSVP.not_attending)
+    def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name):
+        self.logger.info("User %s withdrew from event %s %s", user_id, timestamp, restaurant_name)
+        # Send message that the user withdrew
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
+        # Invite more users for the event
+        self.invite_multiple_if_needed()
 
-def withdraw_invitation(event_id, slack_id):
-    in_past = db.event_in_past(event_id)
-    if not in_past:
-        db.update_invitation(event_id, slack_id, RSVP.not_attending)
-        if db.event_is_finalized(event_id):
-            db.mark_event_as_unfinalized(event_id)
-    return in_past
+    def auto_reply(self):
+        invitations = self.client.get_unanswered_invitations()
 
-def send_slack_message_old(channel_id, text, attachments=None, thread_ts=None):
-    return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
+        for invitation in invitations:
+            deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
+            if deadline < datetime.now(pytz.utc):
+                was_updated = self.update_invitation_answer(
+                    invitation['slack_id'],
+                    invitation['event_id'],
+                    RSVP.not_attending
+                )
+                if was_updated:
+                    slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
+                    self.logger.info("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
+                else:
+                    self.logger.warning("failed to update invitation to not attending")
 
-def update_slack_message(channel_id, ts, text=None, blocks=None):
-    return slack.update_slack_message(channel_id, ts, text, blocks)
-
-def send_pizza_invite(channel_id, event_id, place, datetime, deadline):
-    blocks = [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Pizzainvitasjon"
+    def update_invitation_answer(self, event_id, slack_id, answer: RSVP):
+        return self.client.update_invitation(
+            slack_id,
+            event_id,
+            {
+                "rsvp": answer
             }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": f"Du er invitert til :pizza: på {place}, {datetime}. Pls svar innen {deadline} timer :pray:. Kan du?"
-            }
-        },
-        {
-            "type": "divider"
-        },
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Hells yesss!!! 🍕🍕🍕"
-                    },
-                    "value": event_id,
-                    "action_id": "rsvp_yes",
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Nah ☹️"
-                    },
-                    "value": event_id,
-                    "action_id": "rsvp_no",
+        )
+
+    def accept_invitation(self, event_id, slack_id):
+        self.update_invitation_answer(event_id, slack_id, RSVP.attending)
+
+    def decline_invitation(self, event_id, slack_id):
+        self.update_invitation_answer(event_id, slack_id, RSVP.not_attending)
+
+    def withdraw_invitation(self, event_id, slack_id):
+        return self.client.withdraw_invitation(event_id, slack_id)
+
+    def save_image(self, cloudinary_id, slack_id, title):
+        self.client.create_image(cloudinary_id, slack_id, title)
+
+    def get_invited_users(self):
+        return self.client.get_invited_unanswered_user_ids()
+
+    def sync_db_with_slack_and_return_count(self):
+        all_slack_users = slack.get_slack_users()
+        slack_users = slack.get_real_users(all_slack_users)
+        for slack_user in slack_users:
+            success = self.client.update_slack_user(slack_user)
+            if success:
+                self.logger.info("Updated user %s" % slack_user['id'])
+            else:
+                self.logger.warning("Was unable to update %s" % slack_user['id'])
+        return len(slack_users)
+
+    def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):
+        return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
+
+    def update_slack_message(self, channel_id, ts, text=None, blocks=None):
+        return slack.update_slack_message(channel_id, ts, text, blocks)
+
+    def send_pizza_invite(self, channel_id, event_id, place, datetime, deadline):
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Pizzainvitasjon"
                 }
-            ]
-        }
-    ]
-    return slack.send_slack_message(channel_id=channel_id, blocks=blocks)
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Du er invitert til :pizza: på {place}, {datetime}. Pls svar innen {deadline} timer :pray:. Kan du?"
+                }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Hells yesss!!! 🍕🍕🍕"
+                        },
+                        "value": event_id,
+                        "action_id": "rsvp_yes",
+                    },
+                    {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Nah ☹️"
+                        },
+                        "value": event_id,
+                        "action_id": "rsvp_no",
+                    }
+                ]
+            }
+        ]
+        return slack.send_slack_message(channel_id=channel_id, blocks=blocks)
 
-def clean_blocks(blocks):
-    for block in blocks:
-        del block["block_id"]
-        if ("text" in block and "emoji" in block["text"]):
-            del block["text"]["emoji"]
-    return blocks
+    def clean_blocks(self, blocks):
+        for block in blocks:
+            del block["block_id"]
+            if "text" in block and "emoji" in block["text"]:
+                del block["text"]["emoji"]
+        return blocks
 
-def send_pizza_invite_answered(channel_id, ts, event_id, old_blocks, attending):
-    old_blocks = clean_blocks(old_blocks)
-    new_blocks_common = [
-		{
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": f"Du har takket {'ja. Sweet! 🤙' if attending else 'nei. Ok 😕'}",
-			}
-		}
-	]
-    new_blocks_yes = [
-        {
-			"type": "divider"
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": "Hvis noe skulle skje så kan du melde deg av ved å klikke på knappen!"
-			},
-			"accessory": {
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": "Meld meg av"
-				},
-				"value": event_id,
-				"action_id": "rsvp_withdraw"
-			}
-		}
-    ]
-    blocks = old_blocks + new_blocks_common
-    if attending:
-        blocks += new_blocks_yes
-    return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+    def send_pizza_invite_answered(self, channel_id, ts, event_id, old_blocks, attending):
+        old_blocks = self.clean_blocks(old_blocks)
+        new_blocks_common = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Du har takket {'ja. Sweet! 🤙' if attending else 'nei. Ok 😕'}",
+                }
+            }
+        ]
+        new_blocks_yes = [
+            {
+                "type": "divider"
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Hvis noe skulle skje så kan du melde deg av ved å klikke på knappen!"
+                },
+                "accessory": {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Meld meg av"
+                    },
+                    "value": event_id,
+                    "action_id": "rsvp_withdraw"
+                }
+            }
+        ]
+        blocks = old_blocks + new_blocks_common
+        if attending:
+            blocks += new_blocks_yes
+        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-def send_pizza_invite_withdraw(channel_id, ts, old_blocks):
-    old_blocks = clean_blocks(old_blocks)
-    new_blocks = [
-		{
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": "Du har meldt deg av. Ok 😕",
-			}
-		}
-	]
-    blocks = old_blocks + new_blocks
-    return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+    def send_pizza_invite_withdraw(self, channel_id, ts, old_blocks):
+        old_blocks = self.clean_blocks(old_blocks)
+        new_blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Du har meldt deg av. Ok 😕",
+                }
+            }
+        ]
+        blocks = old_blocks + new_blocks
+        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-def send_pizza_invite_withdraw_failure(channel_id, ts, old_blocks):
-    old_blocks = clean_blocks(old_blocks)
-    new_blocks = [
-		{
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": "Pizza arrangementet er over. Avmelding er ikke mulig.",
-			}
-		}
-	]
-    blocks = old_blocks + new_blocks
-    return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
-
-def get_invited_users():
-    return db.get_invited_users()
-
-def sync_db_with_slack_and_return_count():
-  all_slack_users = slack.get_slack_users()
-  slack_users = slack.get_real_users(all_slack_users)
-  db.update_slack_users(slack_users)
-  return len(slack_users)
+    def send_pizza_invite_withdraw_failure(self, channel_id, ts, old_blocks):
+        old_blocks = self.clean_blocks(old_blocks)
+        new_blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Pizza arrangementet er over. Avmelding er ikke mulig.",
+                }
+            }
+        ]
+        blocks = old_blocks + new_blocks
+        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)

@@ -1,12 +1,6 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
 from app.db import db
-from app.models.mixins import get_field, CrudMixin
-
-from marshmallow import Schema
-from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
 class Rating(db.Model):
   __tablename__ = "ratings"
@@ -20,14 +14,3 @@ class Rating(db.Model):
   
   def __repr__(self):
       return "<Rating(slack_id={self.slack_id!r} restaurant_id={self.restaurant_id!r}))".format(self=self)
-
-class RatingSchema(SQLAlchemySchema):
-    class Meta:
-        model = Rating
-        include_relationships = True
-        sqla_session = db.session
-        load_instance = True
-
-    slack_id = auto_field()
-    restaurant_id = auto_field()
-    rating = auto_field()

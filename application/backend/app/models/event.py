@@ -1,17 +1,13 @@
-from datetime import datetime
-from time import timezone
-import uuid
+from datetime import datetime, timedelta
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy import func, and_, or_, not_, column
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
-from app.models.restaurant import RestaurantSchema
-from app.models.enums import Age
-
-from marshmallow import Schema, fields
-from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
-from marshmallow_enum import EnumField
+from app.models.enums import Age, RSVP
+from app.models.restaurant import Restaurant
+from app.models.invitation import Invitation
 
 class Event(CrudMixin, db.Model):
     __tablename__ = "events"
@@ -25,38 +21,78 @@ class Event(CrudMixin, db.Model):
     def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
         query = session.query(cls)
         # Add filters to the query
-        if ('age' in filters and filters['age'] == Age.New):
+        if 'age' in filters and filters['age'] == Age.New:
             query = query.filter(cls.time > datetime.now())
-        elif ('age' in filters and filters['age'] == Age.Old):
+        elif 'age' in filters and filters['age'] == Age.Old:
             query = query.filter(cls.time < datetime.now())
         # Add order by to the query
-        if (order_by):
+        if order_by:
             query = query.order_by(order_by())
         # If pagination is on, paginate the query
-        if (page and per_page):
-            pagination = query.paginate(page, per_page, False)
+        if page and per_page:
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             return pagination.total, pagination.items
             
         res = query.count(), query.all()
         return res
 
+    @classmethod
+    def get_events_in_need_of_invitations(cls, days_in_advance_to_invite, people_per_event, session=db.session):
+        query = session.query(cls.id, cls.time, Restaurant.name, func.count(Invitation.event_id).label("invited"))\
+            .outerjoin(
+                Restaurant,
+                cls.restaurant_id == Restaurant.id
+            )\
+            .outerjoin(
+                Invitation,
+                and_(
+                    Invitation.event_id == cls.id,
+                    or_(
+                        Invitation.rsvp == RSVP.unanswered,
+                        Invitation.rsvp == RSVP.attending
+                    )
+                )
+            )\
+            .filter(
+                and_(
+                    cls.time > datetime.now(),
+                    cls.time < (datetime.now() + timedelta(days=days_in_advance_to_invite))
+                )
+            )\
+            .group_by(cls.id, Restaurant.name)\
+            .having(func.count(Invitation.event_id) < people_per_event)
+        return query.all()
+
+    @classmethod
+    def get_event_ready_to_finalize(cls, people_per_event, session=db.session):
+        query = session.query(cls)\
+            .join(Invitation, Invitation.event_id == cls.id)\
+            .filter(
+                and_(
+                    Invitation.rsvp == RSVP.attending,
+                    not_(cls.finalized)
+                )
+            )\
+            .group_by(cls.id, cls.time, cls.restaurant_id)\
+            .having(func.count(cls.id) == people_per_event)
+        return query.first()
+
+    @classmethod
+    def get_event_by_id_if_ready_to_finalize(cls, event_id, people_per_event, session=db.session):
+        query = session.query(cls) \
+            .join(Invitation, Invitation.event_id == cls.id) \
+            .filter(
+                and_(
+                    and_(
+                        Invitation.rsvp == RSVP.attending,
+                        not_(cls.finalized)
+                    ),
+                    Invitation.event_id == event_id
+                )
+            )\
+            .group_by(cls.id, cls.time, cls.restaurant_id) \
+            .having(func.count(cls.id) == people_per_event)
+        return query.first()
+
     def __repr__(self):
         return "<Event(id={self.id!r})>".format(self=self)
-
-class EventSchema(SQLAlchemySchema):
-    class Meta:
-        model = Event
-        include_relationships = True
-        sqla_session = db.session
-        load_instance = True
-
-    id = auto_field(dump_only=True)
-    time = auto_field()
-    restaurant_id = auto_field(load_only=True)
-    restaurant = fields.Nested(RestaurantSchema, dump_only=True)
-    finalized = auto_field()
-
-class EventQueryArgsSchema(Schema):
-    time = fields.DateTime(timezone=True)
-    restaurant_id = fields.String()
-    age = EnumField(Age, by_value=True)

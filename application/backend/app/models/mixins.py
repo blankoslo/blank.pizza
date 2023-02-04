@@ -1,7 +1,5 @@
 from copy import deepcopy
 from app.db import db
-from sqlalchemy import desc, asc
-import enum
 
 def get_field(schema, field):
     field = deepcopy(schema._declared_fields[field.key])
@@ -10,8 +8,10 @@ def get_field(schema, field):
 
 class CrudMixin(object):
     @classmethod
-    def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
+    def get(cls, filters = None, order_by = None, page = None, per_page = None, session=db.session):
         query = cls.query
+        if filters is None:
+            filters = {}
         # Add filters to the query
         for attr, value in filters.items():
             query = query.filter(getattr(cls, attr) == value)
@@ -20,14 +20,14 @@ class CrudMixin(object):
             query = query.order_by(order_by())
         # If pagination is on, paginate the query
         if (page and per_page):
-            pagination = query.paginate(page, per_page, False)
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             return pagination.total, pagination.items
             
         res = query.count(), query.all()
         return res
 
     @classmethod
-    def get_like(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
+    def get_like(cls, filters = {}, order_by = None, page = None, per_page = None, session=db.session):
         query = cls.query
         # Add filters to the query
         for attr, value in filters.items():
@@ -37,7 +37,7 @@ class CrudMixin(object):
             query = query.order_by(order_by())
         # If pagination is on, paginate the query
         if (page and per_page):
-            pagination = query.paginate(page, per_page, False)
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
             return pagination.total, pagination.items
             
         res = query.count(), query.all()
@@ -65,6 +65,8 @@ class CrudMixin(object):
     def upsert(cls, schema, session=db.session):
         session.add(schema)
         session.commit()
+        session.refresh(schema)
+        return schema
     
     @classmethod
     def count(cls, session=db.session):

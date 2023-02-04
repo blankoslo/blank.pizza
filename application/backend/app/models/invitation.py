@@ -5,12 +5,6 @@ from sqlalchemy.orm import relationship
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.enums import RSVP
-from marshmallow_enum import EnumField
-from app.models.event import EventSchema
-from app.models.slack_user import SlackUserSchema
-
-from marshmallow import Schema, fields
-from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
 class Invitation(CrudMixin, db.Model):
   __tablename__ = "invitations"
@@ -22,30 +16,21 @@ class Invitation(CrudMixin, db.Model):
   rsvp = sa.Column(sa.Enum(RSVP, values_callable = lambda x: [e.value for e in x]), nullable=False, server_default=RSVP.unanswered)
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
 
+  @classmethod
+  def get_by_id(cls, event_id, slack_id, session=db.session):
+    return cls.query.get((event_id, slack_id))
+
+  @classmethod
+  def get_attending_users(cls, event_id, session=db.session):
+    query = session.query(cls.slack_id)\
+      .filter(
+        sa.and_(
+          cls.rsvp == RSVP.attending,
+          cls.event_id == event_id
+        )
+      )\
+      .order_by(func.random())
+    return query.all()
+
   def __repr__(self):
-      return "<Invitation(id={self.id!r})>".format(self=self)
-
-class InvitationSchema(SQLAlchemySchema):
-    class Meta:
-        model = Invitation
-        include_relationships = True
-        sqla_session = db.session
-        load_instance = True
-
-    event_id = auto_field()
-    slack_id = auto_field()
-    event = fields.Nested(EventSchema, dump_only=True)
-    slack_user = fields.Nested(SlackUserSchema, dump_only=True)
-    invited_at = auto_field()
-    rsvp = EnumField(RSVP, by_value=True)
-    reminded_at = auto_field()
-
-class InvitationUpdateSchema(SQLAlchemySchema):
-    class Meta(InvitationSchema.Meta):
-        load_instance = False
-
-    rsvp = get_field(InvitationSchema, Invitation.rsvp)
-
-class InvitationQueryArgsSchema(Schema):
-    event_id = get_field(InvitationSchema, Invitation.event_id)
-    slack_id = get_field(InvitationSchema, Invitation.slack_id)
+      return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

@@ -14,6 +14,38 @@ variable "environment" {
   type = string
 }
 
+variable "MQ_EXCHANGE" {
+  type = string
+}
+
+variable "MQ_EVENT_QUEUE" {
+  type = string
+}
+
+variable "MQ_RPC_KEY" {
+  type = string
+}
+
+variable "MQ_EVENT_KEY" {
+  type = string
+}
+
+variable "PEOPLE_PER_EVENT" {
+  type = number
+}
+
+variable "DAYS_IN_ADVANCE_TO_INVITE" {
+  type = number
+}
+
+variable "REPLY_DEADLINE_IN_HOURS" {
+  type = number
+}
+
+variable "HOURS_BETWEEN_REMINDERS" {
+  type = number
+}
+
 variable "SLACK_BOT_TOKEN" {
   type = string
 }
@@ -42,19 +74,15 @@ variable "PAPERTRAIL_PLAN" {
   type = string
 }
 
+variable "CLOUDAMQP_PLAN" {
+  type = string
+}
+
 variable "POSTGRES_PLAN" {
   type = string
 }
 
-variable "SCHEDULER_PLAN" {
-  type = string
-}
-
-variable "SCHEDULER_JOB_DYNO" {
-  type = string
-}
-
-variable "SCHEDULER_JOB_FREQUENCY" {
+variable "FLASK_ENV" {
   type = string
 }
 
@@ -70,10 +98,6 @@ variable "FORMATION_SIZE_BOT_WORKER" {
   type = string
 }
 
-variable "FORMATION_SIZE_BOT_BATCH" {
-  type = string
-}
-
 variable "FORMATION_QUANTITY_FRONTEND" {
   type = string
 }
@@ -83,10 +107,6 @@ variable "FORMATION_QUANTITY_BACKEND" {
 }
 
 variable "FORMATION_QUANTITY_BOT_WORKER" {
-  type = string
-}
-
-variable "FORMATION_QUANTITY_BOT_BATCH" {
   type = string
 }
 

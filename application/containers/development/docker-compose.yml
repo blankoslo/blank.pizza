@@ -4,17 +4,17 @@ x-common-variables: &common-variables
   PYTHONUNBUFFERED: 1
   PYTHONPATH: /srv/bot
 
-x-common-database-variables: &common-database-variables
-  DB_HOST: database
-  DB_NAME: pizza
-  DB_USER: postgres
-  DB_PASSWD: postgres
-  DB_PORT: 5432
-
 x-common-slack-variables: &common-slack-variables
   SLACK_BOT_TOKEN: xoxb-
-  SLACK_APP_TOKEN: xapp-1-
+  SLACK_APP_TOKEN: xapp-
   PIZZA_CHANNEL_ID: C0
+
+x-common-rabbitmq-variables: &common-rabbitmq-variables
+  MQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
+  MQ_EXCHANGE: Pizza_Exchange
+  MQ_EVENT_QUEUE: Pizza_Queue
+  MQ_RPC_KEY: rpc
+  MQ_EVENT_KEY: pizza
 
 services:
   frontend:
@@ -40,13 +40,22 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
       - 8080:8080
     volumes:
       - ../../backend:/srv/backend
     environment:
-      <<: *common-database-variables
+      DB_HOST: "database"
+      DB_NAME: "pizza"
+      DB_USER: "postgres"
+      DB_PASSWD: "postgres"
+      DB_PORT: "5432"
+      PEOPLE_PER_EVENT: 5
+      DAYS_IN_ADVANCE_TO_INVITE: 10
       <<: *common-variables
+      <<: *common-rabbitmq-variables
       SECRET_KEY: "V3ryS3cr3tK3y"
       FLASK_ENV: "development"
       FLASK_APP: "main.py"
@@ -58,6 +67,7 @@ services:
     networks:
       - database-network
       - proxy-network
+      - rabbitmq_network
   bot-worker:
     build:
       context: ../../
@@ -65,28 +75,33 @@ services:
     volumes:
       - ../../bot:/srv/bot
     environment:
-      <<: *common-database-variables
       <<: *common-slack-variables
       <<: *common-variables
+      <<: *common-rabbitmq-variables
+      REPLY_DEADLINE_IN_HOURS: 24
+      HOURS_BETWEEN_REMINDERS: 4
+    restart: always
     depends_on:
       database:
         condition: service_healthy
-    networks:
-      - database-network
-  bot-batch:
-    build:
-      context: ../../
-      dockerfile: containers/development/Dockerfile.bot.batch
-    volumes:
-      - ../../bot:/srv/bot
-    environment:
-      <<: *common-database-variables
-      <<: *common-slack-variables
-    depends_on:
-     database:
+      rabbitmq:
         condition: service_healthy
     networks:
       - database-network
+      - rabbitmq_network
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - rabbitmq_network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
   database:
     image: postgres
     restart: always
@@ -124,6 +139,8 @@ networks:
   database-network:
     driver: bridge
   proxy-network:
+    driver: bridge
+  rabbitmq_network:
     driver: bridge
 
 volumes:

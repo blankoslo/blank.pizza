@@ -25,19 +25,19 @@
 ## Google Login Setup
 1. Go to the [Google developers credentials page](https://console.developers.google.com/apis/credentials)
 2. If you don't have a project, create one, else choose the prefered project.
-2. Press the Create credentials button
-3. Select the option for `OAuth client ID`
-4. Click `Configure consent screen`
+3. Press the Create credentials button
+4. Select the option for `OAuth client ID`
+5. Click `Configure consent screen`
     1. If open for all users choose `External`, but if only open for an organization like `blank.no` then choose `Internal`.
     2. Fill out the necessary information for the conest screen
     3. Click `Add or remove scopes` and add `.../auth/userinfo.email`	`.../auth/userinfo.profile` `openid`.
     4. If you are testing add a test user for testing
-5. Choose `Web application`
-6. Give it a name 
-6. Set the Authorized JavaScript origins 
+6. Choose `Web application`
+7. Give it a name 
+8. Set the Authorized JavaScript origins 
     * If testing then set to `https://localhost` and Authorized redirect URIs to `https://localhost/login/callback`
-    * If production then replace `localhost` with your domain
-7. Hit Create and take note of the `client ID` and `client secret`
+    * If production then replace `localhost` with your domain
+9. Hit Create and take note of the `client ID` and `client secret`
 
 ## How to run the system
 
@@ -60,33 +60,7 @@ We are using terraform to describe the infrastructure, which can be found in the
 3. Go to the app settings of the frontend app in Heroku at `https://dashboard.heroku.com/apps/pizzabot-v2-stag-frontend/settings` (where the text after `/apps/` will be your app's name) and under `Domains` copy the `DNS Target`.
 4. Create a CNAME record with the hostname specified in the main terraform file and point it to the `DNS TARGET` from heroku. After a while routing and SSL should work flawlesly.
 
-Infrastructure:  
-* Backend-app: contains the database, papertrail instance, and backend application  
-* Bot-app: contains an attachement to the database,, an attachement to the papertrail instance, the bot worker, the bot batch (not running), scheduler and scheduler job  
-* Frontend-app: contains an nginx instance with the build files from the `public` folder  
-
-#### Cloud / Docker
-It should be fairly straight forward to deploy to other cloud services by using the production docker containers in `application/containers/production`. However, Heroku and Terraform didnt fully support using docker (as the build context would be the same location as the Dockerfile which would ruin the folder structure. The fact that everything application related is put into the `application` folder is already from a limition in terraform/heroku), as such docker won't be used for this project as of now, but they are here for when they are needed.
-
-##### Frontend
-The frontend is a React application. Simply run the command `npm run build:production` and then host the files in your prefered cloud service for static files.
-
-##### Backend
-The backend is a flask application. The easiest way to run it is to use the dockerfile in `/containers/production` in your prefered cloud service.
-
-To build the image run the command `docker build --build-arg DB_NAME=pizza --build-arg DB_USER=postgres --build-arg DB_PASSWD=postgres --build-arg DB_HOST=host.docker.internal --build-arg DB_PORT=5432 --build-arg FRONTEND_URI=[frontend_uri] -f backend.Dockerfile ../../` with the args `DB_USER` `DB_PASSWD` `DB_NAME` `DB_HOST` `DB_PORT` `FRONTEND_URI` with your systems values.
-
-To run the image run the command `docker run -e DB_NAME=pizza -e DB_USER=postgres -e DB_PASSWD=postgres -e DB_HOST=host.docker.internal -e DB_PORT=5432 -e FRONTEND_URI=[frontend_uri] -p 80:80 [id]` where `id` is the docker image id, with the args `DB_USER` `DB_PASSWD` `DB_NAME` `DB_HOST` `DB_PORT` `FRONTEND_URI` with your systems values.
-
-##### Bot
-The bot is a collection of python applications. The easiest way to run it is to use the dockerfiles starting with the name bot. in `/containers/production` in your prefered cloud service.
-
-###### Worker
-To build the image run the command `docker build --build-arg DB_HOST=host.docker.internal --build-arg DB_NAME=pizza --build-arg DB_USER=postgres --build-arg DB_PASSWD=postgres --build-arg SLACK_BOT_TOKEN=[bot-token] --build-arg SLACK_APP_TOKEN=[app-token] --build-arg PIZZA_CHANNEL_ID=[pizza-channel-id] -f bot.worker.Dockerfile ../../` with the args `DB_USER` `DB_PASSWD` `JDBC_URL` `SLACK_BOT_TOKEN` `SLACK_APP_TOKEN` `PIZZA_CHANNEL_ID` with your systems values.
-
-To run the image run the command `docker run [id]` where `id` is the docker image id.
-
-###### Batch
-To build the image run the command `docker build --build-arg DB_HOST=host.docker.internal --build-arg DB_NAME=pizza --build-arg DB_USER=postgres --build-arg DB_PASSWD=postgres --build-arg SLACK_BOT_TOKEN=[bot-token] --build-arg SLACK_APP_TOKEN=[app-token] --build-arg PIZZA_CHANNEL_ID=[pizza-channel-id] -f bot.batch.Dockerfile ../../` with the args `DB_USER` `DB_PASSWD` `JDBC_URL` `SLACK_BOT_TOKEN` `SLACK_APP_TOKEN` `PIZZA_CHANNEL_ID` with your systems values.
-
-To run the image run the command `docker run [id]` where `id` is the docker image id.
+Infrastructure:
+* Backend-app: contains the database, papertrail instance, Rabbitmq instance, and backend application  
+* Bot-app: contains an attachement to the database, an attachement to the papertrail instance, an attachement to the Rabbitmq instance, the bot worker
+* Frontend-app: contains a nginx instance with the build files from the `public` folder
