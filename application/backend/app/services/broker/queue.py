@@ -21,5 +21,5 @@ def rpc(routing_key, body, correlation_id, reply_to):
 
         MessageHandler.process_message(message, correlation_id, reply_to)
     except (ValidationError, json.JSONDecodeError) as e:
-        print(e)
+        logger.error(e)
         broker.sync_send(None, reply_to, ExchangeType.DIRECT, 5, "v1.0.0", correlation_id=correlation_id)
