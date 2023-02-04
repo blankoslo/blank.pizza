@@ -123,7 +123,7 @@ class BotApi:
                 else:
                     self.logger.warning("failed to update invitation to not attending")
 
-    def update_invitation_answer(self, event_id, slack_id, answer: RSVP):
+    def update_invitation_answer(self, slack_id, event_id, answer: RSVP):
         return self.client.update_invitation(
             slack_id,
             event_id,
