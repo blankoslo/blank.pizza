@@ -110,7 +110,3 @@ variable "FORMATION_QUANTITY_BOT_WORKER" {
   type = string
 }
 
-variable "FORMATION_QUANTITY_BOT_BATCH" {
-  type = string
-}
-
