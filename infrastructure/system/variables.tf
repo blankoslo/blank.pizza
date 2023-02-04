@@ -98,10 +98,6 @@ variable "FORMATION_SIZE_BOT_WORKER" {
   type = string
 }
 
-variable "FORMATION_SIZE_BOT_BATCH" {
-  type = string
-}
-
 variable "FORMATION_QUANTITY_FRONTEND" {
   type = string
 }
