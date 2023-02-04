@@ -11,9 +11,9 @@ module "staging" {
   source = "./system"
 
   heroku_team_name = var.heroku_team_name
-  hostname = "dev.bot.blank.pizza"
+  hostname = "staging.bot.blank.pizza"
   prefix = var.prefix
-  environment = "dev"
+  environment = "stag"
   CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
   POSTGRES_PLAN = "heroku-postgresql:mini"
