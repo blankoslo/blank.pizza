@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import logging
 
 from app.services.broker import BrokerService
 from app.services.broker.handlers.message_handler import MessageHandler
@@ -15,6 +16,7 @@ from app.services.event_service import EventService
 
 @MessageHandler.handle('withdraw_invitation')
 def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
+    logger = injector.get(logging.Logger)
     invitation_service = injector.get(InvitationService)
 
     schema = WithdrawInvitationRequestSchema()
@@ -26,7 +28,7 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
         updated_invite = invitation_service.update_invitation_status(event_id, slack_id, RSVP.not_attending)
         result = True if updated_invite is not None else False
     except Exception as e:
-        print(e)
+        logger.warning(e)
         result = False
 
     response_schema = WithdrawInvitationResponseSchema()
@@ -36,6 +38,7 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
 
 @MessageHandler.handle('invite_multiple_if_needed')
 def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str):
+    logger = injector.get(logging.Logger)
     invitation_service = injector.get(InvitationService)
     slack_user_service = injector.get(SlackUserService)
     event_service = injector.get(EventService)
@@ -52,7 +55,7 @@ def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str)
         user_ids_to_invite = slack_user_service.get_user_ids_to_invite(number_to_invite, event['event_id'], number_of_user, people_per_event)
 
         if len(user_ids_to_invite) == 0:
-            print("Event %s in need of users, but noone to invite" % event['event_id']) # TODO: needs to be handled
+            logger.warning("Event %s in need of users, but noone to invite" % event['event_id']) # TODO: needs to be handled
             continue
 
         event_where_users_were_invited = {
@@ -66,7 +69,7 @@ def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str)
                 invitation_service.add(event['event_id'], user_id)
                 event_where_users_were_invited['invited_users'].append(user_id)
         except Exception as e:
-            print(e)
+            logger.error(e)
         events_where_users_were_invited.append(event_where_users_were_invited)
 
     response_schema = InviteMultipleIfNeededResponseSchema()

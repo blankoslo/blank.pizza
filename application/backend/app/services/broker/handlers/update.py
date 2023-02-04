@@ -1,3 +1,5 @@
+import logging
+
 from app.services.broker import BrokerService
 from app.services.broker.handlers.message_handler import MessageHandler
 from app.services.broker.schemas.update_invitation import UpdateInvitationRequestSchema, UpdateInvitationResponseSchema
@@ -9,6 +11,7 @@ from app.services.slack_user_service import SlackUserService
 
 @MessageHandler.handle('update_invitation')
 def update_invitation(payload: dict, correlation_id: str, reply_to: str):
+    logger = injector.get(logging.Logger)
     invitation_service = injector.get(InvitationService)
     schema = UpdateInvitationRequestSchema()
     request = schema.load(payload)
@@ -19,6 +22,7 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
     result = False
     if "reminded_at" in update_data:
         result = invitation_service.update_reminded_at(event_id, slack_id, update_data["reminded_at"].isoformat())
+        logger.info("Updated reminded_at for (%s,%s)", event_id, slack_id)
 
     # Update invitation to either accepted or declined
     if 'rsvp' in update_data:
@@ -32,6 +36,7 @@ def update_invitation(payload: dict, correlation_id: str, reply_to: str):
 
 @MessageHandler.handle('update_slack_user')
 def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
+    logger = injector.get(logging.Logger)
     slack_user_service = injector.get(SlackUserService)
     schema = UpdateSlackUserRequestSchema()
     request = schema.load(payload)
@@ -51,7 +56,7 @@ def update_slack_user(payload: dict, correlation_id: str, reply_to: str):
                 'email': update_data['email']
             })
     except Exception as e:
-        print(e)
+        logger.warning(e)
         response = False
 
     response_schema = UpdateSlackUserResponseSchema()

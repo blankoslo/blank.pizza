@@ -2,6 +2,8 @@ import pika
 import functools
 import os
 from retry import retry
+import logging
+from src.injector import injector
 
 class AmqpConnection:
     def __init__(self, host = None, exchange = None):
@@ -13,6 +15,7 @@ class AmqpConnection:
         self.channel = None
         self.queue = os.environ.get('MQ_EVENT_QUEUE')
         self.routing_key = os.environ.get('MQ_EVENT_KEY')
+        self.logger = injector.get(logging.Logger)
 
     def disconnect(self):
         if self.channel is not None and not self.channel.is_closed:
@@ -58,7 +61,7 @@ class AmqpConnection:
                 body=payload
             )
         else:
-            print("Connection is not open or channel is not open")
+            self.logger.warning("Connection is not open or channel is not open")
 
     @retry(pika.exceptions.AMQPConnectionError, delay=1, backoff=2)
     def consume(self, on_message):
@@ -69,4 +72,4 @@ class AmqpConnection:
             self.channel.basic_consume(queue=self.queue, auto_ack=True, on_message_callback=on_message)
             self.channel.start_consuming()
         except pika.exceptions.ChannelClosedByBroker:
-            print('Channel Closed By Broker Exception')
+            self.logger.warning('Channel Closed By Broker Exception')

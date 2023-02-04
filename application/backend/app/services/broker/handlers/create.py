@@ -1,3 +1,5 @@
+import logging
+
 from app.services.broker import BrokerService
 from app.services.broker.handlers.message_handler import MessageHandler
 
@@ -8,6 +10,7 @@ from app.services.image_service import ImageService
 
 @MessageHandler.handle('create_image')
 def create_image(payload: dict, correlation_id: str, reply_to: str):
+    logger = injector.get(logging.Logger)
     image_service = injector.get(ImageService)
     schema = CreateImageRequestSchema()
     request = schema.load(payload)
@@ -23,7 +26,7 @@ def create_image(payload: dict, correlation_id: str, reply_to: str):
             "title": title
         })
     except Exception as e:
-        print(e)
+        logger.error(e)
         result = False
 
     response_schema = CreateImageResponseSchema()

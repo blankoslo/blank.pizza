@@ -6,6 +6,8 @@ import os
 import locale
 import threading
 import pytz
+import logging
+import sys
 
 from src.api.bot_api import BotApi, BotApiConfiguration
 
@@ -14,7 +16,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from src.injector import injector
+from src.injector import injector, singleton
 from src.broker.amqp_connection import AmqpConnection
 from src.broker.handlers import on_message
 
@@ -25,16 +27,16 @@ slack_app_token = os.environ["SLACK_APP_TOKEN"]
 app = App(token=slack_bot_token)
 
 @app.event("message")
-def handle_event(body, say, logger):
+def handle_event(body, say):
     event = body["event"]
     channel = event["channel"]
     channel_type = event["channel_type"]
     # Handle a channel message in the pizza channel
     if "subtype" not in event and channel_type == 'channel' and channel == pizza_channel_id:
-        handle_channel_message(event, say, logger)
+        handle_channel_message(event, say)
     # Handle a direct message to bot
     elif "subtype" not in event and channel_type == 'im':
-        handle_direct_message(event, say, logger)
+        handle_direct_message(event, say)
     # Handle a file share
     elif "subtype" in event and event["subtype"] == 'file_share':
         handle_file_share(event, say)
@@ -69,6 +71,7 @@ def handle_rsvp_no(ack, body):
 
 @app.action("rsvp_withdraw")
 def handle_rsvp_withdraw(ack, body):
+    logger = injector.get(logging.Logger)
     message = body["message"]
     user = body["user"]
     user_id = user["id"]
@@ -80,22 +83,27 @@ def handle_rsvp_withdraw(ack, body):
     with injector.get(BotApi) as ba:
         success = ba.withdraw_invitation(event_id, user_id)
         if success:
+            logger.info("%s withdrew their invitation", user_id)
             ba.send_pizza_invite_withdraw(channel_id, ts, blocks)
         else:
+            logger.warning("failed to withdraw invitation for %s", user_id)
             ba.send_pizza_invite_withdraw_failure(channel_id, ts, blocks)
     ack()
 
 # We don't use channel messages, but perhaps it'll be useful in the future
-def handle_channel_message(event, say, logger):
+def handle_channel_message(event, say):
+    logger = injector.get(logging.Logger)
     logger.info(event)
 
 # We don't use direct messages, but perhaps it'll be useful in the future
-def handle_direct_message(event, say, logger):
+def handle_direct_message(event, say):
+    logger = injector.get(logging.Logger)
     logger.info(event)
 
 # We don't use app mentions at the moment, but perhaps it'll be useful in the future
 @app.event("app_mention")
-def handle_mention_event(body, logger):
+def handle_mention_event(body):
+    logger = injector.get(logging.Logger)
     logger.info(body)
 
 def handle_file_share(event, say):
@@ -121,35 +129,52 @@ def handle_file_share(event, say):
 # contains a full file object with url_private, while this one only contains the ID
 # Perhaps another file event contains the full object?
 @app.event("file_shared")
-def handle_file_shared_events(body, logger):
+def handle_file_shared_events(body):
+    logger = injector.get(logging.Logger)
     logger.info(body)
 
 def auto_reply():
-    print("Auto replying on scheduled task")
+    logger = injector.get(logging.Logger)
+    logger.info("Auto replying on scheduled task")
     with injector.get(BotApi) as ba:
         ba.auto_reply()
 
 def invite_multiple_if_needed():
-    print("Inviting multiple if need on scheduled task")
+    logger = injector.get(logging.Logger)
+    logger.info("Inviting multiple if need on scheduled task")
     with injector.get(BotApi) as ba:
         ba.invite_multiple_if_needed()
 
 def send_reminders():
-    print("Sending reminders on scheduled task")
+    logger = injector.get(logging.Logger)
+    logger.info("Sending reminders on scheduled task")
     with injector.get(BotApi) as ba:
         ba.send_reminders()
 
 def sync_db_with_slack_and_return_count():
-    print("Syncing db with slack on scheduled task")
+    logger = injector.get(logging.Logger)
+    logger.info("Syncing db with slack on scheduled task")
     with injector.get(BotApi) as ba:
         ba.sync_db_with_slack_and_return_count()
 
 def main():
+    # Set up injector
+    api_config = BotApiConfiguration(pizza_channel_id, pytz.timezone('Europe/Oslo'))
+    injector.binder.bind(BotApiConfiguration, to=api_config)
+
+    # Set up logging
+    logger = logging.getLogger(__name__)
+    logging_handler = logging.StreamHandler(sys.stdout)
+    logging_handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s"))
+    logger.addHandler(logging_handler)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+    injector.binder.bind(logging.Logger, to=logger, scope=singleton)
     # Try setting locale
     try:
         locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
     except:
-        print("Missing locale nb_NO.utf8 on server")
+        logger.warning("Missing locale nb_NO.utf8 on server")
 
     # Set up rabbitmq
     mq = AmqpConnection()
@@ -161,10 +186,6 @@ def main():
         mq.consume(on_message)
     consuming_thread = threading.Thread(target = consume)
     consuming_thread.start()
-
-    # Set up injector and bind rabbitmq
-    api_config = BotApiConfiguration(pizza_channel_id, pytz.timezone('Europe/Oslo'))
-    injector.binder.bind(BotApiConfiguration, to=api_config)
 
     # Set up scheduler
     scheduler = BackgroundScheduler()

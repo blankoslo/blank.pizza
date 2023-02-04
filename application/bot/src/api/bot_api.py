@@ -8,6 +8,8 @@ import src.api.slack_api as slack
 from datetime import datetime, timedelta
 from src.rsvp import RSVP
 from src.broker.api_client import ApiClient
+from src.injector import injector
+import logging
 
 class BotApiConfiguration:
     def __init__(self, pizza_channel_id, timezone):
@@ -16,11 +18,12 @@ class BotApiConfiguration:
 
 class BotApi:
     @inject
-    def __init__(self, config: BotApiConfiguration):
+    def __init__(self, config: BotApiConfiguration, logger: logging.Logger):
         self.REPLY_DEADLINE_IN_HOURS = int(os.environ["REPLY_DEADLINE_IN_HOURS"])
         self.HOURS_BETWEEN_REMINDERS = int(os.environ["HOURS_BETWEEN_REMINDERS"])
         self.pizza_channel_id = config.pizza_channel_id
         self.timezone = config.timezone
+        self.logger = logger
 
     def __enter__(self):
         self.client = ApiClient()
@@ -35,6 +38,7 @@ class BotApi:
             self.invite_if_needed(event)
 
     def invite_if_needed(self, event):
+        self.logger.info("Inviting users for %s", event['event_id'])
         invited_users = event['invited_users']
         event_time = event['event_time']
         event_id = event['event_id']
@@ -46,7 +50,7 @@ class BotApi:
 
         for user_id in invited_users:
             self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
-            print("%s was invited to event on %s" % (user_id, timestamp))
+            self.logger.info("%s was invited to event on %s" % (user_id, timestamp))
 
     def send_reminders(self):
         invitations = self.client.get_unanswered_invitations()
@@ -65,11 +69,12 @@ class BotApi:
                     }
                 )
                 if was_updated:
-                    print("%s was reminded about an event." % invitation['slack_id'])
+                    self.logger.info("%s was reminded about an event." % invitation['slack_id'])
                 else:
-                    print("failed to update invitation")
+                    self.logger.warning("failed to update invitation")
 
     def send_event_finalized(self, timestamp, restaurant_name, slack_ids):
+        self.logger.info("Finalizing event %s %s", timestamp, restaurant_name)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
         # Create slack @-id-strings
@@ -83,6 +88,7 @@ class BotApi:
         slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
     def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
+        self.logger.info("Unfinalizing event %s %s", timestamp, restaurant_name)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
         # Create slack @-id-strings
@@ -94,6 +100,7 @@ class BotApi:
         self.invite_multiple_if_needed()
         pass
     def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name):
+        self.logger.info("User %s withdrew from event %s %s", user_id, timestamp, restaurant_name)
         # Send message that the user withdrew
         slack.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
@@ -113,9 +120,9 @@ class BotApi:
                 )
                 if was_updated:
                     slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
-                    print("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
+                    self.logger.info("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
                 else:
-                    print("failed to update invitation to not attending")
+                    self.logger.warning("failed to update invitation to not attending")
 
     def update_invitation_answer(self, event_id, slack_id, answer: RSVP):
         return self.client.update_invitation(
@@ -147,9 +154,9 @@ class BotApi:
         for slack_user in slack_users:
             success = self.client.update_slack_user(slack_user)
             if success:
-                print("Updated user %s" % slack_user['id'])
+                self.logger.info("Updated user %s" % slack_user['id'])
             else:
-                print("Was unable to update %s" % slack_user['id'])
+                self.logger.warning("Was unable to update %s" % slack_user['id'])
         return len(slack_users)
 
     def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):

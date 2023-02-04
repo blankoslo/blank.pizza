@@ -44,8 +44,13 @@ def create_app(environment):
     app.config.from_object(environment.get("base"))
     FRONTEND_URI = os.environ.get("FRONTEND_URI").rstrip('/')
     # Logging for heroku
-    app.logger.addHandler(logging.StreamHandler(sys.stdout))
+    app.logger.handlers.clear()
+    logging_handler = logging.StreamHandler(sys.stdout)
+    logging_handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s"))
+    app.logger.propagate = False
+    app.logger.addHandler(logging_handler)
     app.logger.setLevel(logging.DEBUG)
+    injector.binder.bind(logging.Logger, to=app.logger)
 
     # Set up database (sqlalchemy) and migration
     db.init_app(app)
