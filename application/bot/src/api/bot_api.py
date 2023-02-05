@@ -62,9 +62,9 @@ class BotApi:
             if invitation['reminded_at'] < remind_timestamp:
                 slack.send_slack_message(invitation['slack_id'], "Hei du! Jeg hørte ikke noe mer? Er du gira?")
                 was_updated = self.client.update_invitation(
-                    invitation['slack_id'],
-                    invitation['event_id'],
-                    {
+                    slack_id = invitation['slack_id'],
+                    event_id = invitation['event_id'],
+                    update_values = {
                         "reminded_at": datetime.now().isoformat()
                     }
                 )
@@ -113,9 +113,9 @@ class BotApi:
             deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
             if deadline < datetime.now(pytz.utc):
                 was_updated = self.update_invitation_answer(
-                    invitation['slack_id'],
-                    invitation['event_id'],
-                    RSVP.not_attending
+                    slack_id = invitation['slack_id'],
+                    event_id = invitation['event_id'],
+                    answer = RSVP.not_attending
                 )
                 if was_updated:
                     slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
@@ -125,24 +125,24 @@ class BotApi:
 
     def update_invitation_answer(self, slack_id, event_id, answer: RSVP):
         return self.client.update_invitation(
-            slack_id,
-            event_id,
-            {
+            slack_id = slack_id,
+            event_id = event_id,
+            update_values = {
                 "rsvp": answer
             }
         )
 
     def accept_invitation(self, event_id, slack_id):
-        self.update_invitation_answer(event_id, slack_id, RSVP.attending)
+        self.update_invitation_answer(slack_id = slack_id, event_id = event_id, answer = RSVP.attending)
 
     def decline_invitation(self, event_id, slack_id):
-        self.update_invitation_answer(event_id, slack_id, RSVP.not_attending)
+        self.update_invitation_answer(slack_id = slack_id, event_id = event_id, answer = RSVP.not_attending)
 
     def withdraw_invitation(self, event_id, slack_id):
-        return self.client.withdraw_invitation(event_id, slack_id)
+        return self.client.withdraw_invitation(event_id = event_id, slack_id = slack_id)
 
     def save_image(self, cloudinary_id, slack_id, title):
-        self.client.create_image(cloudinary_id, slack_id, title)
+        self.client.create_image(cloudinary_id = cloudinary_id, slack_id = slack_id, title = title)
 
     def get_invited_users(self):
         return self.client.get_invited_unanswered_user_ids()
