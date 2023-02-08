@@ -40,6 +40,7 @@ module "staging" {
   FLASK_ENV = "production"
 }
 
+/*
 module "production" {
   source = "./system"
 
@@ -71,7 +72,7 @@ module "production" {
   HOURS_BETWEEN_REMINDERS = 4
   REPLY_DEADLINE_IN_HOURS = 24
   FLASK_ENV = "production"
-}
+}*/
 
 # Add staging apps to pipeline under staging stage
 resource "heroku_pipeline_coupling" "staging-backend" {
@@ -92,6 +93,7 @@ resource "heroku_pipeline_coupling" "staging-frontend" {
   stage = "staging"
 }
 
+/*
 # Add production apps to pipeline under production stage
 resource "heroku_pipeline_coupling" "production-backend" {
   app_id = module.production.app_backend_id
@@ -110,3 +112,4 @@ resource "heroku_pipeline_coupling" "production-frontend" {
   pipeline = heroku_pipeline.pizzabot.id
   stage = "production"
 }
+*/
