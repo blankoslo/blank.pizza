@@ -173,3 +173,6 @@ terraform.rc
 
 # Mac
 .DS_Store
+
+#IDE
+.idea
