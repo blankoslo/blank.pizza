@@ -122,10 +122,6 @@ def create_app(environment):
     # Set up / register blueprints
     register_blueprints(api)
 
-    # Create DB tables if not already exists
-    with app.app_context():
-        db.create_all()
-
     return app
 
 def register_blueprints(api):
