@@ -87,7 +87,7 @@ resource "null_resource" "npm_install" {
 
 data "external" "frontend_build" {
 	program = ["bash", "-c", <<EOT
-((export PATH="$PWD/${path.module}/../node_install/bin:$PATH";export BACKEND_URI=${heroku_app.backend.web_url}; cd ../application/frontend && npm run build:production && cd ../../infrastructure)  >&2 && echo "{\"nop\": \"nop\"}")
+((export PATH="$PWD/${path.module}/../node_install/bin:$PATH";export BACKEND_URI=${heroku_app.backend.web_url}; cd ../application/frontend && npm install && npm run build:production && cd ../../infrastructure)  >&2 && echo "{\"nop\": \"nop\"}")
 EOT
 ]
   depends_on = [
