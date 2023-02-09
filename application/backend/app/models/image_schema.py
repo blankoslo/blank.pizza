@@ -1,8 +1,9 @@
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.image import Image
+from app.models.slack_user_schema import SlackUserSchema
 
-from marshmallow import Schema
+from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
 class ImageSchema(SQLAlchemySchema):
@@ -14,7 +15,7 @@ class ImageSchema(SQLAlchemySchema):
 
     cloudinary_id = auto_field()
     uploaded_by_id = auto_field()
-    uploaded_by = auto_field()
+    uploaded_by = fields.Nested(SlackUserSchema, dump_only=True)
     uploaded_at = auto_field()
     title = auto_field()
 
