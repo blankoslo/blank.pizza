@@ -86,6 +86,14 @@ variable "FLASK_ENV" {
   type = string
 }
 
+variable "FRONTEND_URI" {
+  type = string
+}
+
+variable "BACKEND_URI" {
+  type = string
+}
+
 variable "FORMATION_SIZE_FRONTEND" {
   type = string
 }

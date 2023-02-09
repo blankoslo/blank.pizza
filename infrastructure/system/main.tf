@@ -57,8 +57,8 @@ resource "heroku_app" "bot" {
 # NB: FRONTEND_URI must be set to the ssl custom domain "https://${var.hostname}" for the OAuth to work
 resource "heroku_config" "endpoints" {
     vars = {
-        FRONTEND_URI = "https://${heroku_domain.blank.hostname}"
-        BACKEND_URI = heroku_app.backend.web_url
+        FRONTEND_URI = "https://${var.FRONTEND_URI}"
+        BACKEND_URI = var.BACKEND_URI
     }
 }
 
@@ -67,33 +67,6 @@ resource "heroku_app_config_association" "config_backend_association" {
 
   vars = heroku_config.endpoints.vars
   sensitive_vars = heroku_config.endpoints.sensitive_vars
-}
-
-resource "null_resource" "npm_install" {
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-  provisioner "local-exec" {
-    command = <<-EOF
-      cd ${path.module}/.. &&\
-      mkdir ./node_install &&\
-      cd ./node_install &&\
-      curl https://nodejs.org/dist/v18.14.0/node-v18.14.0-linux-x64.tar.gz | tar --directory ./ --strip-components=1 -xz  &&\
-      export PATH="$PWD/bin:$PATH" &&\
-      cd ..
-    EOF
-  }
-}
-
-data "external" "frontend_build" {
-	program = ["bash", "-c", <<EOT
-((export PATH="$PWD/${path.module}/../node_install/bin:$PATH";export BACKEND_URI=${heroku_app.backend.web_url}; cd ../application/frontend && npm install && npm run build:production && cd ../../infrastructure)  >&2 && sha256sum ../application/frontend/public/* | sha256sum | xargs -I{} echo "{\"checksum\": \"SHA256:{}\"}" | awk '{print substr($2, 1, length($2))}')
-EOT
-]
-  depends_on = [
-    heroku_app.backend,
-    null_resource.npm_install
-  ]
 }
 
 resource "heroku_app" "frontend" {
@@ -110,10 +83,6 @@ resource "heroku_app" "frontend" {
   config_vars = {
     "NGINX_DEFAULT_REQUEST" = "index.html"
   }
-
-  depends_on = [
-    data.external.frontend_build
-  ]
 }
 
 resource "heroku_build" "backend" {
@@ -146,12 +115,7 @@ resource "heroku_build" "frontend" {
 
   source {
     path = "../application/frontend/public"
-    checksum = data.external.frontend_build.result["checksum"]
   }
-
-  depends_on = [
-    data.external.frontend_build
-  ]
 }
 
 resource "heroku_addon" "cloudamqp-backend" {
