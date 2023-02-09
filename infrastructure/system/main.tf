@@ -69,13 +69,30 @@ resource "heroku_app_config_association" "config_backend_association" {
   sensitive_vars = heroku_config.endpoints.sensitive_vars
 }
 
+resource "null_resource" "npm_install" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+  provisioner "local-exec" {
+    command = <<-EOF
+      cd ${path.module}/.. &&\
+      mkdir ./node_install &&\
+      cd ./node_install &&\
+      curl https://nodejs.org/dist/latest-v10.x/node-v10.19.0-linux-x64.tar.gz | tar xz --strip-components=1 &&\
+      export PATH="$PWD/bin:$PATH" &&\
+      cd ..
+    EOF
+  }
+}
+
 data "external" "frontend_build" {
 	program = ["bash", "-c", <<EOT
 ((export BACKEND_URI=${heroku_app.backend.web_url}; cd ../application/frontend && npm run build:production && cd ../../infrastructure)  >&2 && echo "{\"nop\": \"nop\"}")
 EOT
 ]
   depends_on = [
-    heroku_app.backend
+    heroku_app.backend,
+    null_resource.npm_install
   ]
 }
 
