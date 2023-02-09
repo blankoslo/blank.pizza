@@ -23,6 +23,9 @@ jobs:
       working-directory: application/frontend
       env:
         BACKEND_URI: staging.api.bot.blank.pizza
+    - name: Remove build gitignore
+      run: rm public/.gitignore
+      working-directory: application/frontend
     - uses: EndBug/add-and-commit@v9
       with:
         new_branch: build
