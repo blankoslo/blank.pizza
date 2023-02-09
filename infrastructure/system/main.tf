@@ -80,23 +80,14 @@ resource "null_resource" "npm_install" {
       cd ./node_install &&\
       curl https://nodejs.org/dist/v18.14.0/node-v18.14.0-linux-x64.tar.gz | tar --directory ./ --strip-components=1 -xz  &&\
       export PATH="$PWD/bin:$PATH" &&\
-      cd .. &&\
-      export BACKEND_URI=${heroku_app.backend.web_url} &&\
-      cd ../application/frontend &&\
-      npm install &&\
-      npm run build:production &&\
-      cd ../../infrastructure
+      cd ..
     EOF
   }
-
-  depends_on = [
-      heroku_app.backend
-    ]
 }
 
 data "external" "frontend_build" {
 	program = ["bash", "-c", <<EOT
-((export PATH="$PWD/${path.module}/../node_install/bin:$PATH";export BACKEND_URI=${heroku_app.backend.web_url}; cd ../application/frontend && npm install && npm run build:production && cd ../../infrastructure)  >&2 && echo "{\"nop\": \"nop\"}")
+((export PATH="$PWD/${path.module}/../node_install/bin:$PATH";export BACKEND_URI=${heroku_app.backend.web_url}; cd ../application/frontend && npm install && npm run build:production && cd ../../infrastructure)  >&2 && sha256sum ../application/frontend/public/* | sha256sum | xargs -I{} echo "{\"checksum\": \"SHA256:{}\"}" | awk '{print substr($2, 1, length($2))}')
 EOT
 ]
   depends_on = [
@@ -155,6 +146,7 @@ resource "heroku_build" "frontend" {
 
   source {
     path = "../application/frontend/public"
+    checksum = data.external.frontend_build.result["checksum"]
   }
 
   depends_on = [
