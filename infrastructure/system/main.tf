@@ -78,7 +78,7 @@ resource "null_resource" "npm_install" {
       cd ${path.module}/.. &&\
       mkdir ./node_install &&\
       cd ./node_install &&\
-      curl https://nodejs.org/dist/latest-v10.x/node-v10.19.0-linux-x64.tar.gz | tar xz --strip-components=1 &&\
+      curl https://nodejs.org/dist/v18.14.0/node-v18.14.0-linux-x64.tar.xz | tar xz --strip-components=1 &&\
       export PATH="$PWD/bin:$PATH" &&\
       cd ..
     EOF
