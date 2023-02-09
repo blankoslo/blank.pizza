@@ -6,6 +6,28 @@ on:
     branches:
       - main
 jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.sha }}
+        fetch-depth: '0'
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+    - name: Install dependencies
+      run: npm install
+      working-directory: application/frontend
+    - name: Build bundle
+      run: npm run build:production
+      working-directory: application/frontend
+      env:
+        BACKEND_URI: staging.api.bot.blank.pizza
+    - uses: EndBug/add-and-commit@v9
+      with:
+        new_branch: build
+        push: origin build --set-upstream --force
+
   create-tag:
     runs-on: ubuntu-22.04
     steps:
@@ -19,3 +41,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
+        DEFAULT_BRANCH: build

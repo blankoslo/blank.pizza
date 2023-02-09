@@ -38,6 +38,8 @@ module "staging" {
   HOURS_BETWEEN_REMINDERS = 4
   REPLY_DEADLINE_IN_HOURS = 24
   FLASK_ENV = "production"
+  BACKEND_URI = "staging.api.bot.blank.pizza"
+  FRONTEND_URI = "staging.bot.blank.pizza"
 }
 
 /*
@@ -72,6 +74,8 @@ module "production" {
   HOURS_BETWEEN_REMINDERS = 4
   REPLY_DEADLINE_IN_HOURS = 24
   FLASK_ENV = "production"
+  BACKEND_URI = "api.bot.blank.pizza"
+  FRONTEND_URI = "bot.blank.pizza"
 }*/
 
 # Add staging apps to pipeline under staging stage
