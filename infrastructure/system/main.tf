@@ -75,12 +75,10 @@ resource "null_resource" "npm_install" {
   }
   provisioner "local-exec" {
     command = <<-EOF
-      su - &&\
-      apt-get install xz-utils &&\
       cd ${path.module}/.. &&\
       mkdir ./node_install &&\
       cd ./node_install &&\
-      curl https://nodejs.org/dist/v18.14.0/node-v18.14.0-linux-x64.tar.xz | tar --directory ./ --strip-components=1 -xJ  &&\
+      curl https://nodejs.org/dist/v18.14.0/node-v18.14.0-linux-x64.tar.gz | tar --directory ./ --strip-components=1 -x  &&\
       export PATH="$PWD/bin:$PATH" &&\
       cd ..
     EOF
