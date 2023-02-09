@@ -57,7 +57,7 @@ resource "heroku_app" "bot" {
 # NB: FRONTEND_URI must be set to the ssl custom domain "https://${var.hostname}" for the OAuth to work
 resource "heroku_config" "endpoints" {
     vars = {
-        FRONTEND_URI = var.FRONTEND_URI
+        FRONTEND_URI = "https://${var.FRONTEND_URI}"
         BACKEND_URI = var.BACKEND_URI
     }
 }
