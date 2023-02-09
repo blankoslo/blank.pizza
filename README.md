@@ -51,7 +51,9 @@ Locales doesnt work properly in the alpine container used, meaning it's not a bu
 
 ### Production
 #### Terraform Cloud
-This repository is connected to Terraform Cloud where it is automatically planned and then manually applied whenever a new tag is created. A tag is automatically created through GitHub actions when a PR is merged into Main.
+This repository is connected to Terraform Cloud where it is automatically planned and then manually applied whenever a new tag is created.
+The branch used in Terraform Cloud is the `Build` branch, which gets created on every new version. This branch is the same as master, but it also contains the build files for the frontend application.
+A tag is automatically created through GitHub actions when a PR is merged into Main.
 
 #### Heroku
 We are using terraform to describe the infrastructure, which can be found in the `/infrastructure` folder. In addition to this the backend/bot have `Procfile`, `runtime.txt`, and `.locales` files that describe the process, heroku runtime and additional locales to include. While the frontend have `.static` in the `public` folder to indicate the application folder for the nginx buildpacker, and a `.gitignore` file to keep the files and folder in git.
