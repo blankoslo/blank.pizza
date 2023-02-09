@@ -80,9 +80,18 @@ resource "null_resource" "npm_install" {
       cd ./node_install &&\
       curl https://nodejs.org/dist/v18.14.0/node-v18.14.0-linux-x64.tar.gz | tar --directory ./ --strip-components=1 -xz  &&\
       export PATH="$PWD/bin:$PATH" &&\
-      cd ..
+      cd .. &&\
+      export BACKEND_URI=${heroku_app.backend.web_url} &&\
+      cd ../application/frontend &&\
+      npm install &&\
+      npm run build:production &&\
+      cd ../../infrastructure
     EOF
   }
+
+  depends_on = [
+      heroku_app.backend
+    ]
 }
 
 data "external" "frontend_build" {
