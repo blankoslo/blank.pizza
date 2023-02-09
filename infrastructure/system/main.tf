@@ -75,7 +75,7 @@ resource "null_resource" "npm_install" {
   }
   provisioner "local-exec" {
     command = <<-EOF
-      apt-get install xz-utils &&\
+      sudo apt-get install xz-utils &&\
       cd ${path.module}/.. &&\
       mkdir ./node_install &&\
       cd ./node_install &&\
