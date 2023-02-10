@@ -5,6 +5,9 @@ on:
       - closed
     branches:
       - main
+    paths:
+      - application/**
+      - infrastructure/**
 jobs:
   build:
     runs-on: ubuntu-22.04
