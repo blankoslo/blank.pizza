@@ -6,12 +6,12 @@ class MessageHandler:
     handlers = {}
 
     @classmethod
-    def handle(cls, type_: str, requestSchema: Schema = None, responseSchema: Schema = None):
+    def handle(cls, type_: str, incoming_schema: Schema = None, outgoing_schema: Schema = None):
         def decorator(func):
             cls.handlers[type_] = {
             'func': func,
-            'requestSchema': requestSchema,
-            'responseSchema': responseSchema
+            'requestSchema': incoming_schema,
+            'responseSchema': outgoing_schema
             }
             return func
         return decorator

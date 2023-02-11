@@ -30,7 +30,7 @@ def withdraw_invitation(request: dict):
 
     return {'success': result}
 
-@MessageHandler.handle('invite_multiple_if_needed', responseSchema = InviteMultipleIfNeededResponseSchema)
+@MessageHandler.handle('invite_multiple_if_needed', outgoing_schema = InviteMultipleIfNeededResponseSchema)
 def invite_multiple_if_needed():
     logger = injector.get(logging.Logger)
     invitation_service = injector.get(InvitationService)
