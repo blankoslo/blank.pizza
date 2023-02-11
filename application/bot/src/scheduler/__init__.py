@@ -28,8 +28,8 @@ def send_reminders():
         ba.send_reminders()
 
 @scheduler.scheduled_job('interval', id='sync_db_with_slack', hours=6, jitter=120)
-def sync_db_with_slack_and_return_count():
+def sync_db_with_slack():
     logger = injector.get(logging.Logger)
     logger.info("Syncing db with slack on scheduled task")
     with injector.get(BotApi) as ba:
-        ba.sync_db_with_slack_and_return_count()
+        ba.sync_db_with_slack()
