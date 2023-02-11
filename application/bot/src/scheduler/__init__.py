@@ -1,5 +1,6 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+import logging
 from src.api.bot_api import BotApi
 from src.injector import injector
 
