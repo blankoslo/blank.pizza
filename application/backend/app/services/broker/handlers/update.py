@@ -34,23 +34,31 @@ def update_invitation(request: dict):
 def update_slack_user(request: dict):
     logger = injector.get(logging.Logger)
     slack_user_service = injector.get(SlackUserService)
-    slack_id = request['slack_id']
-    update_data = request['update_data']
+    users_to_update = request['users_to_update']
 
     response = True
-    try:
-        result = slack_user_service.update(slack_id, {
-            'current_username': update_data['current_username'],
-            'email': update_data['email']
-        })
-        if result is None:
-            slack_user_service.add({
-                'slack_id': slack_id,
-                'current_username': update_data['current_username'],
-                'email': update_data['email']
+    updated_users = []
+    failed_users = []
+    for user in users_to_update:
+        try:
+            result = slack_user_service.update(user['slack_id'], {
+                'current_username': user['current_username'],
+                'email': user['email']
             })
-    except Exception as e:
-        logger.warning(e)
-        response = False
+            if result is None:
+                slack_user_service.add({
+                    'slack_id': user['slack_id'],
+                    'current_username': user['current_username'],
+                    'email': user['email']
+                })
+            updated_users.append(user['slack_id'])
+        except Exception as e:
+            logger.warning(e)
+            response = False
+            failed_users.append(user['slack_id'])
 
-    return {'success': response}
+    return {
+        'success': response,
+        'updated_users': updated_users,
+        'failed_users': failed_users
+    }
