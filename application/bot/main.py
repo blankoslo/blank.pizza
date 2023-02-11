@@ -9,12 +9,12 @@ import pytz
 import logging
 import sys
 
-from src.api.bot_api import BotApi, BotApiConfiguration
-
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
+
+from src.api.bot_api import BotApi, BotApiConfiguration
+
+from src.scheduler import scheduler
 
 from src.injector import injector, singleton
 from src.broker.amqp_connection import AmqpConnection
@@ -133,30 +133,6 @@ def handle_file_shared_events(body):
     logger = injector.get(logging.Logger)
     logger.info(body)
 
-def auto_reply():
-    logger = injector.get(logging.Logger)
-    logger.info("Auto replying on scheduled task")
-    with injector.get(BotApi) as ba:
-        ba.auto_reply()
-
-def invite_multiple_if_needed():
-    logger = injector.get(logging.Logger)
-    logger.info("Inviting multiple if need on scheduled task")
-    with injector.get(BotApi) as ba:
-        ba.invite_multiple_if_needed()
-
-def send_reminders():
-    logger = injector.get(logging.Logger)
-    logger.info("Sending reminders on scheduled task")
-    with injector.get(BotApi) as ba:
-        ba.send_reminders()
-
-def sync_db_with_slack_and_return_count():
-    logger = injector.get(logging.Logger)
-    logger.info("Syncing db with slack on scheduled task")
-    with injector.get(BotApi) as ba:
-        ba.sync_db_with_slack_and_return_count()
-
 def main():
     # Set up injector
     api_config = BotApiConfiguration(pizza_channel_id, pytz.timezone('Europe/Oslo'))
@@ -170,6 +146,7 @@ def main():
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
     injector.binder.bind(logging.Logger, to=logger, scope=singleton)
+
     # Try setting locale
     try:
         locale.setlocale(locale.LC_ALL, "nb_NO.utf8")
@@ -187,12 +164,7 @@ def main():
     consuming_thread = threading.Thread(target = consume)
     consuming_thread.start()
 
-    # Set up scheduler
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(auto_reply, trigger=IntervalTrigger(minutes=15))
-    scheduler.add_job(invite_multiple_if_needed, trigger=IntervalTrigger(minutes=15))
-    scheduler.add_job(send_reminders, trigger=IntervalTrigger(minutes=15))
-    scheduler.add_job(sync_db_with_slack_and_return_count, trigger=IntervalTrigger(days=1))
+    # start scheduler
     scheduler.start()
 
     # Set up slack app with socket mode
