@@ -97,25 +97,27 @@ class ApiClient:
         response = response_schema.load(response_payload)
         return response['user_ids']
 
-    def update_slack_user(self, slack_user):
-        slack_id = slack_user['id']
-        current_username = slack_user['name']
-        email = slack_user['profile']['email']
-
+    def update_slack_user(self, slack_users):
         request_payload = {
-            "slack_id": slack_id,
-            "update_data": {
+            'users_to_update': []
+        }
+        for slack_user in slack_users:
+            slack_id = slack_user['id']
+            current_username = slack_user['name']
+            email = slack_user['profile']['email']
+
+            request_payload['users_to_update'].append({
+                'slack_id': slack_id,
                 'current_username': current_username,
                 'email': email,
-            }
-        }
+            })
         request_payload_schema = UpdateSlackUserRequestSchema()
         response_payload = self._call(self._create_request("update_slack_user", request_payload_schema.load(request_payload)))
         if response_payload is None:
             return False
         response_schema = UpdateSlackUserResponseSchema()
         response = response_schema.load(response_payload)
-        return response['success']
+        return response
 
     def create_image(self, cloudinary_id, slack_id, title):
         request_payload = {

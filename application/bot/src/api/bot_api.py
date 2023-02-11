@@ -147,16 +147,17 @@ class BotApi:
     def get_invited_users(self):
         return self.client.get_invited_unanswered_user_ids()
 
-    def sync_db_with_slack_and_return_count(self):
+    def sync_db_with_slack(self):
         all_slack_users = slack.get_slack_users()
         slack_users = slack.get_real_users(all_slack_users)
-        for slack_user in slack_users:
-            success = self.client.update_slack_user(slack_user)
-            if success:
-                self.logger.info("Updated user %s" % slack_user['id'])
-            else:
-                self.logger.warning("Was unable to update %s" % slack_user['id'])
-        return len(slack_users)
+        response = self.client.update_slack_user(slack_users)
+
+        updated_users = response['updated_users']
+        for user in updated_users:
+            self.logger.info("Updated user %s" % user)
+        failed_users = response['failed_users']
+        for user in failed_users:
+            self.logger.warning("Was unable to update %s" % user)
 
     def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):
         return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
