@@ -2,7 +2,6 @@ from datetime import datetime
 import os
 import logging
 
-from app.services.broker import BrokerService
 from app.services.broker.handlers.message_handler import MessageHandler
 
 from app.services.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
@@ -14,13 +13,11 @@ from app.services.invitation_service import InvitationService
 from app.services.slack_user_service import SlackUserService
 from app.services.event_service import EventService
 
-@MessageHandler.handle('withdraw_invitation')
-def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
+@MessageHandler.handle('withdraw_invitation', WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema)
+def withdraw_invitation(request: dict):
     logger = injector.get(logging.Logger)
     invitation_service = injector.get(InvitationService)
 
-    schema = WithdrawInvitationRequestSchema()
-    request = schema.load(payload)
     event_id = request.get('event_id')
     slack_id = request.get('slack_id')
 
@@ -31,13 +28,10 @@ def withdraw_invitation(payload: dict, correlation_id: str, reply_to: str):
         logger.warning(e)
         result = False
 
-    response_schema = WithdrawInvitationResponseSchema()
-    response = response_schema.load({'success': result})
+    return {'success': result}
 
-    BrokerService.respond(response, reply_to, correlation_id)
-
-@MessageHandler.handle('invite_multiple_if_needed')
-def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str):
+@MessageHandler.handle('invite_multiple_if_needed', outgoing_schema = InviteMultipleIfNeededResponseSchema)
+def invite_multiple_if_needed():
     logger = injector.get(logging.Logger)
     invitation_service = injector.get(InvitationService)
     slack_user_service = injector.get(SlackUserService)
@@ -72,7 +66,4 @@ def invite_multiple_if_needed(payload: dict, correlation_id: str, reply_to: str)
             logger.error(e)
         events_where_users_were_invited.append(event_where_users_were_invited)
 
-    response_schema = InviteMultipleIfNeededResponseSchema()
-    response = response_schema.load({'events': events_where_users_were_invited})
-
-    BrokerService.respond(response, reply_to, correlation_id)
+    return {'events': events_where_users_were_invited}

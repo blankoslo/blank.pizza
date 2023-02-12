@@ -20,4 +20,4 @@ class BrokerService:
             'type': type,
             'payload': response
         })
-        broker.sync_send(message, os.environ["MQ_EVENT_KEY"], ExchangeType.DIRECT, 5, "v1.0.0")
+        broker.send(message, os.environ["MQ_EVENT_KEY"], ExchangeType.DIRECT, 5, "v1.0.0")
