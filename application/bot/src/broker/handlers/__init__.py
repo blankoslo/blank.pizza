@@ -1,13 +1,17 @@
-from src.broker.schemas.message import MessageSchema
 import json
+from marshmallow import Schema
+from src.broker.schemas.message import MessageSchema
 
 class MessageHandler:
     handlers = {}
 
     @classmethod
-    def handle(cls, type_: str):
+    def handle(cls, type_: str, incoming_schema: Schema = None):
         def decorator(func):
-            cls.handlers[type_] = func
+            cls.handlers[type_] = {
+                'func': func,
+                'incoming_schema': incoming_schema
+            }
             return func
         return decorator
 
@@ -16,6 +20,17 @@ class MessageHandler:
         type_ = message['type']
         payload = message.get('payload')
         cls.handlers[type_](payload)
+
+    @classmethod
+    def process_message(cls, message: dict):
+        type_ = message['type']
+        handler = cls.handlers[type_]
+        if handler['incoming_schema'] is not None:
+            schema = handler['incoming_schema']()
+            payload = schema.load(message.get('payload'))
+            handler['func'](payload)
+        else:
+            handler['func']()
 
 def on_message(channel, method, properties, body):
     msg = body.decode('utf8')

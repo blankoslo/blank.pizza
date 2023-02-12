@@ -3,10 +3,7 @@ from src.broker.schemas.user_withdrew_after_finalization_event import UserWithdr
 from src.api.bot_api import BotApi
 from src.injector import injector
 
-@MessageHandler.handle('user_withdrew_after_finalization')
-def withdraw_invitation(payload: dict):
-    schema = UserWithdrewAfterFinalizationEventSchema()
-    event = schema.load(payload)
-
+@MessageHandler.handle('user_withdrew_after_finalization', UserWithdrewAfterFinalizationEventSchema)
+def withdraw_invitation(event: dict):
     with injector.get(BotApi) as ba:
         ba.send_user_withdrew_after_finalization(event['slack_id'], event['timestamp'], event['restaurant_name'])
