@@ -3,16 +3,15 @@ import functools
 import os
 from retry import retry
 import logging
-from src.injector import injector
 from src.broker.amqp_connection_pool import AmqpConnectionPool
 
 class AmqpConnection:
-    def __init__(self):
+    def __init__(self, logger: logging.Logger, connection_pool: AmqpConnectionPool):
         self.exchange = os.environ.get('MQ_EXCHANGE')
         self.queue = os.environ.get('MQ_EVENT_QUEUE')
         self.routing_key = os.environ.get('MQ_EVENT_KEY')
-        self.logger = injector.get(logging.Logger)
-        self.connection_pool = injector.get(AmqpConnectionPool)
+        self.logger = logger
+        self.connection_pool = connection_pool
         self.channel = None
         self.connection = None
 
