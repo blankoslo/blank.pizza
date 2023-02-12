@@ -4,6 +4,7 @@ import os
 
 from marshmallow import Schema
 
+from src.injector import injector
 from src.broker.amqp_connection import AmqpConnection
 from src.broker.schemas.message import MessageSchema
 from src.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
@@ -19,7 +20,7 @@ class ApiClient:
 
     def __init__(self):
         self.rpc_key = os.environ["MQ_RPC_KEY"]
-        self.mq = AmqpConnection()
+        self.mq = injector.get(AmqpConnection)
         self.mq.connect()
         self.mq.setup_exchange()
 

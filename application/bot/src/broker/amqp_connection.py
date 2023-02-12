@@ -4,8 +4,10 @@ import os
 from retry import retry
 import logging
 from src.broker.amqp_connection_pool import AmqpConnectionPool
+from injector import inject
 
 class AmqpConnection:
+    @inject
     def __init__(self, logger: logging.Logger, connection_pool: AmqpConnectionPool):
         self.exchange = os.environ.get('MQ_EXCHANGE')
         self.queue = os.environ.get('MQ_EVENT_QUEUE')
@@ -23,7 +25,11 @@ class AmqpConnection:
     def connect(self):
         self.connection = self.connection_pool.get_connection()
         self.channel = self.connection.channel()
-        self.channel.add_on_close_callback(self._release_connection)
+        self.channel._impl.add_on_close_callback(self.add_on_close_callback)
+
+    def add_on_close_callback(self):
+        self.channel._on_channel_closed()
+        self._release_connection()
 
     def _release_connection(self):
         self.connection_pool.release_connection(self.connection)
