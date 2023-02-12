@@ -4,30 +4,29 @@ import os
 from retry import retry
 import logging
 from src.injector import injector
-from src.broker.amqp_connection_pool import AmqpConnectionPool
 
 class AmqpConnection:
-    def __init__(self):
-        self.exchange = os.environ.get('MQ_EXCHANGE')
+    def __init__(self, host = None, exchange = None):
+        # CLOUDAMQP_URL is the environment variable created by heroku during production deployment
+        mq_url = os.environ.get('MQ_URL') if 'MQ_URL' in os.environ else os.environ.get('CLOUDAMQP_URL')
+        self.host = host if host is not None else mq_url
+        self.exchange = exchange if exchange is not None else os.environ.get('MQ_EXCHANGE')
+        self.connection = None
+        self.channel = None
         self.queue = os.environ.get('MQ_EVENT_QUEUE')
         self.routing_key = os.environ.get('MQ_EVENT_KEY')
         self.logger = injector.get(logging.Logger)
-        self.connection_pool = injector.get(AmqpConnectionPool)
-        self.channel = None
-        self.connection = None
 
     def disconnect(self):
         if self.channel is not None and not self.channel.is_closed:
             self.channel.stop_consuming()
-        self.connection_pool.release_connection(self.connection)
+        if self.connection is not None and not self.connection.is_closed:
+            self.connection.close()
 
     def connect(self):
-        self.connection = self.connection_pool.get_connection()
+        parameters = pika.URLParameters(self.host)
+        self.connection = pika.BlockingConnection(parameters=parameters)
         self.channel = self.connection.channel()
-        self.channel.add_on_close_callback(self._release_connection)
-
-    def _release_connection(self):
-        self.connection_pool.release_connection(self.connection)
 
     def setup_exchange(self):
         self.channel.exchange_declare(self.exchange, exchange_type='direct')
@@ -49,8 +48,6 @@ class AmqpConnection:
                 routing_key=self.routing_key,
                 body=payload
             )
-        else:
-            self.logger.warning("Connection is not open or channel is not open")
 
     def publish_rpc(self, routing_key, reply_to, correlation_id, payload):
         if self.connection.is_open and self.channel.is_open:
@@ -68,7 +65,7 @@ class AmqpConnection:
 
     @retry(pika.exceptions.AMQPConnectionError, delay=1, backoff=2)
     def consume(self, on_message):
-        if self.channel is None or self.channel.is_closed:
+        if self.connection.is_closed or self.channel.is_closed:
             self.connect()
             self.setup_queues()
         try:

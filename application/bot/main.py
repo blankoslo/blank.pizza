@@ -18,6 +18,7 @@ from src.scheduler import scheduler
 
 from src.injector import injector, singleton
 from src.broker.amqp_connection import AmqpConnection
+from src.broker.amqp_connection_pool import AmqpConnectionPool
 from src.broker.handlers import on_message
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
@@ -154,6 +155,8 @@ def main():
         logger.warning("Missing locale nb_NO.utf8 on server")
 
     # Set up rabbitmq
+    connection_pool = AmqpConnectionPool()
+    injector.binder.bind(AmqpConnectionPool, to=connection_pool, scope=singleton)
     mq = AmqpConnection()
     mq.connect()
     mq.setup_exchange()
