@@ -25,6 +25,7 @@ class ApiClient:
         self.logger = logger
         self.mq = amqp_connection
         self.rpc_key = os.environ["MQ_RPC_KEY"]
+        self.timeout = 30
         self.mq.connect()
         self.mq.setup_exchange()
 
@@ -51,7 +52,7 @@ class ApiClient:
 
         start = time.time()
         while corr_id not in self.messages:
-            if time.time() - start >= 30:
+            if time.time() - start >= self.timeout:
                 break
 
             self.mq.connection.process_data_events(time_limit=0.1)
@@ -127,7 +128,6 @@ class ApiClient:
         request_payload_schema = UpdateSlackUserRequestSchema()
         response_payload = self._call(self._create_request("update_slack_user", request_payload_schema.load(request_payload)))
         response_schema = UpdateSlackUserResponseSchema()
-        print(response_payload)
         if response_payload is None:
             return response_schema.load({
                 'success': False,

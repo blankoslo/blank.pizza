@@ -23,7 +23,8 @@ class AmqpConnectionPool:
 
     def get_connection(self):
         with self._condition:
-            return self._get_connection()
+            connection = self._get_connection()
+            return connection
 
     def release_connection(self, connection):
         # Put connection into wait_queue to indicate it's ready to be used
@@ -42,7 +43,8 @@ class AmqpConnectionPool:
             return connection
 
         # Wait for a connection to be released
-        return self._try_get_connection()
+        connection = self._try_get_connection()
+        return connection
 
     def _try_get_connection(self):
         try:
@@ -59,7 +61,7 @@ class AmqpConnectionPool:
 
     def _get_connection_from_queue(self):
         # Try to get a connection ready to be used from wait queue
-        connection = self._wait_queue.get()
+        connection = self._wait_queue.get(block=False)
         self._wait_queue.task_done()
         # Added connection to connections queue to indicate it's in use
         self._connections_count += 1
