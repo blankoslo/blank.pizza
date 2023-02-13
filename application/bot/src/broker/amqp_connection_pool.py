@@ -11,7 +11,7 @@ class AmqpConnectionPool:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, max_connections=20, timeout=60):
+    def __init__(self, max_connections=10, timeout=60):
         self._host = os.environ.get('MQ_URL') if 'MQ_URL' in os.environ else os.environ.get('CLOUDAMQP_URL')
         self._max_connections = max_connections
         # Keep tracks of all connections currently in use
