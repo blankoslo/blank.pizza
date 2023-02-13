@@ -15,6 +15,7 @@ from src.slack import slack_handler
 
 from src.injector import injector, singleton
 from src.broker.amqp_connection import AmqpConnection
+from src.broker.amqp_connection_pool import AmqpConnectionPool
 from src.broker.handlers import on_message
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
@@ -28,8 +29,12 @@ def setup_logger():
     logger.propagate = False
     return logger
 
+def setup_connection_pool():
+    connection_pool = AmqpConnectionPool()
+    injector.binder.bind(AmqpConnectionPool, to=connection_pool, scope=singleton)
+
 def setup_consumption_queue_listener():
-    mq = AmqpConnection()
+    mq = injector.get(AmqpConnection)
     mq.connect()
     mq.setup_exchange()
     mq.setup_queues()
@@ -55,6 +60,7 @@ def main():
         logger.warning("Missing locale nb_NO.utf8 on server")
 
     # Set up rabbitmq
+    setup_connection_pool()
     setup_consumption_queue_listener()
 
     # start scheduler

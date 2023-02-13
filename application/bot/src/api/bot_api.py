@@ -26,7 +26,7 @@ class BotApi:
         self.logger = logger
 
     def __enter__(self):
-        self.client = ApiClient()
+        self.client = injector.get(ApiClient)
         return self
 
     def __exit__(self, type, value, traceback):
