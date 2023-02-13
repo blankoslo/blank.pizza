@@ -17,7 +17,7 @@ from src.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, U
 from src.broker.schemas.create_image import CreateImageRequestSchema, CreateImageResponseSchema
 from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
 
-class ApiClient:
+class BrokerClient:
     messages = {}
 
     @inject
