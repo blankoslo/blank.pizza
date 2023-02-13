@@ -19,7 +19,6 @@ class AmqpConnection:
 
     def disconnect(self):
         if self.channel is not None and not self.channel.is_closed:
-            print("closing channel")
             self.channel.stop_consuming()
             self.channel.close()
         self.connection_pool.release_connection(self.connection)
@@ -31,6 +30,7 @@ class AmqpConnection:
     def _release_connection(self):
         self.connection_pool.release_connection(self.connection)
         self.connection = None
+        self.channel = None
 
     def setup_exchange(self):
         self.channel.exchange_declare(self.exchange, exchange_type='direct')

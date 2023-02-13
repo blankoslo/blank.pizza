@@ -30,20 +30,14 @@ class AmqpConnectionPool:
         with self._lock:
             self._wait_queue.put(connection)
             self._connections_count -= 1
-            print("released con:")
-            print(connection)
 
     def _get_connection(self):
         if not self._wait_queue.empty():
             con = self._try_get_connection()
-            print("reuse")
-            print(con)
             return con
 
         if self._connections_count < self._max_connections:
             connection = self._create_and_get_connection()
-            print("new")
-            print(connection)
             return connection
 
         # Wait for a connection to be released

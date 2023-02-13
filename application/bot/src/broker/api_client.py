@@ -1,10 +1,12 @@
 import uuid
 import json
 import os
+import logging
+import time
 
 from marshmallow import Schema
 
-from src.injector import injector
+from src.injector import injector, inject
 from src.broker.amqp_connection import AmqpConnection
 from src.broker.schemas.message import MessageSchema
 from src.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
@@ -18,9 +20,11 @@ from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSche
 class ApiClient:
     messages = {}
 
-    def __init__(self):
+    @inject
+    def __init__(self, amqp_connection: AmqpConnection, logger: logging.Logger):
+        self.logger = logger
+        self.mq = amqp_connection
         self.rpc_key = os.environ["MQ_RPC_KEY"]
-        self.mq = injector.get(AmqpConnection)
         self.mq.connect()
         self.mq.setup_exchange()
 
@@ -32,9 +36,6 @@ class ApiClient:
         self.mq.disconnect()
 
     def on_response(self, ch, method, props, body):
-        print(props.correlation_id)
-        print(body)
-        print("\n")
         self.messages[props.correlation_id] = body
 
     def _call(self, payload):
@@ -47,15 +48,18 @@ class ApiClient:
             auto_ack=True)
 
         self.mq.publish_rpc(self.rpc_key, self.callback_queue, corr_id, json.dumps(payload, default=str))
-        print("hi1")
-        self.mq.connection.process_data_events(time_limit=30)
-        print("hi2")
 
-        print(len(self.messages.keys()))
+        start = time.time()
+        while corr_id not in self.messages:
+            if time.time() - start >= 30:
+                break
+
+            self.mq.connection.process_data_events(time_limit=0.1)
+
         if corr_id in self.messages:
             response = json.loads(self.messages.pop(corr_id).decode('utf8'))
         else:
-            print("FAILED TO GET RESPONSE")
+            self.logger.warn("Failed to get response from backend")
         return response
 
     def _create_request(self, type: str, payload: Schema = None):
