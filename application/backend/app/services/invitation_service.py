@@ -36,11 +36,12 @@ class InvitationService:
 
     def update_invitation_status(self, event_id, user_id, rsvp):
         invitation = Invitation.get_by_id(event_id, user_id)
-        event = self.event_service.get_by_id(invitation.event_id)
 
         # If invitation doesnt exist then we cant update it
         if invitation is None:
             return None
+
+        event = self.event_service.get_by_id(invitation.event_id)
 
         # If event is in the past then updating invites doesnt make sense
         if event.time < datetime.now(pytz.utc):

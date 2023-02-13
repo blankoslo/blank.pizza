@@ -14,7 +14,7 @@ module "staging" {
   hostname = "staging.bot.blank.pizza"
   prefix = var.prefix
   environment = "stag"
-  CLOUDAMQP_PLAN = "cloudamqp:tiger"
+  CLOUDAMQP_PLAN = "cloudamqp:lemur"
   PAPERTRAIL_PLAN = "papertrail:choklad"
   POSTGRES_PLAN = "heroku-postgresql:mini"
   FORMATION_SIZE_FRONTEND = "Basic"
