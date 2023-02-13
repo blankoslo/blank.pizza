@@ -32,6 +32,9 @@ class ApiClient:
         self.mq.disconnect()
 
     def on_response(self, ch, method, props, body):
+        print(props.correlation_id)
+        print(body)
+        print("\n")
         self.messages[props.correlation_id] = body
 
     def _call(self, payload):
@@ -44,10 +47,15 @@ class ApiClient:
             auto_ack=True)
 
         self.mq.publish_rpc(self.rpc_key, self.callback_queue, corr_id, json.dumps(payload, default=str))
+        print("hi1")
         self.mq.connection.process_data_events(time_limit=30)
+        print("hi2")
 
+        print(len(self.messages.keys()))
         if corr_id in self.messages:
-            response = json.loads(self.messages[corr_id].decode('utf8'))
+            response = json.loads(self.messages.pop(corr_id).decode('utf8'))
+        else:
+            print("FAILED TO GET RESPONSE")
         return response
 
     def _create_request(self, type: str, payload: Schema = None):
@@ -98,7 +106,7 @@ class ApiClient:
         response = response_schema.load(response_payload)
         return response['user_ids']
 
-    def update_slack_user(self, slack_users):
+    def  update_slack_user(self, slack_users):
         request_payload = {
             'users_to_update': []
         }
@@ -114,9 +122,14 @@ class ApiClient:
             })
         request_payload_schema = UpdateSlackUserRequestSchema()
         response_payload = self._call(self._create_request("update_slack_user", request_payload_schema.load(request_payload)))
-        if response_payload is None:
-            return False
         response_schema = UpdateSlackUserResponseSchema()
+        print(response_payload)
+        if response_payload is None:
+            return response_schema.load({
+                'success': False,
+                'updated_users': [],
+                'failed_users': [user['slack_id'] for user in request_payload['users_to_update']]
+            })
         response = response_schema.load(response_payload)
         return response
 

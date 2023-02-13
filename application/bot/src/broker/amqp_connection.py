@@ -19,20 +19,18 @@ class AmqpConnection:
 
     def disconnect(self):
         if self.channel is not None and not self.channel.is_closed:
+            print("closing channel")
             self.channel.stop_consuming()
+            self.channel.close()
         self.connection_pool.release_connection(self.connection)
 
     def connect(self):
         self.connection = self.connection_pool.get_connection()
         self.channel = self.connection.channel()
-        self.channel._impl.add_on_close_callback(self.add_on_close_callback)
-
-    def add_on_close_callback(self):
-        self.channel._on_channel_closed()
-        self._release_connection()
 
     def _release_connection(self):
         self.connection_pool.release_connection(self.connection)
+        self.connection = None
 
     def setup_exchange(self):
         self.channel.exchange_declare(self.exchange, exchange_type='direct')
