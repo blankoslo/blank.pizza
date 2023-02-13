@@ -7,7 +7,7 @@ from injector import inject
 import src.api.slack_api as slack
 from datetime import datetime, timedelta
 from src.rsvp import RSVP
-from src.broker.api_client import ApiClient
+from src.broker.broker_client import BrokerClient
 from src.injector import injector
 import logging
 
@@ -26,7 +26,7 @@ class BotApi:
         self.logger = logger
 
     def __enter__(self):
-        self.client = injector.get(ApiClient)
+        self.client = injector.get(BrokerClient)
         return self
 
     def __exit__(self, type, value, traceback):
