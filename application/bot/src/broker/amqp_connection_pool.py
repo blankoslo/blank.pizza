@@ -2,6 +2,9 @@ import pika
 import queue
 import threading
 import os
+import logging
+
+from injector import injector
 
 class AmqpConnectionPool:
     _instance = None
@@ -12,6 +15,7 @@ class AmqpConnectionPool:
         return cls._instance
 
     def __init__(self, max_connections=10, timeout=60):
+        self.logger = injector.get(logging.Logger)
         self._host = os.environ.get('MQ_URL') if 'MQ_URL' in os.environ else os.environ.get('CLOUDAMQP_URL')
         self._max_connections = max_connections
         # Keep tracks of all connections currently in use
@@ -33,13 +37,12 @@ class AmqpConnectionPool:
             self._condition.notify()
 
     def _get_connection(self):
-        if not self._wait_queue.empty():
-            return self._try_get_connection()
-
-        if self._connections_count < self._max_connections:
-            return self._create_and_get_connection()
-
-        # Wait for a connection to be released
+        if self._wait_queue.empty() and self._connections_count < self._max_connections:
+            try:
+                return self._create_and_get_connection()
+            except pika.exceptions.AMQPConnectionError as e:
+                # Log error and continue so that it waits for a connection on the queue
+                self.logger.error(e)
         return self._try_get_connection()
 
     def _try_get_connection(self):
@@ -51,6 +54,7 @@ class AmqpConnectionPool:
             connection = self._get_connection_from_queue()
 
         if connection.is_closed or connection._impl.is_closing:
+            self._connections_count -= 1
             return self._get_connection()
 
         return connection
@@ -65,12 +69,7 @@ class AmqpConnectionPool:
 
     def _create_and_get_connection(self):
         # Create a connection and add it to the connections pool to indicate it's in use
-        connection = self._create_connection()
-        self._connections_count += 1
-        return connection
-
-    def _create_connection(self):
-        # create a new connection
         parameters = pika.URLParameters(self._host)
         connection = pika.BlockingConnection(parameters)
+        self._connections_count += 1
         return connection
