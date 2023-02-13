@@ -4,7 +4,7 @@ import threading
 import os
 import logging
 
-from injector import injector
+from src.injector import injector
 
 class AmqpConnectionPool:
     _instance = None
