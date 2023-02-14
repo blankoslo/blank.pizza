@@ -23,9 +23,14 @@ class AmqpConnection:
             self.channel.close()
         self.connection_pool.release_connection(self.connection)
 
+    @retry(pika.exceptions.StreamLostError, tries=5, delay=1, backoff=2)
     def connect(self):
         self.connection = self.connection_pool.get_connection()
-        self.channel = self.connection.channel()
+        try:
+            self.channel = self.connection.channel()
+        except pika.exceptions.StreamLostError as e:
+            self.disconnect()
+            raise e
 
     def _release_connection(self):
         self.connection_pool.release_connection(self.connection)
