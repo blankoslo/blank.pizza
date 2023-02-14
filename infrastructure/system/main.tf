@@ -4,7 +4,7 @@ resource "heroku_domain" "blank" {
 }
 
 resource "heroku_domain" "blank_backend" {
-  app_id   = heroku_app.frontend.id
+  app_id   = heroku_app.backend.id
   hostname = var.BACKEND_URI
 }
 
