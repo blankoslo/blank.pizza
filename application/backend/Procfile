@@ -1,2 +1,1 @@
-web: gunicorn main:app --log-file -
-migration: flask db upgrade
+web: (export FLASK_APP=main.py && flask db upgrade) && gunicorn main:app --log-file -
