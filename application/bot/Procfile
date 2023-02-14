@@ -1,1 +1,1 @@
-web: flask db upgrade; gunicorn main:app --log-file -
+worker: python main.py
