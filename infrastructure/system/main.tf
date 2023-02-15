@@ -3,6 +3,11 @@ resource "heroku_domain" "blank" {
   hostname = var.hostname
 }
 
+resource "heroku_domain" "blank_backend" {
+  app_id   = heroku_app.backend.id
+  hostname = var.BACKEND_URI
+}
+
 resource "heroku_app" "backend" {
   name = "${var.prefix}-${var.environment}-backend"
   region = "eu"
