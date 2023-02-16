@@ -2,12 +2,12 @@ import requests
 import base64
 import logging
 import os
-
+import time
+from functools import wraps
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from src.api.bot_api import BotApi, BotApiConfiguration
-
 from src.injector import injector
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
@@ -17,7 +17,32 @@ slack_app_token = os.environ["SLACK_APP_TOKEN"]
 slack_app = App(token=slack_bot_token)
 slack_handler = SocketModeHandler(slack_app, slack_app_token)
 
+def request_time_monitor(timeout=3000):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            logger = injector.get(logging.Logger)
+            start_time = time.time()
+            user_id = None
+            if "body" in kwargs and "event" in kwargs["body"]:
+                user_id = kwargs["body"]["event"].get("user")
+                if user_id is None:
+                    user_id = kwargs["body"]["event"].get("user_id")
+            elif "body" in kwargs and "user" in kwargs["body"]:
+                user_id = kwargs["body"]["user"].get("id")
+            response = func(*args, **kwargs)
+            end_time = time.time()
+            execution_time = round((end_time - start_time) * 1000, 2)
+            # Log execution time of function if over timeout limit as using more than the timeout limit usually
+            # means that the slack request will fail and the user will get a ⚠️
+            if execution_time > timeout:
+                logger.warn(f"Function {func.__name__} took {execution_time}ms to execute. User ID: {user_id}")
+            return response
+        return wrapper
+    return decorator
+
 @slack_app.event("message")
+@request_time_monitor()
 def handle_event(body, say):
     event = body["event"]
     channel = event["channel"]
@@ -53,14 +78,17 @@ def handle_rsvp(body, ack, attending):
     ack()
 
 @slack_app.action("rsvp_yes")
+@request_time_monitor()
 def handle_rsvp_yes(ack, body):
     handle_rsvp(body, ack, True)
 
 @slack_app.action("rsvp_no")
+@request_time_monitor()
 def handle_rsvp_no(ack, body):
     handle_rsvp(body, ack, False)
 
 @slack_app.action("rsvp_withdraw")
+@request_time_monitor()
 def handle_rsvp_withdraw(ack, body):
     logger = injector.get(logging.Logger)
     message = body["message"]
@@ -93,6 +121,7 @@ def handle_direct_message(event, say):
 
 # We don't use app mentions at the moment, but perhaps it'll be useful in the future
 @slack_app.event("app_mention")
+@request_time_monitor()
 def handle_mention_event(body):
     logger = injector.get(logging.Logger)
     logger.info(body)
@@ -120,6 +149,7 @@ def handle_file_share(event, say):
 # contains a full file object with url_private, while this one only contains the ID
 # Perhaps another file event contains the full object?
 @slack_app.event("file_shared")
+@request_time_monitor()
 def handle_file_shared_events(body):
     logger = injector.get(logging.Logger)
     logger.info(body)
