@@ -15,7 +15,7 @@ const EventList: React.FC = () => (
             justifyContent: 'space-around',
         }}
     >
-        <EventsContainer title="events.list.futureEvents.title">
+        <EventsContainer title="events.list.futureEvents.title" showNewButton={true}>
             <NewEventsContainer />
         </EventsContainer>
         <EventsContainer title="events.list.pastEvents.title">

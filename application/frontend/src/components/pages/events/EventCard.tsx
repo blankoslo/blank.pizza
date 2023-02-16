@@ -7,9 +7,9 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ApiEvent } from '../../../../api/EventService';
-import { useInvitations } from '../../../../hooks/useInvitations';
-import { datetimeToReadableString } from '../../../utils/dateToReadableString';
+import { ApiEvent } from '../../../api/EventService';
+import { useInvitations } from '../../../hooks/useInvitations';
+import { datetimeToReadableString } from '../../utils/dateToReadableString';
 import Stack from '@mui/material/Stack';
 import { InvitationRow } from './InvitationRow';
 

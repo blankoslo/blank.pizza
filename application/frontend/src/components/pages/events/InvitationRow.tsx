@@ -2,9 +2,9 @@ import React, { useCallback, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Box } from '@mui/material';
-import { datetimeToString } from '../../../utils/datetimeToString';
+import { datetimeToString } from '../../utils/datetimeToString';
 import Image from 'mui-image';
-import SelectInput from '../../../SelectInput';
+import SelectInput from '../../SelectInput';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -14,7 +14,7 @@ import {
     ApiInvitationPut,
     invitationsDefaultQueryKey,
     useInvitationService,
-} from '../../../../api/InvitationService';
+} from '../../../api/InvitationService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 

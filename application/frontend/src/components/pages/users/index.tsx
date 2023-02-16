@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import * as React from 'react';
-import { EventList } from './EventList';
+import { UserList } from './UserList';
 
-const EvenListPage: React.FC = () => (
+const UsersPage: React.FC = () => (
     <Box
         sx={{
             flex: 1,
@@ -11,8 +11,8 @@ const EvenListPage: React.FC = () => (
             alignItems: 'center',
         }}
     >
-        <EventList />
+        <UserList />
     </Box>
 );
 
-export default EvenListPage;
+export default UsersPage;
