@@ -6,8 +6,7 @@ import Auth from './Auth';
 
 import { Login } from '../components/pages/login';
 import { Logout } from '../components/pages/logout';
-import NewRestaurantPage from '../components/pages/restaurants/new';
-import RestaurantListPage from '../components/pages/restaurants/list';
+import RestaurantPage from '../components/pages/restaurants';
 import EvenListPage from '../components/pages/events/list';
 import NewEventPage from '../components/pages/events/new';
 import UserListPage from '../components/pages/users/list';
@@ -46,10 +45,7 @@ export const Router: React.FC = () => {
                     </Route>
                     <Route element={<Auth loggedIn={true} />}>
                         <Route path="/" element={<Outlet />} />
-                        <Route path="/restaurants" element={<Outlet />}>
-                            <Route path="new" element={<NewRestaurantPage />} />
-                            <Route path="list" element={<RestaurantListPage />} />
-                        </Route>
+                        <Route path="/restaurants" element={<RestaurantPage />} />
                         <Route path="/events" element={<Outlet />}>
                             <Route path="new" element={<NewEventPage />} />
                             <Route path="list" element={<EvenListPage />} />

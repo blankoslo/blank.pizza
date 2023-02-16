@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import * as React from 'react';
-import { RestaurantList } from '../list/RestaurantList';
+import { RestaurantList } from './RestaurantList';
 
-const RestaurantListPage: React.FC = () => (
+const RestaurantPage: React.FC = () => (
     <Box
         sx={{
             flex: 1,
@@ -15,4 +15,4 @@ const RestaurantListPage: React.FC = () => (
     </Box>
 );
 
-export default RestaurantListPage;
+export default RestaurantPage;

@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
-import { useInfiniteRestaurants } from '../../../../hooks/useRestaurants';
-import { restaurantsDefaultQueryKey, useRestaurantService } from '../../../../api/RestaurantService';
+import { useInfiniteRestaurants } from '../../../hooks/useRestaurants';
+import { restaurantsDefaultQueryKey, useRestaurantService } from '../../../api/RestaurantService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { eventsDefaultQueryKey } from '../../../../api/EventService';
-import DialogWarning from './DialogWarning';
+import { eventsDefaultQueryKey } from '../../../api/EventService';
+import DialogDeleteWarning from './DialogDeleteWarning';
+import DialogNew from './DialogNew';
 import { RestaurantEntry } from './RestaurantEntry';
 import { useTranslation } from 'react-i18next';
-import { Button3D } from '../../../Button3D';
-import { useNavigate } from 'react-router-dom';
-import { InfinityList } from '../../../InfinityList';
+import { Button3D } from '../../Button3D';
+import { InfinityList } from '../../InfinityList';
 
 export const RestaurantList: React.FC = () => {
-    const navigate = useNavigate();
     const { t } = useTranslation();
     const { deleteRestaurant } = useRestaurantService();
 
+    const [showNewModal, setShowNewModal] = useState(false);
     const [deleteId, setDeleteId] = useState<string>();
     const { isLoading, data: _restaurants, hasNextPage, fetchNextPage } = useInfiniteRestaurants({ page_size: 10 });
     const hasMore = isLoading ? true : hasNextPage ?? false;
@@ -52,15 +52,20 @@ export const RestaurantList: React.FC = () => {
         setDeleteId(undefined);
     };
 
-    const navigateToNewRestaurant = () => {
-        navigate('/restaurants/new');
+    const toggleCreateNewForm = () => {
+        setShowNewModal((val) => !val);
     };
 
     const INFINITY_LIST_ID = 'restaurantInfinityListContainer';
 
     return (
         <>
-            <DialogWarning open={!!deleteId} handleClose={deleteRestaurantCancel} onDelete={deleteRestaurantCallback} />
+            <DialogDeleteWarning
+                open={!!deleteId}
+                handleClose={deleteRestaurantCancel}
+                onDelete={deleteRestaurantCallback}
+            />
+            <DialogNew open={showNewModal} handleClose={toggleCreateNewForm} />
             <Paper
                 sx={(theme) => ({
                     padding: 1,
@@ -86,7 +91,7 @@ export const RestaurantList: React.FC = () => {
                     <Typography variant="h5" component="h2" align="center">
                         {t('restaurants.list.title')}
                     </Typography>
-                    <Button3D text={t('restaurants.list.newRestaurantButton')} onClick={navigateToNewRestaurant} />
+                    <Button3D text={t('restaurants.list.newRestaurantButton')} onClick={toggleCreateNewForm} />
                 </Box>
                 <Box
                     id={INFINITY_LIST_ID}

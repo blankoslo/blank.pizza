@@ -18,7 +18,7 @@
       },
       "restaurants": {
         "name": "restauranter",
-        "link": "/restaurants/list"
+        "link": "/restaurants"
       },
       "events": {
         "name": "arrangementer",

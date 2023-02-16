@@ -13,7 +13,7 @@ interface Props {
     handleClose: () => void;
 }
 
-const DraggableDialog: React.FC<Props> = ({ open, onDelete, handleClose }) => {
+const DialogDeleteWarning: React.FC<Props> = ({ open, onDelete, handleClose }) => {
     const { t } = useTranslation();
 
     return (
@@ -36,4 +36,4 @@ const DraggableDialog: React.FC<Props> = ({ open, onDelete, handleClose }) => {
     );
 };
 
-export default DraggableDialog;
+export default DialogDeleteWarning;

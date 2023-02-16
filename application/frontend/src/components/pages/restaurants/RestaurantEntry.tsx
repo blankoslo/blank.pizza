@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, IconButton } from '@mui/material';
 import { RestaurantEntryField } from './RestaurantEntryField';
-import { ApiRestaurant } from '../../../../api/RestaurantService';
+import { ApiRestaurant } from '../../../api/RestaurantService';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@mui/material';
