@@ -1,14 +1,14 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { EventCard } from './EventCard';
-import { InfinityList } from '../../../InfinityList';
-import { useInfiniteEvents } from '../../../../hooks/useEvents';
+import { InfinityList } from '../../InfinityList';
+import { useInfiniteEvents } from '../../../hooks/useEvents';
 import { useTranslation } from 'react-i18next';
 
-const NewEventsContainer: React.FC = () => {
+const OldEventsContainer: React.FC = () => {
     const { t } = useTranslation();
 
-    const INFINITY_LIST_ID = 'newEventsInfinityListContainer';
+    const INFINITY_LIST_ID = 'oldEventsInfinityListContainer';
 
     const {
         isLoading,
@@ -17,7 +17,7 @@ const NewEventsContainer: React.FC = () => {
         fetchNextPage,
     } = useInfiniteEvents({
         page_size: 10,
-        age: 'New',
+        age: 'Old',
         order: 'Desc',
     });
     const hasMore = isLoading ? true : hasNextPage ?? false;
@@ -51,4 +51,4 @@ const NewEventsContainer: React.FC = () => {
     );
 };
 
-export { NewEventsContainer };
+export { OldEventsContainer };

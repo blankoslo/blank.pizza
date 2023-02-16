@@ -1,19 +1,18 @@
 import { Box } from '@mui/material';
 import * as React from 'react';
-import { RestaurantCreator } from './RestaurantCreator';
+import { RestaurantList } from './RestaurantList';
 
-const NewRestaurantPage: React.FC = () => (
+const RestaurantPage: React.FC = () => (
     <Box
         sx={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
         }}
     >
-        <RestaurantCreator />
+        <RestaurantList />
     </Box>
 );
 
-export default NewRestaurantPage;
+export default RestaurantPage;

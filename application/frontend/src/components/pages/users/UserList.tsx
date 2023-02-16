@@ -4,8 +4,8 @@ import Typography from '@mui/material/Typography';
 import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { UserCard } from './UserCard';
-import { InfinityList } from '../../../InfinityList';
-import { useInfiniteUsers } from '../../../../hooks/useUsers';
+import { InfinityList } from '../../InfinityList';
+import { useInfiniteUsers } from '../../../hooks/useUsers';
 
 const UserList: React.FC = () => {
     const { t } = useTranslation();

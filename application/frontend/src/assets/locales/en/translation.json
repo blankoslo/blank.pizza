@@ -18,15 +18,15 @@
       },
       "restaurants": {
         "name": "restaurants",
-        "link": "/restaurants/list"
+        "link": "/restaurants"
       },
       "events": {
         "name": "events",
-        "link": "/events/list"
+        "link": "/events"
       },
       "users": {
         "name": "users",
-        "link": "/users/list"
+        "link": "/users"
       }
     },
     "settings": {

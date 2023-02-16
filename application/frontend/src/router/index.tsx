@@ -6,11 +6,9 @@ import Auth from './Auth';
 
 import { Login } from '../components/pages/login';
 import { Logout } from '../components/pages/logout';
-import NewRestaurantPage from '../components/pages/restaurants/new';
-import RestaurantListPage from '../components/pages/restaurants/list';
-import EvenListPage from '../components/pages/events/list';
-import NewEventPage from '../components/pages/events/new';
-import UserListPage from '../components/pages/users/list';
+import RestaurantPage from '../components/pages/restaurants';
+import EventPage from '../components/pages/events';
+import UsersPage from '../components/pages/users';
 
 type Props = {
     children?: React.ReactNode;
@@ -46,17 +44,9 @@ export const Router: React.FC = () => {
                     </Route>
                     <Route element={<Auth loggedIn={true} />}>
                         <Route path="/" element={<Outlet />} />
-                        <Route path="/restaurants" element={<Outlet />}>
-                            <Route path="new" element={<NewRestaurantPage />} />
-                            <Route path="list" element={<RestaurantListPage />} />
-                        </Route>
-                        <Route path="/events" element={<Outlet />}>
-                            <Route path="new" element={<NewEventPage />} />
-                            <Route path="list" element={<EvenListPage />} />
-                        </Route>
-                        <Route path="/users" element={<Outlet />}>
-                            <Route path="list" element={<UserListPage />} />
-                        </Route>
+                        <Route path="/restaurants" element={<RestaurantPage />} />
+                        <Route path="/events" element={<EventPage />} />
+                        <Route path="/users" element={<UsersPage />} />
                         <Route path="/logout" element={<Logout />} />
                     </Route>
                 </Routes>

@@ -5,16 +5,16 @@ import Typography from '@mui/material/Typography';
 import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import Image from 'mui-image';
-import TextInput from '../../../TextInput';
+import TextInput from '../../TextInput';
 import { FormProvider, useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import i18n from 'i18next';
-import { ApiUser, ApiUserPut, useUserService, usersDefaultQueryKey } from '../../../../api/UserService';
-import SwitchInput from '../../../SwitchInput';
+import { ApiUser, ApiUserPut, useUserService, usersDefaultQueryKey } from '../../../api/UserService';
+import SwitchInput from '../../SwitchInput';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { dateToString } from '../../../utils/dateToString';
+import { dateToString } from '../../utils/dateToString';
 
 const validationSchema = yup.object().shape({
     priority: yup

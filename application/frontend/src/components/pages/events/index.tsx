@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import * as React from 'react';
-import { RestaurantList } from '../list/RestaurantList';
+import { EventList } from './EventList';
 
-const RestaurantListPage: React.FC = () => (
+const EventPage: React.FC = () => (
     <Box
         sx={{
             flex: 1,
@@ -11,8 +11,8 @@ const RestaurantListPage: React.FC = () => (
             alignItems: 'center',
         }}
     >
-        <RestaurantList />
+        <EventList />
     </Box>
 );
 
-export default RestaurantListPage;
+export default EventPage;

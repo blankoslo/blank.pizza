@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import * as React from 'react';
 import { UserList } from './UserList';
 
-const UserListPage: React.FC = () => (
+const UsersPage: React.FC = () => (
     <Box
         sx={{
             flex: 1,
@@ -15,4 +15,4 @@ const UserListPage: React.FC = () => (
     </Box>
 );
 
-export default UserListPage;
+export default UsersPage;

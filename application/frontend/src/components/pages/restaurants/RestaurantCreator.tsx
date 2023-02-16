@@ -5,11 +5,11 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
-import { ApiRestaurantPost, restaurantsDefaultQueryKey, useRestaurantService } from '../../../../api/RestaurantService';
+import { ApiRestaurantPost, restaurantsDefaultQueryKey, useRestaurantService } from '../../../api/RestaurantService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import TextInput from '../../../TextInput';
+import TextInput from '../../TextInput';
 
 const validationSchema = yup.object().shape({
     name: yup
@@ -21,7 +21,11 @@ const validationSchema = yup.object().shape({
     address: yup.string(),
 });
 
-export const RestaurantCreator: React.FC = () => {
+interface Props {
+    onSubmitFinished: () => void;
+}
+
+export const RestaurantCreator: React.FC<Props> = ({ onSubmitFinished }) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { postRestaurant } = useRestaurantService();
@@ -63,48 +67,30 @@ export const RestaurantCreator: React.FC = () => {
             newRestaurant.address = data.address;
         }
         addRestaurantMutation.mutate(newRestaurant);
+        onSubmitFinished();
     });
 
     return (
         <FormProvider {...formMethods}>
-            <Paper
+            <Box
                 component="form"
                 onSubmit={onSubmit}
-                sx={(theme) => ({
-                    padding: 1,
-                    width: '30vw',
-                    minWidth: '500px',
-                    backgroundColor: theme.palette.secondary.main,
-                    borderRadius: 3,
-                })}
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    color: '#ffffff',
+                    marginTop: 1,
+                    minWidth: '300px',
+                }}
             >
-                <Typography
-                    variant="h5"
-                    component="h2"
-                    align="center"
-                    sx={{
-                        marginBottom: 1,
-                        color: '#171717',
-                    }}
-                >
-                    {t('restaurants.new.title')}
-                </Typography>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        color: '#ffffff',
-                    }}
-                >
-                    <TextInput name="name" label={t('restaurants.new.form.name')} type="text" />
-                    <TextInput name="link" label={t('restaurants.new.form.link')} type="text" />
-                    <TextInput name="tlf" label={t('restaurants.new.form.tlf')} type="text" />
-                    <TextInput name="address" label={t('restaurants.new.form.address')} type="text" />
-                    <Button variant="contained" color="success" type="submit">
-                        {t('restaurants.new.form.button')}
-                    </Button>
-                </Box>
-            </Paper>
+                <TextInput name="name" label={t('restaurants.new.form.name')} type="text" />
+                <TextInput name="link" label={t('restaurants.new.form.link')} type="text" />
+                <TextInput name="tlf" label={t('restaurants.new.form.tlf')} type="text" />
+                <TextInput name="address" label={t('restaurants.new.form.address')} type="text" />
+                <Button variant="contained" color="success" type="submit">
+                    {t('restaurants.new.form.button')}
+                </Button>
+            </Box>
         </FormProvider>
     );
 };
