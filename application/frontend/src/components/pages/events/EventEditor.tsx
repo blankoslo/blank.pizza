@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Paper } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {ApiRestaurant, ApiRestaurantPost, restaurantsDefaultQueryKey} from '../../../api/RestaurantService';
+import { ApiRestaurant, ApiRestaurantPost, restaurantsDefaultQueryKey } from '../../../api/RestaurantService';
 import { SelectRestaurant } from '../../SelectRestaurant';
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -117,7 +117,7 @@ export const EventEditor: React.FC<Props> = ({ onSubmitFinished, eventId, eventT
                     })}
                 >
                     <SelectRestaurant />
-                    <DateTimePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+                    <DateTimePicker name="date" />
                     <Box
                         sx={{
                             display: 'flex',

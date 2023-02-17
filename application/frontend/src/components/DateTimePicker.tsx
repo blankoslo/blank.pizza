@@ -8,6 +8,7 @@ import nbLocale from 'date-fns/locale/nb';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import isSameISOWeek from 'date-fns/isSameISOWeek';
+import { Controller, useFormContext } from 'react-hook-form';
 
 interface indexable {
     [index: string]: Locale;
@@ -95,14 +96,23 @@ const StyledDatePicker = styled(Box, {
 );
 
 type _Props = {
+    name?: string;
     selectedDate: Date | null;
     setSelectedDate: React.Dispatch<React.SetStateAction<Date | null>>;
     dayClassNameSetter?: (date: Date) => string;
     onChange: (date: Date) => void;
+    onBlur?: (event: React.FocusEvent<HTMLInputElement, Element>) => void;
     highlightWeek?: boolean;
 };
 
-const _DateTimePicker: React.FC<_Props> = ({ selectedDate, dayClassNameSetter, onChange, highlightWeek }) => {
+const _DateTimePicker: React.FC<_Props> = ({
+    name,
+    selectedDate,
+    dayClassNameSetter,
+    onChange,
+    onBlur,
+    highlightWeek,
+}) => {
     const { i18n } = useTranslation();
 
     registerLocale(i18n.language, localeMap[i18n.language]);
@@ -110,8 +120,10 @@ const _DateTimePicker: React.FC<_Props> = ({ selectedDate, dayClassNameSetter, o
     return (
         <StyledDatePicker highlightWeek={highlightWeek}>
             <DatePicker
+                name={name}
                 selected={selectedDate}
                 onChange={onChange}
+                onBlur={onBlur}
                 showTimeSelect
                 disabledKeyboardNavigation
                 dateFormat="MMMM d, yyyy h:mm aa"
@@ -129,16 +141,27 @@ const _DateTimePicker: React.FC<_Props> = ({ selectedDate, dayClassNameSetter, o
 export { _DateTimePicker };
 
 type Props = {
-    selectedDate: Date | null;
-    setSelectedDate: React.Dispatch<React.SetStateAction<Date | null>>;
+    name: string;
 };
 
-const DateTimePicker: React.FC<Props> = ({ selectedDate, setSelectedDate }) => {
-    const onChange = (newValue: Date | null) => {
-        setSelectedDate(newValue);
-    };
+const DateTimePicker: React.FC<Props> = ({ name }) => {
+    const { control, trigger } = useFormContext();
 
-    return <_DateTimePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} onChange={onChange} />;
+    return (
+        <Controller
+            render={({ field: { ref, onChange, onBlur, value, name }, formState }) => (
+                <_DateTimePicker
+                    selectedDate={value}
+                    setSelectedDate={onChange}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    name={name}
+                />
+            )}
+            name={name}
+            control={control}
+        />
+    );
 };
 
 export default DateTimePicker;
