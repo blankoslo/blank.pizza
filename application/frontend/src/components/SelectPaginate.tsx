@@ -25,10 +25,12 @@ interface Props {
     label: string;
     triggerNames?: string[];
     errorName?: string;
+    marginTop?: boolean;
     marginBottom?: boolean;
     marginLeft?: boolean;
     disabled?: boolean;
     width?: number;
+    fullWidth?: boolean;
     multi?: boolean;
     loadOptions: LoadOptions<Option, Group, Additional>;
 }
@@ -38,10 +40,12 @@ const SelectPaginate: React.FC<Props> = ({
     label,
     triggerNames,
     errorName,
+    marginTop = true,
     marginBottom = true,
     marginLeft = true,
     disabled = false,
     width,
+    fullWidth = false,
     multi = false,
     loadOptions,
 }) => {
@@ -102,19 +106,21 @@ const SelectPaginate: React.FC<Props> = ({
     return (
         <Box
             sx={{
-                marginBottom: marginBottom ? 2 : 0,
-                marginLeft: marginLeft ? 2 : 0,
+                marginBottom: marginBottom ? 1 : 0,
+                marginLeft: marginLeft ? 1 : 0,
+                marginTop: marginTop ? 1 : 0,
                 display: 'flex',
                 flexDirection: 'column',
-                width: width ? `${width}px` : null,
+                width: fullWidth ? '100%' : width ? `${width}px` : null,
+                zIndex: 2,
             }}
         >
             <Controller
-                render={({ field, formState }) => (
+                render={({ field: { ref, ...rest }, formState }) => (
                     <AsyncPaginate
                         components={{ DropdownIndicator, IndicatorSeparator }}
                         styles={customStyles(!formState.errors[name])}
-                        {...field}
+                        {...rest}
                         placeholder={label}
                         /*error={!!formState.errors[name]}*/
                         isDisabled={disabled}
@@ -122,9 +128,9 @@ const SelectPaginate: React.FC<Props> = ({
                         isMulti={multi}
                         onChange={(option: MultiValue<Option> | SingleValue<Option>) => {
                             if (isMultiValue(option)) {
-                                field.onChange(option);
+                                rest.onChange(option);
                             } else {
-                                field.onChange(option);
+                                rest.onChange(option);
                             }
                             // TODO: Temporary fix to handle how yup updates the validation and check of errors
                             if (triggerNames) {

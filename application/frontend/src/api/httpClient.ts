@@ -88,7 +88,7 @@ export const useHttpClient = () => {
     };
 
     const httpPatchClient: httpClientType = async <T>(url: string, data?: any, config?: AxiosRequestConfig<any>) => {
-        const method = (token?: string) => httpClient(token).put<T>(url, data, config);
+        const method = (token?: string) => httpClient(token).patch<T>(url, data, config);
         return refreshGuard<T>(method);
     };
 

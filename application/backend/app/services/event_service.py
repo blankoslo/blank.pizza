@@ -44,3 +44,6 @@ class EventService:
 
     def add(self, data):
         return Event.upsert(data)
+
+    def update(self, event_id, data):
+        return Event.update(event_id, data)

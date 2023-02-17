@@ -93,6 +93,35 @@
       "title": "Nytt pizza arrangement 🍕",
       "button": "Opprett"
     },
+    "edit": {
+      "mutation": {
+        "onSuccess": "Endring av arrangement var vellykket",
+        "onError": "Endring av arrangement var mislykket"
+      },
+      "title": "Endre pizza arrangement \uD83C\uDF55",
+      "button": "Lagre"
+    },
+    "delete": {
+      "button": "Slett",
+      "confirmation": {
+        "title": "Slett arrangement",
+        "content": {
+          "line1": "Er du sikker på at du vil slette arrangementet?",
+          "line2": "Denne handlingen kan ikke bli angret."
+        },
+        "action": {
+          "cancel": "Avbryt",
+          "accept": "Slett"
+        }
+      },
+      "mutation": {
+        "onSuccess": "Sletting av arrangementet var vellykket",
+        "onError": "Sletting av arrangementet var mislykket"
+      }
+    },
+    "select": {
+      "label": "Arrangement"
+    },
     "list": {
       "eventCard": {
         "extended": {
@@ -133,6 +162,9 @@
         "address": "Restaurant adresse",
         "button": "Opprett"
       }
+    },
+    "select": {
+      "label": "Restaurant"
     },
     "list": {
       "title": "List over restaurants",

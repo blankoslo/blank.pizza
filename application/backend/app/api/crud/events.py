@@ -1,6 +1,6 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.event_schema import EventSchema, EventQueryArgsSchema
+from app.models.event_schema import EventSchema, EventQueryArgsSchema, EventUpdateSchema
 from flask_jwt_extended import jwt_required
 from app.services.injector import injector
 from app.services.event_service import EventService
@@ -38,6 +38,16 @@ class EventsById(views.MethodView):
         if event is None:
             abort(404, message = "Event not found.")
         return event
+
+    @bp.arguments(EventUpdateSchema)
+    @bp.response(200, EventSchema)
+    def patch(self, update_data, event_id):
+        """Update event by ID"""
+        event_service = injector.get(EventService)
+        updated_event = event_service.update(event_id, update_data)
+        if updated_event is None:
+            abort(404, message = "Event not found.")
+        return updated_event
 
     @bp.response(204)
     @jwt_required()

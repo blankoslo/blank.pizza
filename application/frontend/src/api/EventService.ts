@@ -21,7 +21,10 @@ export interface ApiEvents extends Pagination {
 }
 
 export interface ApiEventPost extends ApiEventBase {
-    time: string;
+    restaurant_id: string;
+}
+
+export interface ApiEventPatch extends ApiEventBase {
     restaurant_id: string;
 }
 
@@ -37,10 +40,15 @@ export interface ApiEventsInfinite {
 }
 
 export const useEventService = () => {
-    const { httpGetClient, httpPostClient } = useHttpClient();
+    const { httpGetClient, httpPostClient, httpPatchClient, httpDeleteClient } = useHttpClient();
 
     const postEvent = (newEvent: ApiEventPost): Promise<ApiEvent> =>
         httpPostClient<ApiEvent>(endpoint, newEvent).then((response) => response.data);
+
+    const patchEvent = (newEvent: ApiEventPatch, eventId: string): Promise<ApiEvent> =>
+        httpPatchClient<ApiEvent>(`${endpoint}/${eventId}`, newEvent).then((response) => response.data);
+
+    const deleteEvent = (eventId: string): Promise<void> => httpDeleteClient<ApiEvent>(`${endpoint}/${eventId}`).then();
 
     const getEventById = (eventId: number): Promise<ApiEvent> =>
         httpGetClient<ApiEvent>(`${endpoint}/${eventId}`).then((response) => response.data);
@@ -65,6 +73,8 @@ export const useEventService = () => {
 
     return {
         postEvent,
+        patchEvent,
+        deleteEvent,
         getEventById,
         getEvents,
         getRestaurantsInfinite,

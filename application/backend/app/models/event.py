@@ -16,6 +16,7 @@ class Event(CrudMixin, db.Model):
     restaurant_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey('restaurants.id'), nullable=False)
     restaurant = relationship("Restaurant", backref = "events", uselist=False)
     finalized = sa.Column(sa.Boolean, nullable=False, server_default='f')
+    invitations = relationship("Invitation", backref="event", cascade="all, delete-orphan")
 
     @classmethod
     def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):

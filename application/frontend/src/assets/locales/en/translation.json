@@ -97,6 +97,35 @@
       "title": "New Pizza Event 🍕",
       "button": "Create"
     },
+    "edit": {
+      "mutation": {
+        "onSuccess": "Event successfully changed",
+        "onError": "Failed to change event"
+      },
+      "title": "Edit Pizza Event \uD83C\uDF55",
+      "button": "Save"
+    },
+    "delete": {
+      "button": "Delete",
+      "confirmation": {
+        "title": "Delete event",
+        "content": {
+          "line1": "Are you sure you want to delete this event? ",
+          "line2": "This action cannot be undone."
+        },
+        "action": {
+          "cancel": "Cancel",
+          "accept": "Delete"
+        }
+      },
+      "mutation": {
+        "onSuccess": "Deletion of event was successful",
+        "onError": "Deletion of event failed"
+      }
+    },
+    "select": {
+      "label": "Event"
+    },
     "list": {
       "eventCard": {
         "extended": {
@@ -137,6 +166,9 @@
         "address": "Restaurant address",
         "button": "Create"
       }
+    },
+    "select": {
+      "label": "Restaurant"
     },
     "list": {
       "title": "List of Restaurants",
