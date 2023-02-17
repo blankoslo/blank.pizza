@@ -2,6 +2,7 @@ from app.db import db
 from app.models.restaurant_schema import RestaurantSchema
 from app.models.enums import Age, RSVP
 from app.models.event import Event
+from app.models.mixins import get_field
 
 from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
@@ -24,3 +25,10 @@ class EventQueryArgsSchema(Schema):
     time = fields.DateTime(timezone=True)
     restaurant_id = fields.String()
     age = EnumField(Age, by_value=True)
+
+class EventUpdateSchema(SQLAlchemySchema):
+    class Meta(EventSchema.Meta):
+        load_instance = False
+
+    time = get_field(EventSchema, Event.time)
+    restaurant_id = get_field(EventSchema, Event.restaurant_id)

@@ -4,10 +4,15 @@ import { Box, ButtonProps } from '@mui/material';
 interface Props extends ButtonProps {
     text: string;
     onClick?: () => void;
+    stopEventPropagation?: boolean;
 }
 
-const Button3D: React.FC<Props> = ({ text, onClick }) => {
-    const _onClick = () => {
+const Button3D: React.FC<Props> = ({ text, onClick, stopEventPropagation }) => {
+    const _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (stopEventPropagation) {
+            e.stopPropagation();
+        }
+
         if (onClick) {
             // Allow the animation to finish so that it looks like the button goes back up
             setTimeout(onClick, 200);
@@ -19,6 +24,7 @@ const Button3D: React.FC<Props> = ({ text, onClick }) => {
             onClick={_onClick}
             sx={(theme) => ({
                 float: 'right',
+                height: 'fit-content',
                 backgroundColor: theme.palette.primary.main,
                 borderRadius: '6px',
                 boxShadow: `0 0 0 1px ${theme.palette.primary.light} inset,0 0 0 2px rgba(255, 255, 255, 0.15) inset,0 4px 0 0 ${theme.palette.primary.dark},0 4px 0 1px rgba(0, 0, 0, 0.4),0 4px 4px 1px rgba(0, 0, 0, 0.5)`,

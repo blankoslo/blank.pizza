@@ -71,3 +71,13 @@ class CrudMixin(object):
     @classmethod
     def count(cls, session=db.session):
         return cls.query.count()
+
+    @classmethod
+    def update(cls, id, update_data, session=db.session):
+        obj = cls.query.get(id)
+        for attr, value in update_data.items():
+            setattr(obj, attr, value)
+        session.commit()
+        session.refresh(obj)
+        return obj
+
