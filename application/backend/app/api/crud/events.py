@@ -54,4 +54,6 @@ class EventsById(views.MethodView):
     def delete(self, event_id):
         """Delete event"""
         event_service = injector.get(EventService)
-        event_service.delete(event_id)
+        success = event_service.delete(event_id)
+        if not success:
+            abort(400, message = "Something went wrong.")

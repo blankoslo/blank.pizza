@@ -31,5 +31,20 @@ class Invitation(CrudMixin, db.Model):
       .order_by(func.random())
     return query.all()
 
+  @classmethod
+  def get_attending_or_unanswered_users(cls, event_id, session=db.session):
+    query = session.query(cls.slack_id) \
+      .filter(
+        sa.and_(
+          sa.or_(
+            cls.rsvp == RSVP.attending,
+            cls.rsvp == RSVP.unanswered
+          ),
+          cls.event_id == event_id
+        )
+      ) \
+      .order_by(func.random())
+    return query.all()
+
   def __repr__(self):
       return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

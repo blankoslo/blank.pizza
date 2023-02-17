@@ -43,4 +43,5 @@ def on_message(channel, method, properties, body):
 # ALSO DO NOT MOVE: having it at the bottom stops circular imports
 import src.broker.handlers.finalization
 import src.broker.handlers.user_withdrew_after_finalization
+import src.broker.handlers.deleted_event
 

@@ -159,6 +159,18 @@ class BotApi:
         for user in failed_users:
             self.logger.warning("Was unable to update %s" % user)
 
+    def inform_users_unfinalized_event_got_cancelled(self, time, restaurant_name, slack_ids):
+        self.logger.info("unfinalized event got cancelled")
+        for slack_id in slack_ids:
+            slack.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blitt kansellert. Sorry!" % (restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+            self.logger.info("Informed user: %s" % slack_id)
+
+    def inform_users_finalized_event_got_cancelled(self, time, restaurant_name, slack_ids):
+        users = ['<@%s>' % user for user in slack_ids]
+        ids_string = ", ".join(users)
+        self.logger.info("finalized event got cancelled for users %s" % ", ".join(slack_ids))
+        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blitt kansellert. Sorry!" % (ids_string, restaurant_name, time.strftime("%A %d. %B kl %H:%M"),))
+
     def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):
         return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
 
