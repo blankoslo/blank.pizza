@@ -71,7 +71,7 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
                                     marginRight: 1,
                                 }}
                             >
-                                <Button3D text="Edit" stopEventPropagation={true} onClick={toggleEditForm} />
+                                <Button3D text={t('events.edit.buttons.open')} stopEventPropagation={true} onClick={toggleEditForm} />
                             </Box>
                         </Box>
                     </AccordionSummary>

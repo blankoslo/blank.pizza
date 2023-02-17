@@ -99,7 +99,10 @@
         "onError": "Endring av arrangement var mislykket"
       },
       "title": "Endre pizza arrangement \uD83C\uDF55",
-      "button": "Lagre"
+      "buttons": {
+        "save": "Lagre",
+        "open": "Endre"
+      }
     },
     "delete": {
       "button": "Slett",

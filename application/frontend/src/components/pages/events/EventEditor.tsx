@@ -135,7 +135,7 @@ export const EventEditor: React.FC<Props> = ({ onSubmitFinished, eventId, eventT
                             {t('events.delete.button')}
                         </Button>
                         <Button sx={{ marginY: 1 }} color="success" variant="contained" fullWidth type="submit">
-                            {t('events.edit.button')}
+                            {t('events.edit.buttons.save')}
                         </Button>
                     </Box>
                 </Box>

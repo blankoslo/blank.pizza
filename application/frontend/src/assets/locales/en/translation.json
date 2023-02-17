@@ -103,7 +103,10 @@
         "onError": "Failed to change event"
       },
       "title": "Edit Pizza Event \uD83C\uDF55",
-      "button": "Save"
+      "buttons": {
+        "save": "Save",
+        "open": "Edit"
+      }
     },
     "delete": {
       "button": "Delete",
