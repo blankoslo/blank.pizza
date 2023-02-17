@@ -22,7 +22,11 @@ const validationSchema = yup.object().shape({
     rsvp: yup.string().required(i18n.t('invitations.update.validation.rsvp.required')),
 });
 
-const InvitationRow: React.FC<ApiInvitation> = ({ event_id, slack_id, slack_user, invited_at, reminded_at, rsvp }) => {
+interface Props extends ApiInvitation {
+    eventTime: Date;
+}
+
+const InvitationRow: React.FC<Props> = ({ eventTime, event_id, slack_id, slack_user, invited_at, reminded_at, rsvp }) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { putInvitation } = useInvitationService();
@@ -110,6 +114,7 @@ const InvitationRow: React.FC<ApiInvitation> = ({ event_id, slack_id, slack_user
                     }}
                 >
                     <SelectInput
+                        disabled={eventTime < new Date()}
                         name="rsvp"
                         width={140}
                         items={[

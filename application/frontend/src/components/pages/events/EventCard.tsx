@@ -66,13 +66,19 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
                                     }`}
                                 </Typography>
                             </CardContent>
-                            <Box
-                                sx={{
-                                    marginRight: 1,
-                                }}
-                            >
-                                <Button3D text={t('events.edit.buttons.open')} stopEventPropagation={true} onClick={toggleEditForm} />
-                            </Box>
+                            {new Date(time) >= new Date() && (
+                                <Box
+                                    sx={{
+                                        marginRight: 1,
+                                    }}
+                                >
+                                    <Button3D
+                                        text={t('events.edit.buttons.open')}
+                                        stopEventPropagation={true}
+                                        onClick={toggleEditForm}
+                                    />
+                                </Box>
+                            )}
                         </Box>
                     </AccordionSummary>
                     <AccordionDetails
@@ -84,7 +90,11 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
                         <Stack>
                             {invitations &&
                                 invitations.map((invitation) => (
-                                    <InvitationRow key={invitation.event_id + invitation.slack_id} {...invitation} />
+                                    <InvitationRow
+                                        key={invitation.event_id + invitation.slack_id}
+                                        {...invitation}
+                                        eventTime={new Date(time)}
+                                    />
                                 ))}
                         </Stack>
                     </AccordionDetails>
