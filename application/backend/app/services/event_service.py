@@ -6,6 +6,7 @@ from app.models.event import Event
 from app.models.invitation import Invitation
 from app.models.event_schema import EventSchema
 from app.services.broker.schemas.deleted_event_event import DeletedEventEventSchema
+from app.services.broker.schemas.updated_event_event import UpdatedEventEventSchema
 from app.services.broker import BrokerService
 
 class EventService:
@@ -72,4 +73,23 @@ class EventService:
         event = Event.get_by_id(event_id)
         if event.time < datetime.now(pytz.utc):
             return None
-        return Event.update(event_id, data)
+
+        old_time = event.time
+        old_restaurant_name = event.restaurant.name
+
+        updated_event = Event.update(event_id, data)
+
+        attending_or_unanswered_users = [user[0] for user in Invitation.get_attending_or_unanswered_users(event.id)]
+        queue_event_schema = UpdatedEventEventSchema()
+        queue_event = queue_event_schema.load({
+            'is_finalized': event.finalized,
+            'event_id': event.id,
+            'old_timestamp': old_time.isoformat(),
+            'timestamp': event.time.isoformat(),
+            'old_restaurant_name': old_restaurant_name,
+            'restaurant_name': event.restaurant.name,
+            'slack_ids': attending_or_unanswered_users
+        })
+        BrokerService.publish("updated_event", queue_event)
+
+        return updated_event

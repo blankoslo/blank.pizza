@@ -44,4 +44,4 @@ def on_message(channel, method, properties, body):
 import src.broker.handlers.finalization
 import src.broker.handlers.user_withdrew_after_finalization
 import src.broker.handlers.deleted_event
-
+import src.broker.handlers.updated_event
