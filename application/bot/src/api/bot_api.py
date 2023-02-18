@@ -132,11 +132,12 @@ class BotApi:
                 )
                 if was_updated:
                     # Update invitation message - remove buttons and tell user it expired
-                    channel_id = invitation['slack_message']['channel_id']
-                    ts = invitation['slack_message']['ts']
-                    invitation_message = slack.get_slack_message(channel_id, ts)
-                    blocks = invitation_message["blocks"][0:3]
-                    self.send_invitation_expired(channel_id, ts, blocks)
+                    if 'slack_message' in invitation:
+                        channel_id = invitation['slack_message']['channel_id']
+                        ts = invitation['slack_message']['ts']
+                        invitation_message = slack.get_slack_message(channel_id, ts)
+                        blocks = invitation_message["blocks"][0:3]
+                        self.send_invitation_expired(channel_id, ts, blocks)
                     # Send the user a message that the invite expired
                     slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
                     self.logger.info("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
@@ -148,6 +149,8 @@ class BotApi:
 
         for invitation in invitations:
             # Update invitation message - remove buttons and tell user it expired
+            if not 'invitation' in invitation:
+                continue
             channel_id = invitation['slack_message']['channel_id']
             ts = invitation['slack_message']['ts']
             invitation_message = slack.get_slack_message(channel_id, ts)
