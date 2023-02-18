@@ -293,6 +293,62 @@ class BotApi:
                 del block["text"]["emoji"]
         return blocks
 
+    def send_update_pizza_invite_attending(self, channel_id, ts, event_id):
+        self.logger.info('updating invitation message to attending for %s, %s' % (channel_id, event_id))
+        invitation_message = slack.get_slack_message(channel_id, ts)
+        blocks = invitation_message["blocks"][0:3]
+        message = self.send_pizza_invite_answered(
+            channel_id=channel_id,
+            ts=ts,
+            event_id=event_id,
+            old_blocks=blocks,
+            attending=True
+        )
+        self.logger.info(message)
+
+    def send_update_pizza_invite_not_attending(self, channel_id, ts, event_id):
+        self.logger.info('updating invitation message to not_attending for %s, %s' % (channel_id, event_id))
+        invitation_message = slack.get_slack_message(channel_id, ts)
+        blocks = invitation_message["blocks"][0:3]
+        self.send_pizza_invite_answered(
+            channel_id=channel_id,
+            ts=ts,
+            event_id=event_id,
+            old_blocks=blocks,
+            attending=False
+        )
+
+    def send_update_pizza_invite_unanswered(self, channel_id, ts, event_id):
+        self.logger.info('updating invitation message to unanswered for %s, %s' % (channel_id, event_id))
+        invitation_message = slack.get_slack_message(channel_id, ts)
+        blocks = invitation_message["blocks"][0:3]
+        old_blocks = self.clean_blocks(blocks)
+        new_blocks = [{
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Hells yesss!!! 🍕🍕🍕"
+                    },
+                    "value": str(event_id),
+                    "action_id": "rsvp_yes",
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Nah ☹️"
+                    },
+                    "value": str(event_id),
+                    "action_id": "rsvp_no",
+                }
+            ]
+        }]
+        blocks = old_blocks + new_blocks
+        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+
     def send_pizza_invite_answered(self, channel_id, ts, event_id, old_blocks, attending):
         old_blocks = self.clean_blocks(old_blocks)
         new_blocks_common = [
@@ -320,7 +376,7 @@ class BotApi:
                         "type": "plain_text",
                         "text": "Meld meg av"
                     },
-                    "value": event_id,
+                    "value": str(event_id),
                     "action_id": "rsvp_withdraw"
                 }
             }
