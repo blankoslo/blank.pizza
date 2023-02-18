@@ -31,7 +31,7 @@ def get_unanswered_invitations():
 
     return {'invitations': response_data}
 
-@MessageHandler.handle('get_unanswered_invitations_on_finished_events', outgoing_schema = GetUnansweredInvitationsResponseSchema)
+@MessageHandler.handle('get_unanswered_invitations_on_finished_events_and_set_not_attending', outgoing_schema = GetUnansweredInvitationsResponseSchema)
 def get_unanswered_invitations():
     invitation_service = injector.get(InvitationService)
 

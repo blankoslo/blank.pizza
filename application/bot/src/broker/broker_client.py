@@ -89,8 +89,8 @@ class BrokerClient:
         response = response_schema.load(response_payload)
         return response['invitations']
 
-    def get_unanswered_invitations_on_finished_events(self):
-        response_payload = self._call(self._create_request("get_unanswered_invitations_on_finished_events"))
+    def get_unanswered_invitations_on_finished_events_and_set_not_attending(self):
+        response_payload = self._call(self._create_request("get_unanswered_invitations_on_finished_events_and_set_not_attending"))
         if response_payload is None:
             return []
         response_schema = GetUnansweredInvitationsResponseSchema()

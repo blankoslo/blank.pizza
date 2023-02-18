@@ -144,7 +144,7 @@ class BotApi:
                     self.logger.warning("failed to update invitation to not attending")
 
     def clean_up_invitations(self):
-        invitations = self.client.get_unanswered_invitations_on_finished_events()
+        invitations = self.client.get_unanswered_invitations_on_finished_events_and_set_not_attending()
 
         for invitation in invitations:
             # Update invitation message - remove buttons and tell user it expired
