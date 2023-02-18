@@ -131,6 +131,13 @@ class BotApi:
                     answer = RSVP.not_attending
                 )
                 if was_updated:
+                    # Update invitation message - remove buttons and tell user it expired
+                    channel_id = invitation['slack_message']['channel_id']
+                    ts = invitation['slack_message']['ts']
+                    invitation_message = slack.get_slack_message(channel_id, ts)
+                    blocks = invitation_message["blocks"][0:3]
+                    self.send_invitation_expired(channel_id, ts, blocks)
+                    # Send the user a message that the invite expired
                     slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
                     self.logger.info("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
                 else:
@@ -289,6 +296,20 @@ class BotApi:
         blocks = old_blocks + new_blocks_common
         if attending:
             blocks += new_blocks_yes
+        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+
+    def send_invitation_expired(self, channel_id, ts, old_blocks):
+        old_blocks = self.clean_blocks(old_blocks)
+        new_blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Invitasjonen er utløpt.",
+                }
+            }
+        ]
+        blocks = old_blocks + new_blocks
         return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
     def send_pizza_invite_withdraw(self, channel_id, ts, old_blocks):

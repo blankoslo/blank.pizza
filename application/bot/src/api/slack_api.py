@@ -51,3 +51,15 @@ def update_slack_message(channel_id, ts, text=None, blocks=None):
             "ts": ts
         }
     )
+
+def get_slack_message(channel_id, ts):
+    try:
+        # Call the conversations.history method using WebClient
+        # conversations.history returns the first 100 messages by default
+        # These results are paginated, see: https://api.slack.com/methods/conversations.history$pagination
+        response = client.conversations_history(channel=channel_id, latest=ts, limit=1, inclusive=True)
+        if response['ok'] and len(response['messages']) > 0:
+            return response['messages'][0]
+        return None
+    except SlackApiError as e:
+        return None

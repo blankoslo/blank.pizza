@@ -1,10 +1,7 @@
 from marshmallow import fields, Schema
 from marshmallow_enum import EnumField
 from app.models.enums import RSVP
-
-class SlackMessage(Schema):
-    ts = fields.Str(required=True)
-    channel_id = fields.Str(required=True)
+from app.services.broker.schemas.slack_message import SlackMessage
 
 class InvitationUpdate(Schema):
     reminded_at = fields.DateTime()

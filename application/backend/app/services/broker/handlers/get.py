@@ -10,7 +10,16 @@ from app.models.enums import RSVP
 @MessageHandler.handle('get_unanswered_invitations', outgoing_schema = GetUnansweredInvitationsResponseSchema)
 def get_unanswered_invitations():
     invitations = Invitation.get_by_filter({"rsvp": RSVP.unanswered})
-    response_data = [{"slack_id": invitation.slack_id, "event_id": invitation.event_id, "invited_at": invitation.invited_at.isoformat(), "reminded_at": invitation.reminded_at.isoformat() } for invitation in invitations]
+    response_data = [{
+        "slack_id": invitation.slack_id,
+        "event_id": invitation.event_id,
+        "invited_at": invitation.invited_at.isoformat(),
+        "reminded_at": invitation.reminded_at.isoformat(),
+        "slack_message": {
+            "ts": invitation.slack_message.ts,
+            "channel_id": invitation.slack_message.channel_id
+        }
+    } for invitation in invitations]
 
     return {'invitations': response_data}
 
