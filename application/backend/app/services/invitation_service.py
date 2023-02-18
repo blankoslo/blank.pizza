@@ -36,6 +36,15 @@ class InvitationService:
     def get_by_id(self, event_id):
         return Invitation.get_by_id(event_id)
 
+    def get_unanswered_invitations_on_finished_events_and_set_not_attending(self):
+        invitations = Invitation.get_unanswered_invitations_on_finished_events()
+        for invitation in invitations:
+            self._update_invitation(
+                {'rsvp': RSVP.not_attending},
+                invitation
+            )
+        return invitations
+
     def update_invitation_status(self, event_id, user_id, rsvp):
         invitation = Invitation.get_by_id(event_id, user_id)
 

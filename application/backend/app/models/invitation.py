@@ -1,4 +1,6 @@
 import sqlalchemy as sa
+import pytz
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -48,6 +50,21 @@ class Invitation(CrudMixin, db.Model):
         )
       ) \
       .order_by(func.random())
+    return query.all()
+
+  @classmethod
+  def get_unanswered_invitations_on_finished_events(cls, session=db.session):
+    query = session.query(cls) \
+      .join(cls.event) \
+      .filter(
+        sa.and_(
+          sa.and_(
+            cls.rsvp == RSVP.unanswered
+          ),
+          sa.text('events.time < :now')
+        )
+      ) \
+      .params(now=datetime.now(pytz.utc))
     return query.all()
 
   @classmethod

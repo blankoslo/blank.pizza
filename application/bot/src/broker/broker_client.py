@@ -89,6 +89,14 @@ class BrokerClient:
         response = response_schema.load(response_payload)
         return response['invitations']
 
+    def get_unanswered_invitations_on_finished_events(self):
+        response_payload = self._call(self._create_request("get_unanswered_invitations_on_finished_events"))
+        if response_payload is None:
+            return []
+        response_schema = GetUnansweredInvitationsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['invitations']
+
     def update_invitation(self, slack_id: str, event_id: str, update_values: dict):
         request_payload = {
             "slack_id": slack_id,

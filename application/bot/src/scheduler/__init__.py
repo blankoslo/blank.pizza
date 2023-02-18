@@ -27,6 +27,13 @@ def send_reminders():
     with injector.get(BotApi) as ba:
         ba.send_reminders()
 
+@scheduler.scheduled_job('interval', id='clean_up_invitations', minutes=15, jitter=120)
+def clean_up_invitations():
+    logger = injector.get(logging.Logger)
+    logger.info("cleaning up invitations on finished events on scheduled task")
+    with injector.get(BotApi) as ba:
+        ba.clean_up_invitations()
+
 @scheduler.scheduled_job('interval', id='sync_db_with_slack', hours=6, jitter=120)
 def sync_db_with_slack():
     logger = injector.get(logging.Logger)

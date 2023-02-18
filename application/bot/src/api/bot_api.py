@@ -143,6 +143,18 @@ class BotApi:
                 else:
                     self.logger.warning("failed to update invitation to not attending")
 
+    def clean_up_invitations(self):
+        invitations = self.client.get_unanswered_invitations_on_finished_events()
+
+        for invitation in invitations:
+            # Update invitation message - remove buttons and tell user it expired
+            channel_id = invitation['slack_message']['channel_id']
+            ts = invitation['slack_message']['ts']
+            invitation_message = slack.get_slack_message(channel_id, ts)
+            blocks = invitation_message["blocks"][0:3]
+            self.send_invitation_expired(channel_id, ts, blocks)
+            self.logger.info("%s didn't answer and event is finished. Removing accept/decline buttons" % invitation['slack_id'])
+
     def update_invitation_answer(self, slack_id, event_id, answer: RSVP):
         return self.client.update_invitation(
             slack_id = slack_id,
