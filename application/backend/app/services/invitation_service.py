@@ -91,7 +91,6 @@ class InvitationService:
             queue_event = queue_event_schema.load(queue_event_data)
             BrokerService.publish("updated_invitation", queue_event)
             # return the updated invitation
-            self.logger.info(updated_invitation)
             return updated_invitation
         except Exception as e:
             self.logger.error(e)
