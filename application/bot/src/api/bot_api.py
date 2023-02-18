@@ -49,8 +49,21 @@ class BotApi:
         timestamp = pytz.utc.localize(event_time.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
 
         for user_id in invited_users:
-            self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+            slack_message = self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+            if not slack_message['ok']:
+                self.logger.warn("Failed to send invitation to %s", user_id)
+                continue
             self.logger.info("%s was invited to event on %s" % (user_id, timestamp))
+            self.client.update_invitation(
+                user_id,
+                event_id,
+                {
+                    'slack_message': {
+                        'ts': slack_message['ts'],
+                        'channel_id': slack_message['channel']
+                    }
+                }
+            )
 
     def send_reminders(self):
         invitations = self.client.get_unanswered_invitations()

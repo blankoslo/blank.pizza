@@ -5,6 +5,7 @@ from marshmallow_enum import EnumField
 from app.models.event_schema import EventSchema
 from app.models.slack_user_schema import SlackUserSchema
 from app.models.invitation import Invitation
+from app.models.slack_message_schema import SlackMessageSchema
 
 from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
@@ -23,6 +24,9 @@ class InvitationSchema(SQLAlchemySchema):
     invited_at = auto_field()
     rsvp = EnumField(RSVP, by_value=True)
     reminded_at = auto_field()
+    slack_message_channel = auto_field()
+    slack_message_ts = auto_field()
+    slack_message = fields.Nested(SlackMessageSchema, dump_only=True)
 
 class InvitationUpdateSchema(SQLAlchemySchema):
     class Meta(InvitationSchema.Meta):

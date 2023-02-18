@@ -14,6 +14,10 @@ class Invitation(CrudMixin, db.Model):
   invited_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
   rsvp = sa.Column(sa.Enum(RSVP, values_callable = lambda x: [e.value for e in x]), nullable=False, server_default=RSVP.unanswered)
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
+  slack_message_channel = sa.Column(sa.String, nullable=True)
+  slack_message_ts = sa.Column(sa.String, nullable=True)
+  slack_message = relationship("SlackMessage", backref = "invitation", foreign_keys=[slack_message_channel, slack_message_ts])
+  __table_args__ = (sa.ForeignKeyConstraint([slack_message_channel, slack_message_ts], ['slack_messages.channel_id', 'slack_messages.ts']), {})
 
   @classmethod
   def get_by_id(cls, event_id, slack_id, session=db.session):
@@ -45,6 +49,16 @@ class Invitation(CrudMixin, db.Model):
       ) \
       .order_by(func.random())
     return query.all()
+
+  @classmethod
+  def add_message(cls, message, invitation, session=db.session):
+    session.add(message)
+    invitation.slack_message_ts = message.ts
+    invitation.slack_message_channel = message.channel_id
+    session.commit()
+    session.refresh(message)
+    session.refresh(invitation)
+    return invitation
 
   def __repr__(self):
       return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

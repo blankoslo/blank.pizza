@@ -2,6 +2,8 @@ import pytz
 from datetime import datetime
 
 from app.models.invitation import Invitation
+from app.models.slack_message_schema import SlackMessageSchema
+from app.models.slack_message import SlackMessage
 from app.models.enums import RSVP
 
 from app.services.event_service import EventService
@@ -74,6 +76,23 @@ class InvitationService:
                 {'reminded_at': date},
                 invitation
             )
+        except:
+            return None
+
+    def update_slack_message(self, event_id, slack_id, ts, channel_id):
+        invitation = Invitation.get_by_id(event_id, slack_id)
+
+        if invitation is None:
+            return None
+
+        try:
+            slack_message_schema = SlackMessageSchema()
+            message = slack_message_schema.load({
+                'ts': ts,
+                'channel_id': channel_id
+            })
+
+            return Invitation.add_message(message, invitation)
         except:
             return None
 
