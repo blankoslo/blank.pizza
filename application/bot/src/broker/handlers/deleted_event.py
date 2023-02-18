@@ -7,7 +7,7 @@ from src.injector import injector
 def deleted_event(event: dict):
     with injector.get(BotApi) as ba:
         if event['is_finalized']:
-            ba.inform_users_finalized_event_got_cancelled(event['timestamp'], event['restaurant_name'], event['slack_ids'])
+            ba.inform_users_finalized_event_got_cancelled(event['timestamp'], event['restaurant_name'], event['slack'])
         else:
-            ba.inform_users_unfinalized_event_got_cancelled(event['timestamp'], event['restaurant_name'], event['slack_ids'])
+            ba.inform_users_unfinalized_event_got_cancelled(event['timestamp'], event['restaurant_name'], event['slack'])
 

@@ -36,8 +36,8 @@ class Invitation(CrudMixin, db.Model):
     return query.all()
 
   @classmethod
-  def get_attending_or_unanswered_users(cls, event_id, session=db.session):
-    query = session.query(cls.slack_id) \
+  def get_attending_or_unanswered_invitations(cls, event_id, session=db.session):
+    query = session.query(cls) \
       .filter(
         sa.and_(
           sa.or_(
