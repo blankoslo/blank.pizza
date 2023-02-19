@@ -1,4 +1,6 @@
 import sqlalchemy as sa
+import pytz
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -14,6 +16,10 @@ class Invitation(CrudMixin, db.Model):
   invited_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
   rsvp = sa.Column(sa.Enum(RSVP, values_callable = lambda x: [e.value for e in x]), nullable=False, server_default=RSVP.unanswered)
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
+  slack_message_channel = sa.Column(sa.String, nullable=True)
+  slack_message_ts = sa.Column(sa.String, nullable=True)
+  slack_message = relationship("SlackMessage", backref = "invitation", foreign_keys=[slack_message_channel, slack_message_ts])
+  __table_args__ = (sa.ForeignKeyConstraint([slack_message_channel, slack_message_ts], ['slack_messages.channel_id', 'slack_messages.ts']), {})
 
   @classmethod
   def get_by_id(cls, event_id, slack_id, session=db.session):
@@ -32,8 +38,8 @@ class Invitation(CrudMixin, db.Model):
     return query.all()
 
   @classmethod
-  def get_attending_or_unanswered_users(cls, event_id, session=db.session):
-    query = session.query(cls.slack_id) \
+  def get_attending_or_unanswered_invitations(cls, event_id, session=db.session):
+    query = session.query(cls) \
       .filter(
         sa.and_(
           sa.or_(
@@ -45,6 +51,31 @@ class Invitation(CrudMixin, db.Model):
       ) \
       .order_by(func.random())
     return query.all()
+
+  @classmethod
+  def get_unanswered_invitations_on_finished_events(cls, session=db.session):
+    query = session.query(cls) \
+      .join(cls.event) \
+      .filter(
+        sa.and_(
+          sa.and_(
+            cls.rsvp == RSVP.unanswered
+          ),
+          sa.text('events.time < :now')
+        )
+      ) \
+      .params(now=datetime.now(pytz.utc))
+    return query.all()
+
+  @classmethod
+  def add_message(cls, message, invitation, session=db.session):
+    session.add(message)
+    invitation.slack_message_ts = message.ts
+    invitation.slack_message_channel = message.channel_id
+    session.commit()
+    session.refresh(message)
+    session.refresh(invitation)
+    return invitation
 
   def __repr__(self):
       return "<Invitation(id={self.event_id!r}, id={self.slack_id!r})>".format(self=self)

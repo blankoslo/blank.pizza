@@ -16,6 +16,8 @@ def update_invitation(request: dict):
     event_id = request.get('event_id')
     update_data = request.get('update_data')
 
+    # TODO: Refactor this into one update so that it is transactional
+
     result = False
     if "reminded_at" in update_data:
         response = invitation_service.update_reminded_at(event_id, slack_id, update_data["reminded_at"].isoformat())
@@ -27,6 +29,11 @@ def update_invitation(request: dict):
         response = invitation_service.update_invitation_status(event_id, slack_id, update_data["rsvp"])
         result = True if response is not None else False
         logger.info("Updated rsvp for (%s,%s)", event_id, slack_id)
+
+    if 'slack_message' in update_data:
+        response = invitation_service.update_slack_message(event_id, slack_id, update_data["slack_message"]['ts'], update_data["slack_message"]['channel_id'])
+        result = True if response is not None else False
+        logger.info("Updated invitation slack message for (%s,%s)", event_id, slack_id)
 
     return {'success': result}
 

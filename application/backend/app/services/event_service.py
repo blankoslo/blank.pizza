@@ -51,7 +51,18 @@ class EventService:
             return False
         # Has to be lazy loaded before we delete event
         restaurant = event.restaurant
-        attending_or_unanswered_users = [user[0] for user in Invitation.get_attending_or_unanswered_users(event.id)]
+        invitations = Invitation.get_attending_or_unanswered_invitations(event.id)
+        slack_data = []
+        for invitation in invitations:
+            slack_data_entry = {
+                'user_id': invitation.slack_id,
+            }
+            if invitation.slack_message:
+                slack_data_entry['invitation_message'] = {
+                    'ts': invitation.slack_message_ts,
+                    'channel_id': invitation.slack_message_channel
+                }
+            slack_data.append(slack_data_entry)
 
         Event.delete(event_id)
 
@@ -61,7 +72,7 @@ class EventService:
             'event_id': event.id,
             'timestamp': event.time.isoformat(),
             'restaurant_name': restaurant.name,
-            'slack_ids': attending_or_unanswered_users
+            'slack': slack_data
         })
         BrokerService.publish("deleted_event", queue_event)
         return True
@@ -79,7 +90,7 @@ class EventService:
 
         updated_event = Event.update(event_id, data)
 
-        attending_or_unanswered_users = [user[0] for user in Invitation.get_attending_or_unanswered_users(event.id)]
+        attending_or_unanswered_users = [invitation.slack_id for invitation in Invitation.get_attending_or_unanswered_invitations(event.id)]
         queue_event_schema = UpdatedEventEventSchema()
         queue_event = queue_event_schema.load({
             'is_finalized': event.finalized,

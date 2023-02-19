@@ -78,7 +78,7 @@ def create_app(environment):
     # Set up services
     event_service = EventService()
     restaurant_service = RestaurantService()
-    invitation_service = InvitationService(event_service, restaurant_service)
+    invitation_service = InvitationService(app.logger, event_service, restaurant_service)
     image_service = ImageService()
     injector.binder.bind(EventService, to=event_service)
     injector.binder.bind(InvitationService, to=invitation_service)
