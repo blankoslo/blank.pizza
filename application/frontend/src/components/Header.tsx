@@ -23,6 +23,7 @@ const pages = [
     { name: 'header.pages.restaurants.name', link: 'header.pages.restaurants.link' },
     { name: 'header.pages.events.name', link: 'header.pages.events.link' },
     { name: 'header.pages.users.name', link: 'header.pages.users.link' },
+    { name: 'header.pages.images.name', link: 'header.pages.images.link' },
 ];
 const settings = [{ name: 'header.settings.logout.name', link: 'header.settings.logout.link' }];
 

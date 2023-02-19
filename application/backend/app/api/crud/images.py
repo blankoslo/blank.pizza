@@ -1,5 +1,6 @@
 from flask import views
 from flask_smorest import Blueprint, abort
+from app.models.image import Image
 from app.models.image_schema import ImageSchema, ImageQueryArgsSchema
 from flask_jwt_extended import jwt_required
 from app.services.injector import injector
@@ -15,7 +16,10 @@ class Images(views.MethodView):
     def get(self, args, pagination_parameters):
         """List images"""
         image_service = injector.get(ImageService)
-        total, images = image_service.get(filters = args, page = pagination_parameters.page, per_page = pagination_parameters.page_size)
+        order = None
+        if 'order' in args:
+            order = args.pop('order')
+        total, images = image_service.get(filters = args, order_by=order, page = pagination_parameters.page, per_page = pagination_parameters.page_size)
         pagination_parameters.item_count = total
         return images
 

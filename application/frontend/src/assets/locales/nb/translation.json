@@ -1,4 +1,7 @@
 {
+  "global": {
+    "by": "av"
+  },
   "auth": {
     "refresh": {
       "expired": "Sessjonen din har utløpt, vennligst logg inn på nytt" 
@@ -27,6 +30,10 @@
       "users": {
         "name": "brukere",
         "link": "/users"
+      },
+      "images": {
+        "name": "bilder",
+        "link": "/images"
       }
     },
     "settings": {
