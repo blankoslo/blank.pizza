@@ -1,4 +1,7 @@
 {
+  "global": {
+    "by": "av"
+  },
   "auth": {
     "refresh": {
       "expired": "Sessjonen din har utløpt, vennligst logg inn på nytt" 

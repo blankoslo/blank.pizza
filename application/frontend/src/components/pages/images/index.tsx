@@ -5,8 +5,10 @@ import { Chrono, TimelineItem } from 'react-chrono';
 import { useInfiniteImages } from '../../../hooks/useImages';
 import { useTheme } from '@mui/material/styles';
 import i18n from 'i18next';
+import {useTranslation} from "react-i18next";
 
 const ImagesPage: React.FC = () => {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     const {
@@ -34,7 +36,7 @@ const ImagesPage: React.FC = () => {
                         month: 'long',
                         year: 'numeric',
                     })}`,
-                    cardTitle: `"${image.title}" by @${image.uploaded_by.current_username}`,
+                    cardTitle: `"${image.title}" ${t('global.by')} @${image.uploaded_by.current_username}`,
                     media: {
                         name: image.title,
                         source: {
@@ -44,7 +46,7 @@ const ImagesPage: React.FC = () => {
                     },
                 })) ?? [];
         setImages(imageCards);
-    }, [_images]);
+    }, [_images, i18n.language]);
 
     const loadMore = async () => {
         if (!isLoading && hasNextPage) {

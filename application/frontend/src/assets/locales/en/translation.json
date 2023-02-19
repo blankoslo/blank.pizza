@@ -1,4 +1,7 @@
 {
+  "global": {
+    "by": "by"
+  },
   "auth": {
     "refresh": {
       "expired": "Your session has expired, please log in again" 
