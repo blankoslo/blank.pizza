@@ -20,4 +20,5 @@ class ImageSchema(SQLAlchemySchema):
     title = auto_field()
 
 class ImageQueryArgsSchema(Schema):
+    order = fields.Str()
     uploaded_by_id = get_field(ImageSchema, Image.uploaded_by_id)
