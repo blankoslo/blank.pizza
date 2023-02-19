@@ -9,6 +9,7 @@ import { Logout } from '../components/pages/logout';
 import RestaurantPage from '../components/pages/restaurants';
 import EventPage from '../components/pages/events';
 import UsersPage from '../components/pages/users';
+import ImagesPage from '../components/pages/images';
 
 type Props = {
     children?: React.ReactNode;
@@ -47,6 +48,7 @@ export const Router: React.FC = () => {
                         <Route path="/restaurants" element={<RestaurantPage />} />
                         <Route path="/events" element={<EventPage />} />
                         <Route path="/users" element={<UsersPage />} />
+                        <Route path="/images" element={<ImagesPage />} />
                         <Route path="/logout" element={<Logout />} />
                     </Route>
                 </Routes>

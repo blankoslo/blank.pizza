@@ -27,6 +27,10 @@
       "users": {
         "name": "brukere",
         "link": "/users"
+      },
+      "images": {
+        "name": "bilder",
+        "link": "/images"
       }
     },
     "settings": {
