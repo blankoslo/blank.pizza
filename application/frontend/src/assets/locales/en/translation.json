@@ -7,6 +7,9 @@
       "expired": "Your session has expired, please log in again" 
     } 
   },
+  "install": {
+    "button": "Install"
+  },
   "login": {
     "logo": "Pizzabot By",
     "button": "Login"

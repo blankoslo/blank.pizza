@@ -18,7 +18,7 @@ class Event(CrudMixin, db.Model):
     finalized = sa.Column(sa.Boolean, nullable=False, server_default='f')
     invitations = relationship("Invitation", backref="event", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
-    slack_organization = relationship("SlackOrganization", backref="restaurants", uselist=False)
+    slack_organization = relationship("SlackOrganization", backref="events", uselist=False)
 
     @classmethod
     def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):

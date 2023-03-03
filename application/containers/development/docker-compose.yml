@@ -4,6 +4,12 @@ x-common-variables: &common-variables
   PYTHONUNBUFFERED: 1
   PYTHONPATH: /srv/bot
 
+x-common-slack-variables: &common-slack-variables
+  SLACK_APP_TOKEN: ""
+  SLACK_CLIENT_ID: ""
+  SLACK_CLIENT_SECRET: ""
+  SLACK_SIGNING_SECRET: ""
+
 x-common-rabbitmq-variables: &common-rabbitmq-variables
   MQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
   MQ_EXCHANGE: Pizza_Exchange
@@ -59,8 +65,7 @@ services:
       FRONTEND_URI: "https://localhost"
       GOOGLE_CLIENT_ID: ""
       GOOGLE_CLIENT_SECRET: ""
-      SLACK_CLIENT_ID: ""
-      SLACK_SECRET: ""
+      <<: *common-slack-variables
     networks:
       - database-network
       - proxy-network
@@ -74,11 +79,8 @@ services:
     environment:
       <<: *common-variables
       <<: *common-rabbitmq-variables
-      SLACK_APP_TOKEN: xapp-
-      SLACK_CLIENT_ID: a
-      SLACK_CLIENT_SECRET: a
-      slack_signing_secret: a
-      PIZZA_CHANNEL_ID: C0
+      <<: *common-slack-variables
+      PIZZA_CHANNEL_ID: ""
       REPLY_DEADLINE_IN_HOURS: 24
       HOURS_BETWEEN_REMINDERS: 4
     restart: always

@@ -1,5 +1,7 @@
 import requests
 import os
+import logging
+from app.services.injector import injector
 from flask import views, request, redirect, jsonify, current_app, Response
 from flask_smorest import Blueprint, abort
 from app.models.slack_organization_schema import SlackOrganizationSchema
@@ -23,7 +25,7 @@ class Slack(views.MethodView):
         ]
         frontend_base_url = os.environ.get("FRONTEND_URI").rstrip('/')
         callback_redirect_uri = f'{frontend_base_url}/slack/callback'
-        client_id = current_app.config["slack_client_id"]
+        client_id = current_app.config["SLACK_CLIENT_ID"]
         if client_id == None:
             return abort(500)
         base_redirect_url = "https://slack.com/oauth/v2/authorize"
@@ -33,14 +35,17 @@ class Slack(views.MethodView):
 @bp.route("/callback")
 class Slack(views.MethodView):
     def post(self):
+        logger = injector.get(logging.Logger)
         url = "https://slack.com/api/oauth.v2.access"
 
         code = request.json.get('code')
         client_id = current_app.config["SLACK_CLIENT_ID"]
         client_secret = current_app.config["SLACK_SECRET"]
         if code is None:
+            logger.info("Code is None")
             return abort(400)
         if client_id is None or client_secret is None:
+            logger.warn("client_id or client_secret is None")
             return abort(500)
 
         data = {
@@ -52,10 +57,20 @@ class Slack(views.MethodView):
         response = requests.post(url, data=data).json()
 
         if not response['ok']:
+            logger.error(response["error"])
             return abort(500)
 
         schema = SlackOrganizationSchema()
-        slack_organization = schema.load(response)
+        schema_data = {
+            'team_id': response['team']['id'],
+            'team_name': response['team']['name'],
+            'enterprise_id': response['enterprise']['id'] if ('enterprise' in response and response['enterprise'] is not None) else None,
+            'enterprise_name': response['enterprise']['name'] if ('enterprise' in response and response['enterprise'] is not None) else None,
+            'app_id': response['app_id'],
+            'bot_user_id': response['bot_user_id'],
+            'access_token': response['access_token']
+        }
+        slack_organization = schema.load(schema_data)
         SlackOrganization.upsert(slack_organization)
 
         return Response(status=200)

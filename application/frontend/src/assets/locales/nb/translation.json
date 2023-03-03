@@ -7,6 +7,9 @@
       "expired": "Sessjonen din har utløpt, vennligst logg inn på nytt" 
     } 
   },
+  "install": {
+    "button": "Installer"
+  },
   "login": {
     "logo": "Pizzabot av",
     "button": "Logg Inn"

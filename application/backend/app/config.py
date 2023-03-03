@@ -25,4 +25,4 @@ class Base(object):
   MQ_URL = os.environ.get('MQ_URL') if 'MQ_URL' in os.environ else os.environ.get('CLOUDAMQP_URL')
   MQ_EXCHANGE = os.environ.get('MQ_EXCHANGE')
   SLACK_CLIENT_ID = os.environ.get('SLACK_CLIENT_ID')
-  SLACK_SECRET = os.environ.get('SLACK_SECRET')
+  SLACK_SECRET = os.environ.get('SLACK_CLIENT_SECRET')

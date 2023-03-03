@@ -21,6 +21,8 @@
 18. Click `OAuth & Permissions` and copy the token at `Bot User OAuth Token` (this is the `SLACK_BOT_TOKEN`).
 19. Click `Basic Information` in the menu
 20. Now you have the `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` needed to run the bot.
+21. Go to `OAuth & Permissions` under `Redirect URLs`
+22. Add your redirect url which will be your domain (or localhost for development) + `/slack/callback`
 
 ## Google Login Setup
 1. Go to the [Google developers credentials page](https://console.developers.google.com/apis/credentials)
