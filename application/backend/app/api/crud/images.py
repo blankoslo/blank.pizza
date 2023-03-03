@@ -1,8 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.image import Image
 from app.models.image_schema import ImageSchema, ImageQueryArgsSchema
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, current_user
 from app.services.injector import injector
 from app.services.image_service import ImageService
 
@@ -20,7 +19,7 @@ class Images(views.MethodView):
         order = None
         if 'order' in args:
             order = args.pop('order')
-        total, images = image_service.get(filters = args, order_by=order, page = pagination_parameters.page, per_page = pagination_parameters.page_size)
+        total, images = image_service.get(filters=args, order_by=order, page=pagination_parameters.page, per_page=pagination_parameters.page_size, team_id=current_user.slack_organization.team_id)
         pagination_parameters.item_count = total
         return images
 
@@ -31,8 +30,8 @@ class ImagesById(views.MethodView):
     def get(self, image_id):
         """Get image by ID"""
         image_service = injector.get(ImageService)
-        image = image_service.get_by_id(image_id)
-        if image == None:
+        image = image_service.get_by_id(image_id=image_id, team_id=current_user.slack_organization.team_id)
+        if image is None:
             abort(404, message = "Image not found.")
         return image
 
@@ -41,4 +40,4 @@ class ImagesById(views.MethodView):
     def delete(self, image_id):
         """Delete image"""
         image_service = injector.get(ImageService)
-        image_service.delete(image_id)
+        image_service.delete(image_id=image_id, team_id=current_user.slack_organization.team_id)
