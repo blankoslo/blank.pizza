@@ -12,6 +12,7 @@ class Restaurants(views.MethodView):
     @bp.arguments(RestaurantQueryArgsSchema, location="query")
     @bp.response(200, RestaurantSchema(many=True))
     @bp.paginate()
+    @jwt_required()
     def get(self, args, pagination_parameters):
         """List restaurants"""
         restaurant_service = injector.get(RestaurantService)
@@ -30,6 +31,7 @@ class Restaurants(views.MethodView):
 @bp.route("/<restaurant_id>")
 class RestaurantsById(views.MethodView):
     @bp.response(200, RestaurantSchema)
+    @jwt_required()
     def get(self, restaurant_id):
         """Get restaurant by ID"""
         restaurant_service = injector.get(RestaurantService)

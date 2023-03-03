@@ -13,6 +13,7 @@ class Images(views.MethodView):
     @bp.arguments(ImageQueryArgsSchema, location="query")
     @bp.response(200, ImageSchema(many=True))
     @bp.paginate()
+    @jwt_required()
     def get(self, args, pagination_parameters):
         """List images"""
         image_service = injector.get(ImageService)
@@ -26,6 +27,7 @@ class Images(views.MethodView):
 @bp.route("/<image_id>")
 class ImagesById(views.MethodView):
     @bp.response(200, ImageSchema)
+    @jwt_required()
     def get(self, image_id):
         """Get image by ID"""
         image_service = injector.get(ImageService)
