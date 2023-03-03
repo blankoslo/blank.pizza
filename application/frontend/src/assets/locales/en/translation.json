@@ -8,11 +8,17 @@
     } 
   },
   "install": {
-    "button": "Install"
+    "button": "Install",
+    "successAlert": "App installed"
   },
   "login": {
     "logo": "Pizzabot By",
-    "button": "Login"
+    "loginButton": "Login",
+    "installButton": "Add PizzaBot?",
+    "error": {
+      "401": "Something went wrong. Is your email verified?",
+      "403": "Something went wrong. Is PizzaBot installed on your workspace?"
+    }
   },
   "logout": "Logging you out...",
   "header": {

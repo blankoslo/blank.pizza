@@ -6,8 +6,10 @@ import { useQuery } from '../../../../hooks/useQuery';
 import { useSlackInstall } from '../../../../hooks/useSlackInstall';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const Callback: React.FC = () => {
+    const { t } = useTranslation();
     const query = useQuery();
     const navigate = useNavigate();
     const { installApp } = useSlackInstall();
@@ -19,7 +21,7 @@ export const Callback: React.FC = () => {
             if (code) {
                 const success = await installApp(code);
                 if (success) {
-                    toast.success('App installert');
+                    toast.success(t('install.successAlert'));
                     navigate('/login');
                 }
             }

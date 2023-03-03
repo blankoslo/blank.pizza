@@ -8,11 +8,17 @@
     } 
   },
   "install": {
-    "button": "Installer"
+    "button": "Installer",
+    "successAlert": "App installert"
   },
   "login": {
     "logo": "Pizzabot av",
-    "button": "Logg Inn"
+    "loginButton": "Logg Inn",
+    "installButton": "Legg til PizzaBot?",
+    "error": {
+      "401": "Noe gikk galt. Er epostadressen din verifisert?",
+      "403": "Noe gikk galt. Er PizzaBot installert i ditt workspace?"
+    }
   },
   "logout": "Logger deg ut...",
   "header": {

@@ -86,7 +86,10 @@ class Auth(views.MethodView):
             data=body,
         )
 
-        auth.client.parse_request_body_response(json.dumps(token_response.json()))
+        try:
+            auth.client.parse_request_body_response(json.dumps(token_response.json()))
+        except:
+            return abort(401)
 
         userinfo_endpoint = slack_provider_cfg["userinfo_endpoint"]
         uri, headers, body = auth.client.add_token(userinfo_endpoint)
@@ -121,4 +124,4 @@ class Auth(views.MethodView):
             access_token = create_access_token(identity=user, additional_claims=additional_claims)
             refresh_token = create_refresh_token(identity=user, additional_claims=additional_claims)
             return jsonify(access_token=access_token, refresh_token=refresh_token)
-        return abort(400, message = "User email not available or not verified by Google.")
+        return abort(401, message = "User email not available or not verified by Slack.")

@@ -7,6 +7,8 @@ import { LoadingSpinner } from '../../LoadingSpinner';
 import { useQuery } from '../../../hooks/useQuery';
 import { useNavigate } from 'react-router-dom';
 import { LocalizationButton } from '../../LocalizationButton';
+import { toast } from 'react-toastify';
+import {AxiosError} from "axios";
 
 interface Props {
     callback?: boolean;
@@ -24,7 +26,16 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
             const code = query.get('code');
             const params = Object.fromEntries(query);
             if (callback && code) {
-                await loginUser(params);
+                try {
+                    await loginUser(params);
+                } catch (e) {
+                    const error = e as AxiosError;
+                    if (error.response?.status == 403) {
+                        toast.error(t('login.error.403'));
+                    } else if (error.response?.status == 401) {
+                        toast.error(t('login.error.401'));
+                    }
+                }
             } else if (callback && !code) {
                 navigate('/login');
             }
@@ -38,6 +49,10 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
     const onClickLogin = async () => {
         const res = await createLoginURI();
         window.location.replace(res.auth_url);
+    };
+
+    const onClickInstall = async () => {
+        navigate('/slack/install');
     };
 
     return (
@@ -95,9 +110,11 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
                         </Box>
                         <Box
                             sx={{
-                                width: '300px',
+                                width: '400px',
                                 height: '200px',
                                 display: 'flex',
+                                flexDirection: 'column',
+                                gap: 1,
                                 justifyContent: 'center',
                                 alignItems: 'center',
                             }}
@@ -110,13 +127,27 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
                                     fontFamily: '"Respira"',
                                     fontStyle: 'normal',
                                     fontWeight: 400,
-                                    width: 200,
-                                    height: 80,
                                     fontSize: 24,
+                                    padding: 2,
                                 }}
                                 onClick={onClickLogin}
                             >
-                                {t('login.button')}
+                                {t('login.loginButton')}
+                            </Button>
+                            <Button
+                                size="large"
+                                variant="contained"
+                                color="secondary"
+                                sx={{
+                                    fontFamily: '"Respira"',
+                                    fontStyle: 'normal',
+                                    fontWeight: 400,
+                                    fontSize: 24,
+                                    padding: 2,
+                                }}
+                                onClick={onClickInstall}
+                            >
+                                {t('login.installButton')}
                             </Button>
                         </Box>
                     </>
