@@ -4,7 +4,7 @@ import pytz
 import os
 from injector import inject
 
-import src.api.slack_api as slack
+from src.api.slack_api import SlackApi
 from datetime import datetime, timedelta
 from src.rsvp import RSVP
 from src.broker.broker_client import BrokerClient
@@ -35,9 +35,10 @@ class BotApi:
     def invite_multiple_if_needed(self):
         events = self.client.invite_multiple_if_needed()
         for event in events:
-            self.invite_if_needed(event)
+            slack_client = SlackApi(token = "TODO")
+            self.invite_if_needed(event, slack_client)
 
-    def invite_if_needed(self, event):
+    def invite_if_needed(self, event, slack_client):
         self.logger.info("Inviting users for %s", event['event_id'])
         invited_users = event['invited_users']
         event_time = event['event_time']
@@ -49,7 +50,7 @@ class BotApi:
         timestamp = pytz.utc.localize(event_time.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
 
         for user_id in invited_users:
-            slack_message = self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS)
+            slack_message = self.send_pizza_invite(user_id, str(event_id), restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), self.REPLY_DEADLINE_IN_HOURS, slack_client = slack_client)
             if not slack_message['ok']:
                 self.logger.warn("Failed to send invitation to %s", user_id)
                 continue
@@ -69,11 +70,12 @@ class BotApi:
         invitations = self.client.get_unanswered_invitations()
 
         for invitation in invitations:
+            slack_client = SlackApi(token = "TODO")
             # all timestamps (such as reminded_at) gets converted to UTC
             # so comparing it to datetime.now in UTC is correct
             remind_timestamp = datetime.now(pytz.utc) + timedelta(hours =- self.HOURS_BETWEEN_REMINDERS)
             if invitation['reminded_at'] < remind_timestamp:
-                slack.send_slack_message(invitation['slack_id'], "Hei du! Jeg hørte ikke noe mer? Er du gira?")
+                slack_client.send_slack_message(invitation['slack_id'], "Hei du! Jeg hørte ikke noe mer? Er du gira?")
                 was_updated = self.client.update_invitation(
                     slack_id = invitation['slack_id'],
                     event_id = invitation['event_id'],
@@ -87,6 +89,7 @@ class BotApi:
                     self.logger.warning("failed to update invitation")
 
     def send_event_finalized(self, timestamp, restaurant_name, slack_ids):
+        slack_client = SlackApi(token = "TODO")
         self.logger.info("Finalizing event %s %s", timestamp, restaurant_name)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
@@ -98,9 +101,10 @@ class BotApi:
         # Get the user to pay
         payer = users[1] if len(users) > 1 else users[0]
         # Send the finalization Slack message
-        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
+        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer))
 
     def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids):
+        slack_client = SlackApi(token = "TODO")
         self.logger.info("Unfinalizing event %s %s", timestamp, restaurant_name)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
@@ -108,14 +112,15 @@ class BotApi:
         users = ['<@%s>' % user for user in slack_ids]
         ids_string = ", ".join(users)
         # Send message that the event unfinalized
-        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
+        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
         self.invite_multiple_if_needed()
 
     def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name):
+        slack_client = SlackApi(token = "TODO")
         self.logger.info("User %s withdrew from event %s %s", user_id, timestamp, restaurant_name)
         # Send message that the user withdrew
-        slack.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
+        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M")))
         # Invite more users for the event
         self.invite_multiple_if_needed()
 
@@ -123,6 +128,7 @@ class BotApi:
         invitations = self.client.get_unanswered_invitations()
 
         for invitation in invitations:
+            slack_client = SlackApi(token = "TODO")
             deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
             if deadline < datetime.now(pytz.utc):
                 was_updated = self.update_invitation_answer(
@@ -135,11 +141,11 @@ class BotApi:
                     if 'slack_message' in invitation:
                         channel_id = invitation['slack_message']['channel_id']
                         ts = invitation['slack_message']['ts']
-                        invitation_message = slack.get_slack_message(channel_id, ts)
+                        invitation_message = slack_client.get_slack_message(channel_id, ts)
                         blocks = invitation_message["blocks"][0:3]
-                        self.send_invitation_expired(channel_id, ts, blocks)
+                        self.send_invitation_expired(channel_id, ts, blocks, slack_client = slack_client)
                     # Send the user a message that the invite expired
-                    slack.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
+                    slack_client.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
                     self.logger.info("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
                 else:
                     self.logger.warning("failed to update invitation to not attending")
@@ -148,14 +154,15 @@ class BotApi:
         invitations = self.client.get_unanswered_invitations_on_finished_events_and_set_not_attending()
 
         for invitation in invitations:
+            slack_client = SlackApi(token = "TODO")
             # Update invitation message - remove buttons and tell user it expired
             if not 'invitation' in invitation:
                 continue
             channel_id = invitation['slack_message']['channel_id']
             ts = invitation['slack_message']['ts']
-            invitation_message = slack.get_slack_message(channel_id, ts)
+            invitation_message = slack_client.get_slack_message(channel_id, ts)
             blocks = invitation_message["blocks"][0:3]
-            self.send_invitation_expired(channel_id, ts, blocks)
+            self.send_invitation_expired(channel_id, ts, blocks, slack_client = slack_client)
             self.logger.info("%s didn't answer and event is finished. Removing accept/decline buttons" % invitation['slack_id'])
 
     def update_invitation_answer(self, slack_id, event_id, answer: RSVP):
@@ -182,9 +189,10 @@ class BotApi:
     def get_invited_users(self):
         return self.client.get_invited_unanswered_user_ids()
 
+    # TODO This has to get all slack organizations from BACKEND
     def sync_db_with_slack(self):
-        all_slack_users = slack.get_slack_users()
-        slack_users = slack.get_real_users(all_slack_users)
+        all_slack_users = self.slack_client.get_slack_users()
+        slack_users = self.slack_client.get_real_users(all_slack_users)
         response = self.client.update_slack_user(slack_users)
 
         updated_users = response['updated_users']
@@ -196,52 +204,56 @@ class BotApi:
 
     def inform_users_unfinalized_event_got_cancelled(self, time, restaurant_name, slack_data):
         self.logger.info("unfinalized event got cancelled")
+        slack_client = SlackApi(token = "TODO")
         for slack_user_data in slack_data:
             slack_id = slack_user_data['user_id']
             # Update invitation message - remove buttons and tell user it has been cancelled
             channel_id = slack_user_data['invitation_message']['channel_id']
             ts = slack_user_data['invitation_message']['ts']
-            invitation_message = slack.get_slack_message(channel_id, ts)
+            invitation_message = slack_client.get_slack_message(channel_id, ts)
             blocks = invitation_message["blocks"][0:3]
-            self.send_invitation_invalidated_event_cancelled(channel_id, ts, blocks)
+            self.send_invitation_invalidated_event_cancelled(channel_id, ts, blocks, slack_client = slack_client)
             # Send the user a message that the event has been cancelled
-            slack.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blitt kansellert. Sorry!" % (restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+            slack_client.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blitt kansellert. Sorry!" % (restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
             self.logger.info("Informed user: %s" % slack_id)
 
     def inform_users_finalized_event_got_cancelled(self, time, restaurant_name, slack_data):
+        slack_client = SlackApi(token = "TODO")
         # Send the users a message in the pizza channel that the event has been cancelled
         slack_user_ids = [user['user_id'] for user in slack_data]
         users = ['<@%s>' % user_id for user_id in slack_user_ids]
         ids_string = ", ".join(users)
         self.logger.info("finalized event got cancelled for users %s" % ", ".join(slack_user_ids))
-        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blitt kansellert. Sorry!" % (ids_string, restaurant_name, time.strftime("%A %d. %B kl %H:%M"),))
+        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blitt kansellert. Sorry!" % (ids_string, restaurant_name, time.strftime("%A %d. %B kl %H:%M"),))
         # Update invitation message - remove buttons and tell user it has been cancelled
         for slack_user_data in slack_data:
             channel_id = slack_user_data['invitation_message']['channel_id']
             ts = slack_user_data['invitation_message']['ts']
-            invitation_message = slack.get_slack_message(channel_id, ts)
+            invitation_message = slack_client.get_slack_message(channel_id, ts)
             blocks = invitation_message["blocks"][0:3]
-            self.send_invitation_invalidated_event_cancelled(channel_id, ts, blocks)
+            self.send_invitation_invalidated_event_cancelled(channel_id, ts, blocks, slack_client = slack_client)
 
     def inform_users_unfinalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids):
         self.logger.info("unfinalized event got updated")
+        slack_client = SlackApi(token = "TODO")
         for slack_id in slack_ids:
-            slack.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blit endret til %s, %s." % (old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+            slack_client.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blit endret til %s, %s." % (old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
             self.logger.info("Informed user: %s" % slack_id)
 
     def inform_users_finalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids):
+        slack_client = SlackApi(token = "TODO")
         users = ['<@%s>' % user for user in slack_ids]
         ids_string = ", ".join(users)
         self.logger.info("finalized event got updated for users %s" % ", ".join(slack_ids))
-        slack.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blit endret til %s, %s." % (ids_string, old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blit endret til %s, %s." % (ids_string, old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
 
-    def send_slack_message_old(self, channel_id, text, attachments=None, thread_ts=None):
-        return slack.send_slack_message_old(channel_id, text, attachments, thread_ts)
+    def send_slack_message_old(self, channel_id, text, slack_client, attachments=None, thread_ts=None):
+        return slack_client.send_slack_message_old(channel_id, text, attachments, thread_ts)
 
-    def update_slack_message(self, channel_id, ts, text=None, blocks=None):
-        return slack.update_slack_message(channel_id, ts, text, blocks)
+    def update_slack_message(self, channel_id, ts, slack_client, text=None, blocks=None):
+        return slack_client.update_slack_message(channel_id, ts, text, blocks)
 
-    def send_pizza_invite(self, channel_id, event_id, place, datetime, deadline):
+    def send_pizza_invite(self, channel_id, event_id, place, datetime, deadline, slack_client):
         blocks = [
             {
                 "type": "header",
@@ -284,7 +296,7 @@ class BotApi:
                 ]
             }
         ]
-        return slack.send_slack_message(channel_id=channel_id, blocks=blocks)
+        return slack_client.send_slack_message(channel_id=channel_id, blocks=blocks)
 
     def clean_blocks(self, blocks):
         for block in blocks:
@@ -293,34 +305,36 @@ class BotApi:
                 del block["text"]["emoji"]
         return blocks
 
-    def send_update_pizza_invite_attending(self, channel_id, ts, event_id):
+    def send_update_pizza_invite_attending(self, channel_id, ts, event_id, slack_client):
         self.logger.info('updating invitation message to attending for %s, %s' % (channel_id, event_id))
-        invitation_message = slack.get_slack_message(channel_id, ts)
+        invitation_message = slack_client.get_slack_message(channel_id, ts)
         blocks = invitation_message["blocks"][0:3]
         message = self.send_pizza_invite_answered(
             channel_id=channel_id,
             ts=ts,
             event_id=event_id,
             old_blocks=blocks,
-            attending=True
+            attending=True,
+            slack_client = slack_client
         )
         self.logger.info(message)
 
-    def send_update_pizza_invite_not_attending(self, channel_id, ts, event_id):
+    def send_update_pizza_invite_not_attending(self, channel_id, ts, event_id, slack_client):
         self.logger.info('updating invitation message to not_attending for %s, %s' % (channel_id, event_id))
-        invitation_message = slack.get_slack_message(channel_id, ts)
+        invitation_message = slack_client.get_slack_message(channel_id, ts)
         blocks = invitation_message["blocks"][0:3]
         self.send_pizza_invite_answered(
             channel_id=channel_id,
             ts=ts,
             event_id=event_id,
             old_blocks=blocks,
-            attending=False
+            attending=False,
+            slack_client = slack_client
         )
 
-    def send_update_pizza_invite_unanswered(self, channel_id, ts, event_id):
+    def send_update_pizza_invite_unanswered(self, channel_id, ts, event_id, slack_client):
         self.logger.info('updating invitation message to unanswered for %s, %s' % (channel_id, event_id))
-        invitation_message = slack.get_slack_message(channel_id, ts)
+        invitation_message = slack_client.get_slack_message(channel_id, ts)
         blocks = invitation_message["blocks"][0:3]
         old_blocks = self.clean_blocks(blocks)
         new_blocks = [{
@@ -347,9 +361,9 @@ class BotApi:
             ]
         }]
         blocks = old_blocks + new_blocks
-        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-    def send_pizza_invite_answered(self, channel_id, ts, event_id, old_blocks, attending):
+    def send_pizza_invite_answered(self, channel_id, ts, event_id, old_blocks, attending, slack_client):
         old_blocks = self.clean_blocks(old_blocks)
         new_blocks_common = [
             {
@@ -384,9 +398,9 @@ class BotApi:
         blocks = old_blocks + new_blocks_common
         if attending:
             blocks += new_blocks_yes
-        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-    def send_invitation_invalidated_event_cancelled(self, channel_id, ts, old_blocks):
+    def send_invitation_invalidated_event_cancelled(self, channel_id, ts, old_blocks, slack_client):
         old_blocks = self.clean_blocks(old_blocks)
         new_blocks = [
             {
@@ -398,9 +412,9 @@ class BotApi:
             }
         ]
         blocks = old_blocks + new_blocks
-        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-    def send_invitation_expired(self, channel_id, ts, old_blocks):
+    def send_invitation_expired(self, channel_id, ts, old_blocks, slack_client):
         old_blocks = self.clean_blocks(old_blocks)
         new_blocks = [
             {
@@ -412,9 +426,9 @@ class BotApi:
             }
         ]
         blocks = old_blocks + new_blocks
-        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-    def send_pizza_invite_withdraw(self, channel_id, ts, old_blocks):
+    def send_pizza_invite_withdraw(self, channel_id, ts, old_blocks, slack_client):
         old_blocks = self.clean_blocks(old_blocks)
         new_blocks = [
             {
@@ -426,9 +440,9 @@ class BotApi:
             }
         ]
         blocks = old_blocks + new_blocks
-        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
 
-    def send_pizza_invite_withdraw_failure(self, channel_id, ts, old_blocks):
+    def send_pizza_invite_withdraw_failure(self, channel_id, ts, old_blocks, slack_client):
         old_blocks = self.clean_blocks(old_blocks)
         new_blocks = [
             {
@@ -440,4 +454,4 @@ class BotApi:
             }
         ]
         blocks = old_blocks + new_blocks
-        return slack.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
