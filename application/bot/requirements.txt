@@ -10,3 +10,4 @@ injector
 apscheduler
 marshmallow
 marshmallow_enum
+lmdb

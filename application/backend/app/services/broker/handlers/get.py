@@ -2,11 +2,13 @@ from app.services.broker.handlers.message_handler import MessageHandler
 
 from app.services.broker.schemas.get_unanswered_invitations import GetUnansweredInvitationsResponseSchema, GetUnansweredInvitationsDataSchema
 from app.services.broker.schemas.get_invited_unanswered_user_ids import GetInvitedUnansweredUserIdsResponseSchema
+from app.services.broker.schemas.get_slack_installation import GetSlackInstallationRequestSchema, GetSlackInstallationResponseSchema
 
 from app.services.invitation_service import InvitationService
 from app.services.injector import injector
 
 from app.models.slack_user import SlackUser
+from app.models.slack_organization import SlackOrganization
 from app.models.enums import RSVP
 
 @MessageHandler.handle('get_unanswered_invitations', outgoing_schema = GetUnansweredInvitationsResponseSchema)
@@ -59,3 +61,24 @@ def get_unanswered_invitations():
     response_data = [user_id[0] for user_id in user_ids]
 
     return {'user_ids': response_data}
+
+
+@MessageHandler.handle('get_slack_installation', incoming_schema = GetSlackInstallationRequestSchema, outgoing_schema = GetSlackInstallationResponseSchema)
+def get_slack_installation(request: dict):
+    slack_organization = SlackOrganization.get_by_id(request['team_id'])
+
+    response = {
+        'team_id': slack_organization.team_id,
+        'app_id': slack_organization.app_id,
+        'bot_user_id': slack_organization.bot_user_id,
+        'access_token': slack_organization.access_token
+    }
+
+    if slack_organization.team_name:
+        response['team_name'] = slack_organization.team_name
+    if slack_organization.enterprise_id:
+        response['enterprise_id'] = slack_organization.enterprise_id
+    if slack_organization.enterprise_name:
+        response['enterprise_name'] = slack_organization.enterprise_name
+
+    return response

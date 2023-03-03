@@ -16,6 +16,7 @@ from src.broker.schemas.get_invited_unanswered_user_ids import GetInvitedUnanswe
 from src.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 from src.broker.schemas.create_image import CreateImageRequestSchema, CreateImageResponseSchema
 from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
+from src.broker.schemas.get_slack_installation import GetSlackInstallationRequestSchema, GetSlackInstallationResponseSchema
 
 class BrokerClient:
     messages = {}
@@ -72,6 +73,18 @@ class BrokerClient:
         request_schema = MessageSchema()
         request = request_schema.load(request_data)
         return request
+
+    def get_slack_installation(self, team_id: str):
+        request_payload = {
+            "team_id": team_id,
+        }
+        request_payload_schema = GetSlackInstallationRequestSchema()
+        response_payload = self._call(self._create_request("get_slack_installation", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return None
+        response_schema = GetSlackInstallationResponseSchema()
+        response = response_schema.load(response_payload)
+        return response
 
     def invite_multiple_if_needed(self):
         response_payload = self._call(self._create_request("invite_multiple_if_needed"))

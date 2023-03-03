@@ -7,9 +7,11 @@ from functools import wraps
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_bolt.oauth.oauth_settings import OAuthSettings
+from slack_sdk.oauth.state_store import FileOAuthStateStore
 
 from src.api.bot_api import BotApi, BotApiConfiguration
 from src.injector import injector
+from src.slack.installation_store import BrokerInstallationStore
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
 slack_signing_secret = os.environ["SLACK_SIGNING_SECRET"]
@@ -19,9 +21,11 @@ slack_app_token = os.environ["SLACK_APP_TOKEN"]
 
 slack_app = App(
     signing_secret=slack_signing_secret,
+    installation_store=BrokerInstallationStore(),
     oauth_settings=OAuthSettings(
         client_id=client_id,
         client_secret=client_secret,
+        state_store=FileOAuthStateStore(expiration_seconds=600),
         #scopes=os.environ["SLACK_SCOPES"].split(","),
     ),
 )
