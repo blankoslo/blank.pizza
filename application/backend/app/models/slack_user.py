@@ -26,48 +26,46 @@ class SlackUser(CrudMixin, db.Model):
     )
 
     @classmethod
-    def get_users_to_invite(cls, number_of_users_to_invite, event_id, total_number_of_employees, employees_per_event,
-                            session=db.session):
-        number_of_events_regarded = math.ceil(
-            total_number_of_employees / employees_per_event)
+    def get_users_to_invite(cls, number_of_users_to_invite, event_id, total_number_of_employees, employees_per_event, session=db.session):
+        number_of_events_regarded = math.ceil(total_number_of_employees / employees_per_event)
 
         AliasInvitation = aliased(Invitation)
 
         subquery_join = session.query(Event.id) \
             .filter(
-            sa.and_(
-                Event.time < datetime.now(),
-                Event.finalized == True
-            )
-        ) \
+                sa.and_(
+                    Event.time < datetime.now(),
+                    Event.finalized == True
+                )
+            ) \
             .order_by(Event.time.desc()) \
             .limit(number_of_events_regarded)
         subquery_filter = session.query(AliasInvitation) \
             .filter(
-            sa.and_(
-                AliasInvitation.event_id == event_id,
-                AliasInvitation.slack_id == cls.slack_id
+                sa.and_(
+                    AliasInvitation.event_id == event_id,
+                    AliasInvitation.slack_id == cls.slack_id
+                )
             )
-        ) \
- \
+
         query = session.query(cls.slack_id) \
             .join(
-            Invitation,
-            sa.and_(
-                cls.slack_id == Invitation.slack_id,
+                Invitation,
                 sa.and_(
-                    Invitation.rsvp == RSVP.attending,
-                    Invitation.event_id.in_(subquery_join)
-                )
-            ),
-            isouter=True
-        ) \
+                    cls.slack_id == Invitation.slack_id,
+                    sa.and_(
+                        Invitation.rsvp == RSVP.attending,
+                        Invitation.event_id.in_(subquery_join)
+                    )
+                ),
+                isouter = True
+            ) \
             .filter(
-            sa.and_(
-                ~subquery_filter.exists(),
-                cls.active == True
-            )
-        ) \
+                sa.and_(
+                    ~subquery_filter.exists(),
+                    cls.active == True
+                )
+            ) \
             .group_by(cls.slack_id) \
             .order_by(func.count(Invitation.rsvp), func.random()) \
             .limit(number_of_users_to_invite)
@@ -77,9 +75,9 @@ class SlackUser(CrudMixin, db.Model):
     def get_invited_unanswered_user_ids(cls, session=db.session):
         query = session.query(cls.slack_id) \
             .join(
-            Invitation,
-            cls.slack_id == Invitation.slack_id
-        ) \
+                Invitation,
+                cls.slack_id == Invitation.slack_id
+            ) \
             .filter(Invitation.rsvp == RSVP.unanswered) \
             .distinct()
         return query.all()
