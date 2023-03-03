@@ -7,10 +7,10 @@ class AuthClient():
 
   def __init__(self, app = None, **kwargs):
     if (app):
-      self.client = WebApplicationClient(app.config["GOOGLE_CLIENT_ID"])
+      self.init_app(app, **kwargs)
   
   def init_app(self, app, **kwargs):
-    self.client = WebApplicationClient(app.config["GOOGLE_CLIENT_ID"], kwargs=kwargs)
+    self.client = WebApplicationClient(app.config["SLACK_CLIENT_ID"], kwargs=kwargs)
 
 auth = AuthClient()
 jwt = JWTManager()

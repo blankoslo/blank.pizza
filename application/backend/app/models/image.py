@@ -11,6 +11,8 @@ class Image(CrudMixin, db.Model):
   uploaded_by = relationship("SlackUser", backref ="images", uselist=False)
   uploaded_at = sa.Column(sa.DateTime(timezone=True), server_default=func.now())
   title = sa.Column(sa.String)
+  slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
+  slack_organization = relationship("SlackOrganization", backref="images", uselist=False)
 
   def __repr__(self):
       return "<Image(id={self.id!r})>".format(self=self)

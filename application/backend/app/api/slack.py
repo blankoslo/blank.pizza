@@ -40,7 +40,7 @@ class Slack(views.MethodView):
 
         code = request.json.get('code')
         client_id = current_app.config["SLACK_CLIENT_ID"]
-        client_secret = current_app.config["SLACK_SECRET"]
+        client_secret = current_app.config["SLACK_CLIENT_SECRET"]
         if code is None:
             logger.info("Code is None")
             return abort(400)

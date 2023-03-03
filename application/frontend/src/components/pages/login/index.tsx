@@ -1,5 +1,5 @@
 import { Box, Typography, Button, Grid } from '@mui/material';
-import React, { useEffect } from 'react';
+import React, {useEffect, useRef} from 'react';
 import Logo from '../../../assets/BlankLogoLight5.svg';
 import { useTranslation } from 'react-i18next';
 import { useAuthService } from '../../../api/AuthService';
@@ -17,6 +17,7 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
     const query = useQuery();
     const navigate = useNavigate();
     const { loginUser, createLoginURI } = useAuthService();
+    const hasInstalled = useRef(false);
 
     useEffect(() => {
         const init = async () => {
@@ -28,7 +29,10 @@ export const Login: React.FC<Props> = ({ callback = false }) => {
                 navigate('/login');
             }
         };
-        init();
+        if (!hasInstalled.current) {
+            hasInstalled.current = true;
+            init();
+        }
     }, [query]);
 
     const onClickLogin = async () => {
