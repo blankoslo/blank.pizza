@@ -2,21 +2,24 @@ from app.models.slack_user import SlackUser
 from app.models.slack_user_schema import SlackUserSchema
 
 class SlackUserService:
-    def get(self, filters = {}, page = None, per_page = None, order_by_ascending = True):
+    def get(self, filters = {}, page = None, per_page = None, order_by_ascending = True, team_id = None):
         order_by = SlackUser.current_username.asc if order_by_ascending else SlackUser.current_username.desc
-        return SlackUser.get(filters = filters, page = page, per_page = per_page, order_by = order_by)
+        return SlackUser.get(filters = filters, page = page, per_page = per_page, order_by = order_by, team_id = team_id)
 
-    def get_by_id(self, slack_user_id):
-        return SlackUser.get_by_id(slack_user_id)
+    def get_by_id(self, slack_user_id, team_id):
+        slack_user = SlackUser.get_by_id(slack_user_id)
+        if slack_user is None or slack_user.slack_organization_id != team_id:
+            return None
+        return slack_user
 
     def add(self, data):
         slack_user = SlackUserSchema().load(data=data, partial=True)
         return SlackUser.upsert(slack_user)
 
-    def update(self, slack_user_id, data):
+    def update(self, slack_user_id, data, team_id):
         slack_user = SlackUser.get_by_id(slack_user_id)
 
-        if slack_user is None:
+        if slack_user is None or slack_user.slack_organization_id != team_id:
             return None
 
         updated_slack_user = SlackUserSchema().load(data=data, instance=slack_user, partial=True)
