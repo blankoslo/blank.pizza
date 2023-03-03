@@ -3,6 +3,7 @@ from app.models.restaurant_schema import RestaurantSchema
 from app.models.enums import Age, RSVP
 from app.models.event import Event
 from app.models.mixins import get_field
+from app.models.slack_organization_schema import SlackOrganizationSchema
 
 from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
@@ -20,6 +21,8 @@ class EventSchema(SQLAlchemySchema):
     restaurant_id = auto_field(load_only=True)
     restaurant = fields.Nested(RestaurantSchema, dump_only=True)
     finalized = auto_field()
+    slack_organization_id = auto_field()
+    slack_organization = fields.Nested(SlackOrganizationSchema, dump_only=True)
 
 class EventQueryArgsSchema(Schema):
     time = fields.DateTime(timezone=True)

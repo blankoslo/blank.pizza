@@ -18,6 +18,8 @@ class Restaurant(CrudMixin, db.Model):
     address = sa.Column(sa.String, nullable=True)
     deleted = sa.Column(sa.Boolean, nullable=False, server_default='f')
     ratings = relationship("Rating", uselist=True, lazy="dynamic")
+    slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
+    slack_organization = relationship("SlackOrganization", backref="restaurants", uselist=False)
 
     @hybrid_property
     def rating(self):

@@ -1,6 +1,7 @@
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.restaurant import Restaurant
+from app.models.slack_organization_schema import SlackOrganizationSchema
 
 from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
@@ -19,6 +20,8 @@ class RestaurantSchema(SQLAlchemySchema):
     address = auto_field()
     deleted = auto_field(load_only=True)
     rating = fields.Float(dump_only=True)
+    slack_organization_id = auto_field()
+    slack_organization = fields.Nested(SlackOrganizationSchema, dump_only=True)
 
 class RestaurantUpdateSchema(RestaurantSchema):
     class Meta(RestaurantSchema.Meta):
