@@ -36,8 +36,8 @@ class Slack(views.MethodView):
         url = "https://slack.com/api/oauth.v2.access"
 
         code = request.json.get('code')
-        client_id = current_app.config["slack_client_id"]
-        client_secret = current_app.config["slack_client_id"]
+        client_id = current_app.config["SLACK_CLIENT_ID"]
+        client_secret = current_app.config["SLACK_SECRET"]
         if code is None:
             return abort(400)
         if client_id is None or client_secret is None:

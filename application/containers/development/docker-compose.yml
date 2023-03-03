@@ -59,6 +59,8 @@ services:
       FRONTEND_URI: "https://localhost"
       GOOGLE_CLIENT_ID: ""
       GOOGLE_CLIENT_SECRET: ""
+      SLACK_CLIENT_ID: ""
+      SLACK_SECRET: ""
     networks:
       - database-network
       - proxy-network
