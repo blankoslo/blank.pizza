@@ -10,13 +10,13 @@ class ImageService:
 
     def get_by_id(self, image_id, team_id):
         image = Image.get_by_id(image_id)
-        if image.slack_organization_id != team_id:
+        if image is None or image.slack_organization_id != team_id:
             return None
         return image
 
     def delete(self, image_id, team_id):
         image = Image.get_by_id(image_id)
-        if image.slack_organization_id == team_id:
+        if image is not None and image.slack_organization_id == team_id:
             Image.delete(image_id)
 
     def add(self, data, team_id):
