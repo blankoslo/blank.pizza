@@ -44,18 +44,16 @@ class EventService:
 
     def get_by_id(self, event_id, team_id):
         event = Event.get_by_id(event_id=event_id, team_id=team_id)
-        if event.slack_organization_id != team_id:
+        if event is None or event.slack_organization_id != team_id:
             return None
         return event
 
     def delete(self, event_id, team_id):
         event = Event.get_by_id(event_id)
 
-        if event.slack_organization_id != team_id:
+        if event is None or event.slack_organization_id != team_id or event.time < datetime.now(pytz.utc):
             return False
 
-        if event.time < datetime.now(pytz.utc):
-            return False
         # Has to be lazy loaded before we delete event
         restaurant = event.restaurant
         invitations = Invitation.get_attending_or_unanswered_invitations(event.id)
@@ -91,10 +89,7 @@ class EventService:
     def update(self, event_id, data, team_id):
         event = Event.get_by_id(event_id)
 
-        if event.slack_organization_id != team_id:
-            return None
-
-        if event.time < datetime.now(pytz.utc):
+        if event is None or event.slack_organization_id != team_id or event.time < datetime.now(pytz.utc):
             return None
 
         old_time = event.time

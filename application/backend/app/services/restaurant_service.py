@@ -7,7 +7,7 @@ class RestaurantService:
 
     def get_by_id(self, restaurant_id, team_id):
         restaurant = Restaurant.get_by_id(restaurant_id)
-        if restaurant.slack_organization_id != team_id:
+        if restaurant is None or restaurant.slack_organization_id != team_id:
             return None
         return restaurant
 
@@ -18,10 +18,7 @@ class RestaurantService:
     def update(self, restaurant_id, data, team_id):
         restaurant = Restaurant.get_by_id(restaurant_id)
 
-        if restaurant.slack_organization_id != team_id:
-            return None
-
-        if restaurant is None:
+        if restaurant is None or restaurant.slack_organization_id != team_id:
             return None
 
         updated_restaurant = RestaurantSchema().load(data=data, instance=restaurant, partial=True)
