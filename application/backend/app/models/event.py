@@ -8,6 +8,7 @@ from app.models.mixins import get_field, CrudMixin
 from app.models.enums import Age, RSVP
 from app.models.restaurant import Restaurant
 from app.models.invitation import Invitation
+from app.models.slack_organization import SlackOrganization
 
 class Event(CrudMixin, db.Model):
     __tablename__ = "events"
@@ -41,10 +42,14 @@ class Event(CrudMixin, db.Model):
 
     @classmethod
     def get_events_in_need_of_invitations(cls, days_in_advance_to_invite, people_per_event, session=db.session):
-        query = session.query(cls.id, cls.time, Restaurant.name, func.count(Invitation.event_id).label("invited"))\
+        query = session.query(cls.id, cls.time, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token, func.count(Invitation.event_id).label("invited"))\
             .outerjoin(
                 Restaurant,
                 cls.restaurant_id == Restaurant.id
+            )\
+            .outerjoin(
+                SlackOrganization,
+                cls.slack_organization_id == SlackOrganization.team_id
             )\
             .outerjoin(
                 Invitation,

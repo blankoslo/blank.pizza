@@ -35,7 +35,7 @@ class BotApi:
     def invite_multiple_if_needed(self):
         events = self.client.invite_multiple_if_needed()
         for event in events:
-            slack_client = SlackApi(token = "TODO")
+            slack_client = SlackApi(token=event["bot_token"])
             self.invite_if_needed(event, slack_client)
 
     def invite_if_needed(self, event, slack_client):

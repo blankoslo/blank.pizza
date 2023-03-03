@@ -39,7 +39,14 @@ def invite_multiple_if_needed():
     # Get events in need of invitation
     people_per_event = int(os.environ["PEOPLE_PER_EVENT"])
     events = event_service.get_events_in_need_of_invitations()
-    events = [{"event_id": event[0], "event_time": event[1].isoformat(), "restaurant_name": event[2], "number_of_already_invited": event[3]} for event in events]
+    events = [{
+        "event_id": event[0],
+        "event_time": event[1].isoformat(),
+        "restaurant_name": event[2],
+        "team_id": event[3],
+        "bot_token": event[4],
+        "number_of_already_invited": event[5]
+    } for event in events]
 
     # Get numbers of users to invite
     events_where_users_were_invited = []
@@ -56,6 +63,8 @@ def invite_multiple_if_needed():
             'event_time': event['event_time'],
             'event_id': event['event_id'],
             'restaurant_name': event['restaurant_name'],
+            'team_id': event['team_id'],
+            'bot_token': event['bot_token'],
             'invited_users': []
         }
         try:
