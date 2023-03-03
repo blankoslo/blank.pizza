@@ -149,11 +149,14 @@ class BrokerClient:
             slack_id = slack_user['id']
             current_username = slack_user['name']
             email = slack_user['profile']['email']
+            team_id = slack_user['team_id']
+
 
             request_payload['users_to_update'].append({
                 'slack_id': slack_id,
                 'current_username': current_username,
                 'email': email,
+                'team_id': team_id
             })
         request_payload_schema = UpdateSlackUserRequestSchema()
         response_payload = self._call(self._create_request("update_slack_user", request_payload_schema.load(request_payload)))

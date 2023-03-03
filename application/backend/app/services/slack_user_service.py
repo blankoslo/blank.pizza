@@ -12,8 +12,9 @@ class SlackUserService:
             return None
         return slack_user
 
-    def add(self, data):
+    def add(self, data, team_id):
         slack_user = SlackUserSchema().load(data=data, partial=True)
+        slack_user.slack_organization_id = team_id
         return SlackUser.upsert(slack_user)
 
     def update(self, slack_user_id, data, team_id):

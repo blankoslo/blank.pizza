@@ -4,6 +4,7 @@ class SlackUserUpdate(Schema):
     slack_id = fields.Str(required=True)
     current_username = fields.Str()
     email = fields.Str()
+    team_id = fields.Str(required=True)
 
 class UpdateSlackUserRequestSchema(Schema):
     users_to_update = fields.Nested(SlackUserUpdate, required=True, many=True)
