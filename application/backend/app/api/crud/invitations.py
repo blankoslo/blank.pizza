@@ -12,6 +12,7 @@ class Invitations(views.MethodView):
     @bp.arguments(InvitationQueryArgsSchema, location="query")
     @bp.response(200, InvitationSchema(many=True))
     @bp.paginate()
+    @jwt_required()
     def get(self, args, pagination_parameters):
         """List invitations"""
         invitation_service = injector.get(InvitationService)
@@ -22,6 +23,7 @@ class Invitations(views.MethodView):
 @bp.route("/<event_id>")
 class InvitationsById(views.MethodView):
     @bp.response(200, InvitationSchema(many=True))
+    @jwt_required()
     def get(self, event_id):
         """Get invitation by ID"""
         invitation_service = injector.get(InvitationService)
@@ -30,6 +32,7 @@ class InvitationsById(views.MethodView):
 @bp.route("/<event_id>/<user_id>")
 class InvitationsById(views.MethodView):
     @bp.response(200, InvitationSchema)
+    @jwt_required()
     def get(self, event_id, user_id):
         """Get invitation by ID"""
         invitation_service = injector.get(InvitationService)
