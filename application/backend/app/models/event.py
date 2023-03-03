@@ -67,7 +67,7 @@ class Event(CrudMixin, db.Model):
                     cls.time < (datetime.now() + timedelta(days=days_in_advance_to_invite))
                 )
             )\
-            .group_by(cls.id, Restaurant.name)\
+            .group_by(cls.id, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token)\
             .having(func.count(Invitation.event_id) < people_per_event)
         return query.all()
 
