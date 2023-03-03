@@ -22,8 +22,12 @@ class Event(CrudMixin, db.Model):
     slack_organization = relationship("SlackOrganization", backref="events", uselist=False)
 
     @classmethod
-    def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
+    def get(cls, filters, order_by = None, page = None, per_page = None, team_id = None, session=db.session):
         query = session.query(cls)
+
+        if team_id:
+            query = query.filter(cls.slack_organization_id == team_id)
+
         # Add filters to the query
         if 'age' in filters and filters['age'] == Age.New:
             query = query.filter(cls.time > datetime.now())

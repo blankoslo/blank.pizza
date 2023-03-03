@@ -39,14 +39,21 @@ class EventService:
         updated_invitation = EventSchema().load(data=update_data, instance=event, partial=True)
         Event.upsert(updated_invitation)
 
-    def get(self, filters, page, per_page):
-        return Event.get(filters = filters, page = page, per_page = per_page)
+    def get(self, filters, page, per_page, team_id):
+        return Event.get(filters = filters, page = page, per_page = per_page, team_id = team_id)
 
-    def get_by_id(self, event_id):
-        return Event.get_by_id(event_id)
+    def get_by_id(self, event_id, team_id):
+        event = Event.get_by_id(event_id=event_id, team_id=team_id)
+        if event.slack_organization_id != team_id:
+            return None
+        return event
 
-    def delete(self, event_id):
+    def delete(self, event_id, team_id):
         event = Event.get_by_id(event_id)
+
+        if event.slack_organization_id != team_id:
+            return False
+
         if event.time < datetime.now(pytz.utc):
             return False
         # Has to be lazy loaded before we delete event
@@ -77,11 +84,16 @@ class EventService:
         BrokerService.publish("deleted_event", queue_event)
         return True
 
-    def add(self, data):
+    def add(self, data, team_id):
+        data.slack_organization_id = team_id
         return Event.upsert(data)
 
-    def update(self, event_id, data):
+    def update(self, event_id, data, team_id):
         event = Event.get_by_id(event_id)
+
+        if event.slack_organization_id != team_id:
+            return None
+
         if event.time < datetime.now(pytz.utc):
             return None
 
