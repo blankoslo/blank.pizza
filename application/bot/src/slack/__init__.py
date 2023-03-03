@@ -6,15 +6,25 @@ import time
 from functools import wraps
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from src.api.bot_api import BotApi, BotApiConfiguration
 from src.injector import injector
 
 pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
-slack_bot_token = os.environ["SLACK_BOT_TOKEN"]
+slack_signing_secret = os.environ["SLACK_SIGNING_SECRET"]
+client_id = os.environ["SLACK_CLIENT_ID"],
+client_secret = os.environ["SLACK_CLIENT_SECRET"],
 slack_app_token = os.environ["SLACK_APP_TOKEN"]
 
-slack_app = App(token=slack_bot_token)
+slack_app = App(
+    signing_secret=slack_signing_secret,
+    oauth_settings=OAuthSettings(
+        client_id=client_id,
+        client_secret=client_secret,
+        #scopes=os.environ["SLACK_SCOPES"].split(","),
+    ),
+)
 slack_handler = SocketModeHandler(slack_app, slack_app_token)
 
 def request_time_monitor(timeout=3000):

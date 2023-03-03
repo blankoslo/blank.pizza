@@ -74,8 +74,10 @@ services:
     environment:
       <<: *common-variables
       <<: *common-rabbitmq-variables
-      SLACK_BOT_TOKEN: xoxb-
       SLACK_APP_TOKEN: xapp-
+      SLACK_CLIENT_ID: a
+      SLACK_CLIENT_SECRET: a
+      slack_signing_secret: a
       PIZZA_CHANNEL_ID: C0
       REPLY_DEADLINE_IN_HOURS: 24
       HOURS_BETWEEN_REMINDERS: 4
