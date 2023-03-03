@@ -16,30 +16,12 @@
 13. Go down to `Scopes` and click `Add an OAuth Scope` and add the scopes `chat:write` `im:write` `users:read` `users:read.email`
 14. Go to `App Home`
 15. Go down to `Show Tabs` and switch on `Messages Tab` (to allow DMs)
-16. Go up to `OAuth Tokens for Your Workspace` and click `Install to Workspace`
-17. Choose a channel and click `Allow`
-18. Click `OAuth & Permissions` and copy the token at `Bot User OAuth Token` (this is the `SLACK_BOT_TOKEN`).
+16. Go to `OAuth & Permissions` under `Redirect URLs`
+17. Add your install-redirect url which will be your domain (or localhost for development) + `/slack/callback`
+18. Add your login-redirect url which will be your domain (or localhost for development) + `/login/callback`
 19. Click `Basic Information` in the menu
-20. Now you have the `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` needed to run the bot.
-21. Go to `OAuth & Permissions` under `Redirect URLs`
-22. Add your redirect url which will be your domain (or localhost for development) + `/slack/callback`
-
-## Google Login Setup
-1. Go to the [Google developers credentials page](https://console.developers.google.com/apis/credentials)
-2. If you don't have a project, create one, else choose the prefered project.
-3. Press the Create credentials button
-4. Select the option for `OAuth client ID`
-5. Click `Configure consent screen`
-    1. If open for all users choose `External`, but if only open for an organization like `blank.no` then choose `Internal`.
-    2. Fill out the necessary information for the conest screen
-    3. Click `Add or remove scopes` and add `.../auth/userinfo.email`	`.../auth/userinfo.profile` `openid`.
-    4. If you are testing add a test user for testing
-6. Choose `Web application`
-7. Give it a name 
-8. Set the Authorized JavaScript origins 
-    * If testing then set to `https://localhost` and Authorized redirect URIs to `https://localhost/login/callback`
-    * If production then replace `localhost` with your domain
-9. Hit Create and take note of the `client ID` and `client secret`
+20. `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET`
+21. You now have `SLACK_APP_TOKEN`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET` which is needed in terraform or docker-compose
 
 ## How to run the system
 

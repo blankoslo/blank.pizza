@@ -63,8 +63,6 @@ services:
       FLASK_RUN_HOST: "0.0.0.0"
       FLASK_RUN_PORT: "3000"
       FRONTEND_URI: "https://localhost"
-      GOOGLE_CLIENT_ID: ""
-      GOOGLE_CLIENT_SECRET: ""
       <<: *common-slack-variables
     networks:
       - database-network
