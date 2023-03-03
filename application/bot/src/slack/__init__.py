@@ -57,8 +57,9 @@ def request_time_monitor(timeout=3000):
 
 @slack_app.event("message")
 @request_time_monitor()
-def handle_event(body, say):
+def handle_event(body, say, context):
     event = body["event"]
+    token = context["token"]
     channel = event["channel"]
     channel_type = event["channel_type"]
     # Handle a channel message in the pizza channel
@@ -69,7 +70,7 @@ def handle_event(body, say):
         handle_direct_message(event, say)
     # Handle a file share
     elif "subtype" in event and event["subtype"] == 'file_share':
-        handle_file_share(event, say)
+        handle_file_share(event, say, token)
 
 def handle_rsvp(body, ack, attending):
     user = body["user"]
@@ -125,28 +126,25 @@ def handle_rsvp_withdraw(ack, body):
 
 # We don't use channel messages, but perhaps it'll be useful in the future
 def handle_channel_message(event, say):
-    logger = injector.get(logging.Logger)
-    logger.info(event)
+    pass
 
 # We don't use direct messages, but perhaps it'll be useful in the future
 def handle_direct_message(event, say):
-    logger = injector.get(logging.Logger)
-    logger.info(event)
+    pass
 
 # We don't use app mentions at the moment, but perhaps it'll be useful in the future
 @slack_app.event("app_mention")
 @request_time_monitor()
 def handle_mention_event(body):
-    logger = injector.get(logging.Logger)
-    logger.info(body)
+    pass
 
-def handle_file_share(event, say):
+def handle_file_share(event, say, token):
     channel = event["channel"]
     if 'files' in event:
         files = event['files']
         with injector.get(BotApi) as ba:
             ba.send_slack_message_old(channel, u'Takk for fil! 🤙')
-            headers = {u'Authorization': u'Bearer %s' % slack_bot_token}
+            headers = {u'Authorization': u'Bearer %s' % token}
             for file in files:
                 r = requests.get(
                     file['url_private'], headers=headers)
@@ -165,5 +163,4 @@ def handle_file_share(event, say):
 @slack_app.event("file_shared")
 @request_time_monitor()
 def handle_file_shared_events(body):
-    logger = injector.get(logging.Logger)
-    logger.info(body)
+    pass
