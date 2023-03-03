@@ -13,7 +13,7 @@ def auto_reply():
     with injector.get(BotApi) as ba:
         ba.auto_reply()
 
-@scheduler.scheduled_job('interval', id='invite_multiple_if_needed', minutes=15, jitter=120)
+@scheduler.scheduled_job('interval', id='invite_multiple_if_needed', minutes=1)
 def invite_multiple_if_needed():
     logger = injector.get(logging.Logger)
     logger.info("Inviting multiple if need on scheduled task")
@@ -34,7 +34,7 @@ def clean_up_invitations():
     with injector.get(BotApi) as ba:
         ba.clean_up_invitations()
 
-@scheduler.scheduled_job('interval', id='sync_db_with_slack', hours=6, jitter=120)
+@scheduler.scheduled_job('interval', id='sync_db_with_slack', minutes=1)
 def sync_db_with_slack():
     logger = injector.get(logging.Logger)
     logger.info("Syncing db with slack on scheduled task")

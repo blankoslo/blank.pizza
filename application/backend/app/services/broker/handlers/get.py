@@ -3,6 +3,7 @@ from app.services.broker.handlers.message_handler import MessageHandler
 from app.services.broker.schemas.get_unanswered_invitations import GetUnansweredInvitationsResponseSchema, GetUnansweredInvitationsDataSchema
 from app.services.broker.schemas.get_invited_unanswered_user_ids import GetInvitedUnansweredUserIdsResponseSchema
 from app.services.broker.schemas.get_slack_installation import GetSlackInstallationRequestSchema, GetSlackInstallationResponseSchema
+from app.services.broker.schemas.get_slack_organizations import GetSlackOrganizationsResponseSchema
 
 from app.services.invitation_service import InvitationService
 from app.services.injector import injector
@@ -82,3 +83,13 @@ def get_slack_installation(request: dict):
         response['enterprise_name'] = slack_organization.enterprise_name
 
     return response
+
+@MessageHandler.handle('get_slack_organizations', outgoing_schema = GetSlackOrganizationsResponseSchema)
+def get_slack_organizations():
+    count, slack_organizations = SlackOrganization.get()
+    response_data = [{
+        'team_id': slack_organization.team_id,
+        'bot_token': slack_organization.access_token
+    } for slack_organization in slack_organizations]
+
+    return {'organizations': response_data}

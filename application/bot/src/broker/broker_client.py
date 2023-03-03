@@ -17,6 +17,7 @@ from src.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, U
 from src.broker.schemas.create_image import CreateImageRequestSchema, CreateImageResponseSchema
 from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
 from src.broker.schemas.get_slack_installation import GetSlackInstallationRequestSchema, GetSlackInstallationResponseSchema
+from src.broker.schemas.get_slack_organizations import GetSlackOrganizationsResponseSchema
 
 class BrokerClient:
     messages = {}
@@ -85,6 +86,14 @@ class BrokerClient:
         response_schema = GetSlackInstallationResponseSchema()
         response = response_schema.load(response_payload)
         return response
+
+    def get_slack_organizations(self):
+        response_payload = self._call(self._create_request("get_slack_organizations"))
+        if response_payload is None:
+            return []
+        response_schema = GetSlackOrganizationsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['organizations']
 
     def invite_multiple_if_needed(self):
         response_payload = self._call(self._create_request("invite_multiple_if_needed"))

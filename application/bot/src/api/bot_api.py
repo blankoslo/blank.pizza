@@ -189,18 +189,20 @@ class BotApi:
     def get_invited_users(self):
         return self.client.get_invited_unanswered_user_ids()
 
-    # TODO This has to get all slack organizations from BACKEND
     def sync_db_with_slack(self):
-        all_slack_users = self.slack_client.get_slack_users()
-        slack_users = self.slack_client.get_real_users(all_slack_users)
-        response = self.client.update_slack_user(slack_users)
+        slack_organizations = self.client.get_slack_organizations()
+        for slack_organization in slack_organizations:
+            slack_client = SlackApi(token=slack_organization['bot_token'])
+            all_slack_users = slack_client.get_slack_users()
+            slack_users = slack_client.get_real_users(all_slack_users)
+            response = self.client.update_slack_user(slack_users)
 
-        updated_users = response['updated_users']
-        for user in updated_users:
-            self.logger.info("Updated user %s" % user)
-        failed_users = response['failed_users']
-        for user in failed_users:
-            self.logger.warning("Was unable to update %s" % user)
+            updated_users = response['updated_users']
+            for user in updated_users:
+                self.logger.info("Updated user %s" % user)
+            failed_users = response['failed_users']
+            for user in failed_users:
+                self.logger.warning("Was unable to update %s" % user)
 
     def inform_users_unfinalized_event_got_cancelled(self, time, restaurant_name, slack_data):
         self.logger.info("unfinalized event got cancelled")
