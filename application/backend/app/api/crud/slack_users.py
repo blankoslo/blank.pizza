@@ -12,6 +12,7 @@ class SlackUsers(views.MethodView):
     @bp.arguments(SlackUserQueryArgsSchema, location="query")
     @bp.response(200, SlackUserSchema(many=True))
     @bp.paginate()
+    @jwt_required()
     def get(self, args, pagination_parameters):
         """List slack_users"""
         slack_user_service = injector.get(SlackUserService)
@@ -22,6 +23,7 @@ class SlackUsers(views.MethodView):
 @bp.route("/<slack_user_id>")
 class SlackUsersById(views.MethodView):
     @bp.response(200, SlackUserSchema)
+    @jwt_required()
     def get(self, slack_user_id):
         """Get slack_user by ID"""
         slack_user_service = injector.get(SlackUserService)

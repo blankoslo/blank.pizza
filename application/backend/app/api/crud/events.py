@@ -12,6 +12,7 @@ class Events(views.MethodView):
     @bp.arguments(EventQueryArgsSchema, location="query")
     @bp.response(200, EventSchema(many=True))
     @bp.paginate()
+    @jwt_required()
     def get(self, args, pagination_parameters):
         """List events"""
         event_service = injector.get(EventService)
@@ -31,6 +32,7 @@ class Events(views.MethodView):
 @bp.route("/<event_id>")
 class EventsById(views.MethodView):
     @bp.response(200, EventSchema)
+    @jwt_required()
     def get(self, event_id):
         """Get event by ID"""
         event_service = injector.get(EventService)
@@ -41,6 +43,7 @@ class EventsById(views.MethodView):
 
     @bp.arguments(EventUpdateSchema)
     @bp.response(200, EventSchema)
+    @jwt_required()
     def patch(self, update_data, event_id):
         """Update event by ID"""
         event_service = injector.get(EventService)
