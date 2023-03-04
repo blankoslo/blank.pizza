@@ -158,9 +158,9 @@ class BotApi:
             deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
             if deadline < datetime.now(pytz.utc):
                 was_updated = self.update_invitation_answer(
-                    slack_id = invitation['slack_id'],
-                    event_id = invitation['event_id'],
-                    answer = RSVP.not_attending
+                    slack_id=invitation['slack_id'],
+                    event_id=invitation['event_id'],
+                    answer=RSVP.not_attending
                 )
                 if was_updated:
                     # Update invitation message - remove buttons and tell user it expired
@@ -211,21 +211,21 @@ class BotApi:
 
     def update_invitation_answer(self, slack_id, event_id, answer: RSVP):
         return self.client.update_invitation(
-            slack_id = slack_id,
-            event_id = event_id,
-            update_values = {
+            slack_id=slack_id,
+            event_id=event_id,
+            update_values={
                 "rsvp": answer
             }
         )
 
     def accept_invitation(self, event_id, slack_id):
-        self.update_invitation_answer(slack_id = slack_id, event_id = event_id, answer = RSVP.attending)
+        self.update_invitation_answer(slack_id=slack_id, event_id=event_id, answer=RSVP.attending)
 
     def decline_invitation(self, event_id, slack_id):
-        self.update_invitation_answer(slack_id = slack_id, event_id = event_id, answer = RSVP.not_attending)
+        self.update_invitation_answer(slack_id=slack_id, event_id=event_id, answer=RSVP.not_attending)
 
     def withdraw_invitation(self, event_id, slack_id):
-        return self.client.withdraw_invitation(event_id = event_id, slack_id = slack_id)
+        return self.client.withdraw_invitation(event_id=event_id, slack_id=slack_id)
 
     def save_image(self, cloudinary_id, slack_id, team_id, title):
         self.client.create_image(cloudinary_id=cloudinary_id, slack_id=slack_id, team_id=team_id, title=title)
