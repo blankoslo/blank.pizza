@@ -20,7 +20,7 @@ def invite_multiple_if_needed():
     with injector.get(BotApi) as ba:
         ba.invite_multiple_if_needed()
 
-@scheduler.scheduled_job('interval', id='send_reminders', minutes=15, jitter=120)
+@scheduler.scheduled_job('interval', id='send_reminders', minutes=1)
 def send_reminders():
     logger = injector.get(logging.Logger)
     logger.info("Sending reminders on scheduled task")

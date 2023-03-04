@@ -24,6 +24,8 @@ def get_unanswered_invitations():
             "event_id": invitation.event_id,
             "invited_at": invitation.invited_at.isoformat(),
             "reminded_at": invitation.reminded_at.isoformat(),
+            'team_id': invitation.event.slack_organization.team_id,
+            'bot_token': invitation.event.slack_organization.access_token
         }
         if invitation.slack_message:
             data["slack_message"] = {

@@ -68,9 +68,15 @@ class BotApi:
 
     def send_reminders(self):
         invitations = self.client.get_unanswered_invitations()
+        invitations.sort(key=lambda x: x["bot_token"])
 
+        previous_invitation = None
+        slack_client = None
         for invitation in invitations:
-            slack_client = SlackApi(token = "TODO")
+            if previous_invitation is None:
+                slack_client = SlackApi(token = invitation["bot_token"])
+            elif previous_invitation["bot_token"] != invitation["bot_token"]:
+                slack_client = SlackApi(token = invitation["bot_token"])
             # all timestamps (such as reminded_at) gets converted to UTC
             # so comparing it to datetime.now in UTC is correct
             remind_timestamp = datetime.now(pytz.utc) + timedelta(hours =- self.HOURS_BETWEEN_REMINDERS)
