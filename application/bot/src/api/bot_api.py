@@ -248,36 +248,50 @@ class BotApi:
             for user in failed_users:
                 self.logger.warning("Was unable to update %s" % user)
 
-    def inform_users_unfinalized_event_got_cancelled(self, time, restaurant_name, slack_data):
+    def inform_users_unfinalized_event_got_cancelled(self, time, restaurant_name, slack_data, slack_client):
         self.logger.info("unfinalized event got cancelled")
-        slack_client = SlackApi(token = "TODO")
         for slack_user_data in slack_data:
             slack_id = slack_user_data['user_id']
             # Update invitation message - remove buttons and tell user it has been cancelled
             channel_id = slack_user_data['invitation_message']['channel_id']
             ts = slack_user_data['invitation_message']['ts']
-            invitation_message = slack_client.get_slack_message(channel_id, ts)
+            invitation_message = slack_client.get_slack_message(channel_id=channel_id, ts=ts)
             blocks = invitation_message["blocks"][0:3]
-            self.send_invitation_invalidated_event_cancelled(channel_id, ts, blocks, slack_client = slack_client)
+            self.send_invitation_invalidated_event_cancelled(
+                channel_id=channel_id,
+                ts=ts,
+                old_blocks=blocks,
+                slack_client=slack_client
+            )
             # Send the user a message that the event has been cancelled
-            slack_client.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blitt kansellert. Sorry!" % (restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+            slack_client.send_slack_message(
+                channel_id=slack_id,
+                text="Halloi! Besøket til %s, %s har blitt kansellert. Sorry!" % (restaurant_name, time.strftime("%A %d. %B kl %H:%M"))
+            )
             self.logger.info("Informed user: %s" % slack_id)
 
-    def inform_users_finalized_event_got_cancelled(self, time, restaurant_name, slack_data):
-        slack_client = SlackApi(token = "TODO")
+    def inform_users_finalized_event_got_cancelled(self, time, restaurant_name, slack_data, slack_client):
         # Send the users a message in the pizza channel that the event has been cancelled
         slack_user_ids = [user['user_id'] for user in slack_data]
         users = ['<@%s>' % user_id for user_id in slack_user_ids]
         ids_string = ", ".join(users)
         self.logger.info("finalized event got cancelled for users %s" % ", ".join(slack_user_ids))
-        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blitt kansellert. Sorry!" % (ids_string, restaurant_name, time.strftime("%A %d. %B kl %H:%M"),))
+        slack_client.send_slack_message(
+            channel_id=self.pizza_channel_id,
+            text="Halloi! %s! Besøket til %s, %s har blitt kansellert. Sorry!" % (ids_string, restaurant_name, time.strftime("%A %d. %B kl %H:%M"),)
+        )
         # Update invitation message - remove buttons and tell user it has been cancelled
         for slack_user_data in slack_data:
             channel_id = slack_user_data['invitation_message']['channel_id']
             ts = slack_user_data['invitation_message']['ts']
-            invitation_message = slack_client.get_slack_message(channel_id, ts)
+            invitation_message = slack_client.get_slack_message(channel_id=channel_id, ts=ts)
             blocks = invitation_message["blocks"][0:3]
-            self.send_invitation_invalidated_event_cancelled(channel_id, ts, blocks, slack_client = slack_client)
+            self.send_invitation_invalidated_event_cancelled(
+                channel_id=channel_id,
+                ts=ts,
+                old_blocks=blocks,
+                slack_client=slack_client
+            )
 
     def inform_users_unfinalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids):
         self.logger.info("unfinalized event got updated")

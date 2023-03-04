@@ -11,3 +11,5 @@ class DeletedEventEventSchema(Schema):
     timestamp = fields.DateTime(required=True)
     restaurant_name = fields.Str(required=True)
     slack = fields.Nested(DeletedEventEventDataSchema, many=True)
+    team_id = fields.Str(required=True)
+    bot_token = fields.Str(required=True)
