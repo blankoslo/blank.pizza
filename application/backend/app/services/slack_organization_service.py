@@ -13,3 +13,8 @@ class SlackOrganizationService:
 
     def upsert(self, schema):
         return SlackOrganizationRepository.upsert(schema=schema)
+
+    def set_channel(self, team_id, channel_id):
+        slack_organization = SlackOrganizationRepository.get_by_id(id=team_id)
+        slack_organization.channel_id = channel_id
+        return SlackOrganizationRepository.upsert(schema=slack_organization)

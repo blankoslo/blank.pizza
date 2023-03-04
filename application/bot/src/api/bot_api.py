@@ -32,6 +32,48 @@ class BotApi:
     def __exit__(self, type, value, traceback):
         self.client.disconnect()
 
+    def welcome(self, slack_client, team_id):
+        channel_id = self.join_channel(slack_client=slack_client, team_id=team_id)
+        if channel_id is None:
+            self.send_slack_message(
+                channel_id=channel_id,
+                text="Hei! Jeg er pizzabot. For å sette hvilke kanal jeg bruker så må dere gå inn i riktig kanal og bruke kommandoen '/set-pizza-channel'",
+                slack_client=slack_client
+            )
+        else:
+            self.send_slack_message(
+                channel_id=channel_id,
+                text="Hei! Jeg er pizzabot. Hvis dere vil endre hvilke kanal jeg bruker så kan dere gå inn i riktig kanal og bruke kommandoen '/set-pizza-channel'",
+                slack_client=slack_client
+            )
+
+    def join_channel(self, slack_client, team_id, channel_id = None):
+        # Get default channel if non is given
+        if channel_id is None:
+            default_channel = slack_client.get_default_channel()
+            channel_id = default_channel["id"]
+
+        # Log and exit if we were unable to find a channel
+        if channel_id is None:
+            self.logger.error("Was unable to find channel")
+            return None
+
+        success = slack_client.join_channel(channel_id)
+
+        # If we were unable to join the channel
+        if not success:
+            self.logger.error("Was unable to join channel", channel_id)
+            return
+
+        # Send a rpc message to set the channel
+        success = self.client.set_slack_channel(channel_id=channel_id, team_id=team_id)
+
+        if not success:
+            return None
+
+        # return channel
+        return channel_id
+
     def invite_multiple_if_needed(self):
         events = self.client.invite_multiple_if_needed()
         for event in events:

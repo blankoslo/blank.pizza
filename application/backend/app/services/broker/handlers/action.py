@@ -7,6 +7,7 @@ from app.services.broker.handlers.message_handler import MessageHandler
 from app.services.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
 from app.services.broker.schemas.invite_multiple_if_needed import InviteMultipleIfNeededResponseSchema
 from app.services.broker.schemas.deleted_slack_organization_event import DeletedSlackOrganizationEventSchema
+from app.services.broker.schemas.set_slack_channel import SetSlackChannelRequestSchema, SetSlackChannelResponseSchema
 
 from app.models.enums import RSVP
 from app.services.injector import injector
@@ -93,4 +94,20 @@ def deleted_slack_organization_event(request: dict):
     except Exception as e:
         logger.error(e)
 
+
+@MessageHandler.handle('set_slack_channel', incoming_schema=SetSlackChannelRequestSchema, outgoing_schema=SetSlackChannelResponseSchema)
+def set_slack_channel(request: dict):
+    logger = injector.get(logging.Logger)
+    slack_organization_service = injector.get(SlackOrganizationService)
+    team_id = request.get('team_id')
+    channel_id = request.get('channel_id')
+
+    response = True
+    try:
+        slack_organization_service.set_channel(team_id=team_id, channel_id=channel_id)
+    except Exception as e:
+        logger.error(e)
+        response = False
+
+    return {'success': response}
 

@@ -46,3 +46,4 @@ import src.broker.handlers.user_withdrew_after_finalization
 import src.broker.handlers.deleted_event
 import src.broker.handlers.updated_event
 import src.broker.handlers.updated_invitation
+import src.broker.handlers.new_slack_organization

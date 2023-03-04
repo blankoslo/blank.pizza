@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+import logging
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from src.injector import injector
 
 
 class SlackApi:
@@ -13,6 +12,7 @@ class SlackApi:
             self.client = WebClient(token=token)
         else:
             raise ValueError("Either 'client' or 'token' must be provided.")
+        self.logger = injector.get(logging.Logger)
 
     def get_slack_users(self):
         return self.client.api_call(
@@ -56,4 +56,39 @@ class SlackApi:
                 return response['messages'][0]
             return None
         except SlackApiError as e:
+            self.logger.error(e)
             return None
+
+    def get_default_channel(self):
+        first_page = self.client.conversations_list()
+
+        # If response is not OK then we return None as we didnt find a channel
+        if not first_page["ok"]:
+            self.logger(first_page["error"])
+            return None
+
+        # Try to find default channel in first page
+        for channel in first_page['channels']:
+            if channel["is_general"]:
+                return channel
+
+        # Continue to loop over pages to find the default channel
+        next_cursor = first_page["response_metadata"]["next_cursor"]
+        while next_cursor != "":
+            page = self.client.conversations_list(cursor=next_cursor)
+            next_cursor = page["response_metadata"]["next_cursor"]
+
+            for channel in page['channels']:
+                if channel["is_general"]:
+                    return channel
+
+        # If all else failed then return None as we didnt find it
+        self.logger.warn("Was unable to find default channel")
+        return None
+
+    def join_channel(self, channel_id):
+        try:
+            self.client.conversations_join(channel=channel_id)
+        except:
+            return False
+        return True

@@ -19,6 +19,7 @@ from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSche
 from src.broker.schemas.get_slack_installation import GetSlackInstallationRequestSchema, GetSlackInstallationResponseSchema
 from src.broker.schemas.get_slack_organizations import GetSlackOrganizationsResponseSchema
 from src.broker.schemas.deleted_slack_organization_event import DeletedSlackOrganizationEventSchema
+from src.broker.schemas.set_slack_channel import SetSlackChannelRequestSchema, SetSlackChannelResponseSchema
 
 class BrokerClient:
     messages = {}
@@ -84,6 +85,19 @@ class BrokerClient:
             request_payload['enterprise_id'] = enterprise_id
         request_payload_schema = DeletedSlackOrganizationEventSchema()
         self._call(self._create_request("deleted_slack_organization_event", request_payload_schema.load(request_payload)))
+
+    def set_slack_channel(self, channel_id, team_id):
+        request_payload = {
+            "channel_id": channel_id,
+            "team_id": team_id
+        }
+        request_payload_schema = SetSlackChannelRequestSchema()
+        response_payload = self._call(self._create_request("set_slack_channel", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = SetSlackChannelResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['success']
 
     def get_slack_installation(self, team_id: str):
         request_payload = {

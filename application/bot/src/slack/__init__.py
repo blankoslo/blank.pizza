@@ -144,6 +144,27 @@ def handle_file_share(event, say, token, client):
                     team_id=file['user_team'],
                     title=file['title'])
 
+@slack_app.command("/set-pizza-channel")
+def handle_some_command(ack, body, say, context):
+    with injector.get(BotApi) as ba:
+        team_id = body["team_id"]
+        channel_id = body["channel_id"]
+        client = SlackApi(client=context["client"])
+        channel_id = ba.join_channel(client, team_id, channel_id)
+        if channel_id is None:
+            ba.send_slack_message(
+                channel_id=channel_id,
+                text='Noe gikk galt. Klarte ikke å sette Pizza kanal',
+                slack_client=client
+            )
+        else:
+            ba.send_slack_message(
+                channel_id=channel_id,
+                text='Pizza kanal er nå satt til #%s' % channel_id,
+                slack_client=client
+            )
+    ack()
+
 # This only exists to make bolt not throw a warning that we dont handle the file_shared event
 # We dont use this as we use the message event with subtype file_shared as that one
 # contains a full file object with url_private, while this one only contains the ID

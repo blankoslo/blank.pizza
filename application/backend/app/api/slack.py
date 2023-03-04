@@ -6,6 +6,8 @@ from flask import views, request, redirect, jsonify, current_app, Response
 from flask_smorest import Blueprint, abort
 from app.models.slack_organization_schema import SlackOrganizationSchema
 from app.services.slack_organization_service import SlackOrganizationService
+from app.services.broker import BrokerService
+from app.services.broker.schemas.new_slack_organization_event import NewSlackOrganizationEventSchema
 
 
 bp = Blueprint("slack", "slack", url_prefix="/slack", description="Slack OAUTH API")
@@ -14,7 +16,9 @@ bp = Blueprint("slack", "slack", url_prefix="/slack", description="Slack OAUTH A
 class Slack(views.MethodView):
     def get(self):
         scopes = [
+            'channels:read',
             'channels:history',
+            'channels:join',
             'chat:write',
             'files:read',
             'im:history',
@@ -76,5 +80,10 @@ class Slack(views.MethodView):
         }
         slack_organization = schema.load(schema_data)
         slack_organization_service.upsert(slack_organization)
+
+        BrokerService.publish("new_slack_organization_event", NewSlackOrganizationEventSchema().load({
+            'team_id': schema_data['team_id'],
+            'bot_token': schema_data['access_token']
+        }))
 
         return Response(status=200)
