@@ -144,7 +144,9 @@ class InvitationService:
                 'event_id': updated_invitation.event_id,
                 'slack_id': updated_invitation.slack_id,
                 'timestamp': event.time.isoformat(),
-                'restaurant_name': restaurant.name
+                'restaurant_name': restaurant.name,
+                'team_id': event.slack_organization_id,
+                'bot_token': event.slack_organization.access_token
             })
             BrokerService.publish("user_withdrew_after_finalization", queue_event)
             # Mark event as unfinalized
