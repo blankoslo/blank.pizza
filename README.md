@@ -19,9 +19,13 @@
 16. Go to `OAuth & Permissions` under `Redirect URLs`
 17. Add your install-redirect url which will be your domain (or localhost for development) + `/slack/callback`
 18. Add your login-redirect url which will be your domain (or localhost for development) + `/login/callback`
-19. Click `Basic Information` in the menu
-20. `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET`
-21. You now have `SLACK_APP_TOKEN`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET` which is needed in terraform or docker-compose
+19. Click `Slash Commands` in the menu
+20. Click `Create new command`
+21. Fill in `/set-pizza-channel` under `command`, fill in `This sets the current channel as the pizza channel` under `Short Description`
+22. Click `save`
+23. Click `Basic Information` in the menu
+24. Under App Credentials, copy `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET`
+25. You now have `SLACK_APP_TOKEN`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET` which is needed in terraform or docker-compose
 
 ## How to run the system
 
