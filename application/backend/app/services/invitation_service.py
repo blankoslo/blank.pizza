@@ -151,7 +151,9 @@ class InvitationService:
                 'event_id': event.id,
                 'timestamp': event.time.isoformat(),
                 'restaurant_name': restaurant.name,
-                'slack_ids': attending_users
+                'slack_ids': attending_users,
+                'team_id': event.slack_organization.team_id,
+                'bot_token': event.slack_organization.access_token
             })
             BrokerService.publish("finalization", queue_event)
         return updated_invitation
@@ -176,7 +178,9 @@ class InvitationService:
                 'event_id': event.id,
                 'timestamp': event.time.isoformat(),
                 'restaurant_name': restaurant.name,
-                'slack_ids': [user[0] for user in Invitation.get_attending_users(event.id)]
+                'slack_ids': [user[0] for user in Invitation.get_attending_users(event.id)],
+                'team_id': event.slack_organization.team_id,
+                'bot_token': event.slack_organization.access_token
             })
             BrokerService.publish("finalization", queue_event)
         return updated_invitation

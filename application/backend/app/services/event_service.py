@@ -32,7 +32,7 @@ class EventService:
         return False
 
     def unfinalize_event(self, event_id):
-        event = Event.get_by_id(event_id)
+        event = Event.get_by_id(id=event_id)
         update_data = {
             'finalized': False
         }
@@ -42,14 +42,14 @@ class EventService:
     def get(self, filters, page, per_page, team_id):
         return Event.get(filters = filters, page = page, per_page = per_page, team_id = team_id)
 
-    def get_by_id(self, event_id, team_id):
-        event = Event.get_by_id(event_id=event_id, team_id=team_id)
-        if event is None or event.slack_organization_id != team_id:
+    def get_by_id(self, event_id, team_id = None):
+        event = Event.get_by_id(id=event_id)
+        if event is None or (team_id is not None and event.slack_organization_id != team_id):
             return None
         return event
 
     def delete(self, event_id, team_id):
-        event = Event.get_by_id(event_id)
+        event = Event.get_by_id(id=event_id)
 
         if event is None or event.slack_organization_id != team_id or event.time < datetime.now(pytz.utc):
             return False
@@ -87,7 +87,7 @@ class EventService:
         return Event.upsert(data)
 
     def update(self, event_id, data, team_id):
-        event = Event.get_by_id(event_id)
+        event = Event.get_by_id(id=event_id)
 
         if event is None or event.slack_organization_id != team_id or event.time < datetime.now(pytz.utc):
             return None

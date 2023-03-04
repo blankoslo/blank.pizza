@@ -5,9 +5,9 @@ class RestaurantService:
     def get(self, filters, page, per_page, team_id):
         return Restaurant.get(filters = filters, page = page, per_page = per_page, team_id = team_id)
 
-    def get_by_id(self, restaurant_id, team_id):
+    def get_by_id(self, restaurant_id, team_id = None):
         restaurant = Restaurant.get_by_id(restaurant_id)
-        if restaurant is None or restaurant.slack_organization_id != team_id:
+        if restaurant is None or (team_id is not None and restaurant.slack_organization_id != team_id):
             return None
         return restaurant
 
