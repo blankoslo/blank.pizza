@@ -80,10 +80,9 @@ class BotApi:
         previous_invitation = None
         slack_client = None
         for invitation in invitations:
-            if previous_invitation is None:
+            if previous_invitation is None or previous_invitation["bot_token"] != invitation["bot_token"]:
                 slack_client = SlackApi(token=invitation["bot_token"])
-            elif previous_invitation["bot_token"] != invitation["bot_token"]:
-                slack_client = SlackApi(token=invitation["bot_token"])
+            previous_invitation = invitation
             # all timestamps (such as reminded_at) gets converted to UTC
             # so comparing it to datetime.now in UTC is correct
             remind_timestamp = datetime.now(pytz.utc) + timedelta(hours =- self.HOURS_BETWEEN_REMINDERS)
@@ -148,9 +147,14 @@ class BotApi:
 
     def auto_reply(self):
         invitations = self.client.get_unanswered_invitations()
+        invitations.sort(key=lambda x: x["bot_token"])
 
+        previous_invitation = None
+        slack_client = None
         for invitation in invitations:
-            slack_client = SlackApi(token=invitation['bot_token'])
+            if previous_invitation is None or previous_invitation["bot_token"] != invitation["bot_token"]:
+                slack_client = SlackApi(token=invitation["bot_token"])
+            previous_invitation = invitation
             deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
             if deadline < datetime.now(pytz.utc):
                 was_updated = self.update_invitation_answer(
@@ -182,11 +186,16 @@ class BotApi:
 
     def clean_up_invitations(self):
         invitations = self.client.get_unanswered_invitations_on_finished_events_and_set_not_attending()
+        invitations.sort(key=lambda x: x["bot_token"])
 
+        previous_invitation = None
+        slack_client = None
         for invitation in invitations:
-            slack_client = SlackApi(token = invitation['bot_token'])
+            if previous_invitation is None or previous_invitation["bot_token"] != invitation["bot_token"]:
+                slack_client = SlackApi(token=invitation["bot_token"])
+            previous_invitation = invitation
             # Update invitation message - remove buttons and tell user it expired
-            if not 'invitation' in invitation:
+            if 'slack_message' not in invitation:
                 continue
             channel_id = invitation['slack_message']['channel_id']
             ts = invitation['slack_message']['ts']
