@@ -56,6 +56,7 @@ class EventService:
 
         # Has to be lazy loaded before we delete event
         restaurant = event.restaurant
+        slack_organization = event.slack_organization
         invitations = InvitationRepository.get_attending_or_unanswered_invitations(event.id)
         slack_data = []
         for invitation in invitations:
@@ -78,8 +79,8 @@ class EventService:
             'timestamp': event.time.isoformat(),
             'restaurant_name': restaurant.name,
             'slack': slack_data,
-            'team_id': event.slack_organization_id,
-            'bot_token': event.slack_organization.access_token
+            'team_id': slack_organization.team_id,
+            'bot_token': slack_organization.access_token
         })
         BrokerService.publish("deleted_event", queue_event)
         return True
