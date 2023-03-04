@@ -7,9 +7,9 @@ from app.services.broker.schemas.get_slack_organizations import GetSlackOrganiza
 
 from app.services.invitation_service import InvitationService
 from app.services.slack_organization_service import SlackOrganizationService
+from app.services.slack_user_service import SlackUserService
 from app.services.injector import injector
 
-from app.models.slack_user import SlackUser
 from app.models.enums import RSVP
 
 @MessageHandler.handle('get_unanswered_invitations', outgoing_schema = GetUnansweredInvitationsResponseSchema)
@@ -62,7 +62,8 @@ def get_unanswered_invitations():
 
 @MessageHandler.handle('get_invited_unanswered_user_ids', outgoing_schema = GetInvitedUnansweredUserIdsResponseSchema)
 def get_unanswered_invitations():
-    user_ids = SlackUser.get_invited_unanswered_user_ids()
+    slack_user_service = injector.get(SlackUserService)
+    user_ids = slack_user_service.get_invited_unanswered_user_ids()
     response_data = [user_id[0] for user_id in user_ids]
 
     return {'user_ids': response_data}
