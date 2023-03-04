@@ -131,7 +131,7 @@ class BotApi:
         invitations = self.client.get_unanswered_invitations()
 
         for invitation in invitations:
-            slack_client = SlackApi(token = "TODO")
+            slack_client = SlackApi(token = invitation['bot_token'])
             deadline = invitation['invited_at'] + timedelta(hours=self.REPLY_DEADLINE_IN_HOURS)
             if deadline < datetime.now(pytz.utc):
                 was_updated = self.update_invitation_answer(
@@ -146,9 +146,17 @@ class BotApi:
                         ts = invitation['slack_message']['ts']
                         invitation_message = slack_client.get_slack_message(channel_id, ts)
                         blocks = invitation_message["blocks"][0:3]
-                        self.send_invitation_expired(channel_id, ts, blocks, slack_client = slack_client)
+                        self.send_invitation_expired(
+                            channel_id=channel_id,
+                            ts=ts,
+                            old_blocks=blocks,
+                            slack_client=slack_client
+                        )
                     # Send the user a message that the invite expired
-                    slack_client.send_slack_message(invitation['slack_id'], "Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞")
+                    slack_client.send_slack_message(
+                        channel_id=invitation['slack_id'],
+                        text="Neivel, da antar jeg du ikke kan/gidder. Håper du blir med neste gang! 🤞"
+                    )
                     self.logger.info("%s didn't answer. Setting RSVP to not attending." % invitation['slack_id'])
                 else:
                     self.logger.warning("failed to update invitation to not attending")
@@ -165,7 +173,12 @@ class BotApi:
             ts = invitation['slack_message']['ts']
             invitation_message = slack_client.get_slack_message(channel_id, ts)
             blocks = invitation_message["blocks"][0:3]
-            self.send_invitation_expired(channel_id, ts, blocks, slack_client = slack_client)
+            self.send_invitation_expired(
+                channel_id=channel_id,
+                ts=ts,
+                old_blocks=blocks,
+                slack_client=slack_client
+            )
             self.logger.info("%s didn't answer and event is finished. Removing accept/decline buttons" % invitation['slack_id'])
 
     def update_invitation_answer(self, slack_id, event_id, answer: RSVP):
