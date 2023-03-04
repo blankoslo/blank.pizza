@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
 
+
 class Image(CrudMixin, db.Model):
   __tablename__ = "images"
   cloudinary_id = sa.Column(sa.String, primary_key=True)
@@ -12,7 +13,6 @@ class Image(CrudMixin, db.Model):
   uploaded_at = sa.Column(sa.DateTime(timezone=True), server_default=func.now())
   title = sa.Column(sa.String)
   slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
-  slack_organization = relationship("SlackOrganization", backref="images", uselist=False)
 
   def __repr__(self):
       return "<Image(id={self.id!r})>".format(self=self)

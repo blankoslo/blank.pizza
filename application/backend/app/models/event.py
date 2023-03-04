@@ -10,6 +10,7 @@ from app.models.restaurant import Restaurant
 from app.models.invitation import Invitation
 from app.models.slack_organization import SlackOrganization
 
+
 class Event(CrudMixin, db.Model):
     __tablename__ = "events"
     id = sa.Column(UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()"))
@@ -19,7 +20,6 @@ class Event(CrudMixin, db.Model):
     finalized = sa.Column(sa.Boolean, nullable=False, server_default='f')
     invitations = relationship("Invitation", backref="event", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
-    slack_organization = relationship("SlackOrganization", backref="events", uselist=False)
 
     @classmethod
     def get(cls, filters, order_by = None, page = None, per_page = None, team_id = None, session=db.session):

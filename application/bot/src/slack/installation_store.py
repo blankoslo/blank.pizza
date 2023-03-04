@@ -96,6 +96,7 @@ class BrokerInstallationStore(InstallationStore):
         self._delete_workspace(team_id=team_id, enterprise_id=enterprise_id)
 
     def _delete_workspace(self, team_id, enterprise_id):
+        print("Deleting workspace with team_id %s and enterprise_id %s" % (team_id, enterprise_id))
         client = injector.get(BrokerClient)
         client.deleted_slack_organization_event(team_id=team_id, enterprise_id=enterprise_id)
         client.disconnect()

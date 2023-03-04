@@ -9,6 +9,7 @@ from app.models.rating import Rating
 
 from app.models.soft_delete import QueryWithSoftDelete
 
+
 class Restaurant(CrudMixin, db.Model):
     __tablename__ = "restaurants"
     id = sa.Column(UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()"))
@@ -17,9 +18,8 @@ class Restaurant(CrudMixin, db.Model):
     tlf = sa.Column(sa.String, nullable=True)
     address = sa.Column(sa.String, nullable=True)
     deleted = sa.Column(sa.Boolean, nullable=False, server_default='f')
-    ratings = relationship("Rating", uselist=True, lazy="dynamic")
+    ratings = relationship("Rating", uselist=True, lazy="dynamic", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
-    slack_organization = relationship("SlackOrganization", backref="restaurants", uselist=False)
 
     @hybrid_property
     def rating(self):

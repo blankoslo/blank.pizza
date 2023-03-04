@@ -15,7 +15,7 @@ class Invitation(db.Model):
   reminded_at = sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=func.now())
   slack_message_channel = sa.Column(sa.String, nullable=True)
   slack_message_ts = sa.Column(sa.String, nullable=True)
-  slack_message = relationship("SlackMessage", backref = "invitation", foreign_keys=[slack_message_channel, slack_message_ts])
+  slack_message = relationship("SlackMessage", backref="invitation", single_parent=True, foreign_keys=[slack_message_channel, slack_message_ts], cascade="all, delete-orphan")
   __table_args__ = (sa.ForeignKeyConstraint([slack_message_channel, slack_message_ts], ['slack_messages.channel_id', 'slack_messages.ts']), {})
 
   def __repr__(self):

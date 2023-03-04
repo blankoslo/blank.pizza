@@ -18,8 +18,8 @@ class SlackUser(CrudMixin, db.Model):
     active = sa.Column(sa.Boolean, nullable=False, server_default='t')
     priority = sa.Column(sa.Integer, nullable=False, server_default='1')
     email = sa.Column(sa.String, nullable=True)
+    ratings = relationship("Rating", backref="slack_user", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
-    slack_organization = relationship("SlackOrganization", backref="slack_users", uselist=False)
     __table_args__ = (
         sa.CheckConstraint(priority >= 1, name='check_priority_range_min'),
         sa.CheckConstraint(priority <= 10, name='check_priority_range_max'),
