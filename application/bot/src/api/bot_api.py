@@ -373,7 +373,7 @@ class BotApi:
         self.logger.info('updating invitation message to attending for %s, %s' % (channel_id, event_id))
         invitation_message = slack_client.get_slack_message(channel_id, ts)
         blocks = invitation_message["blocks"][0:3]
-        message = self.send_pizza_invite_answered(
+        self.send_pizza_invite_answered(
             channel_id=channel_id,
             ts=ts,
             event_id=event_id,
@@ -381,7 +381,6 @@ class BotApi:
             attending=True,
             slack_client = slack_client
         )
-        self.logger.info(message)
 
     def send_update_pizza_invite_not_attending(self, channel_id, ts, event_id, slack_client):
         self.logger.info('updating invitation message to not_attending for %s, %s' % (channel_id, event_id))

@@ -9,3 +9,5 @@ class UpdatedInvitationEventSchema(Schema):
     slack_id = fields.Str(required=True)
     rsvp = EnumField(RSVP, by_value=True, required=True)
     slack_message = fields.Nested(SlackMessage)
+    team_id = fields.Str(required=True)
+    bot_token = fields.Str(required=True)

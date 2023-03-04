@@ -86,7 +86,9 @@ class InvitationService:
             queue_event_data = {
                 'event_id': updated_invitation.event_id,
                 'slack_id': updated_invitation.slack_id,
-                'rsvp': updated_invitation.rsvp
+                'rsvp': updated_invitation.rsvp,
+                'team_id': updated_invitation.event.slack_organization_id,
+                'bot_token': updated_invitation.event.slack_organization.access_token
             }
             if updated_invitation.slack_message:
                 queue_event_data['slack_message'] = {
