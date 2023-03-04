@@ -26,7 +26,7 @@ class Invitation(CrudMixin, db.Model):
     query = cls.query
 
     if team_id:
-      query = query.filter(cls.slack_organization_id == team_id)
+      query = query.filter(cls.event.slack_organization_id == team_id)
 
     if filters is None:
       filters = {}
@@ -49,7 +49,7 @@ class Invitation(CrudMixin, db.Model):
     query = cls.query
 
     if team_id:
-      query = query.filter(cls.slack_organization_id == team_id)
+      query = query.filter(cls.event.slack_organization_id == team_id)
 
     for attr, value in filters.items():
       query = query.filter(getattr(cls, attr) == value)

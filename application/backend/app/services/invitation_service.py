@@ -33,7 +33,7 @@ class InvitationService:
     def get(self, filters, page, per_page, team_id):
         return Invitation.get(filters = filters, page = page, per_page = per_page, team_id=team_id)
 
-    def get_by_filter(self, key, value, team_id):
+    def get_by_filter(self, key, value, team_id = None):
         return Invitation.get_by_filter(filters={key: value}, team_id=team_id)
 
     def get_by_id(self, id, team_id):
