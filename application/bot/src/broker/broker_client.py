@@ -170,11 +170,12 @@ class BrokerClient:
         response = response_schema.load(response_payload)
         return response
 
-    def create_image(self, cloudinary_id, slack_id, title):
+    def create_image(self, cloudinary_id, slack_id, team_id, title):
         request_payload = {
             "cloudinary_id": cloudinary_id,
             "slack_id": slack_id,
-            'title': title
+            'title': title,
+            'team_id': team_id
         }
         request_payload_schema = CreateImageRequestSchema()
         response_payload = self._call(self._create_request("create_image", request_payload_schema.load(request_payload)))

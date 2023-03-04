@@ -227,8 +227,8 @@ class BotApi:
     def withdraw_invitation(self, event_id, slack_id):
         return self.client.withdraw_invitation(event_id = event_id, slack_id = slack_id)
 
-    def save_image(self, cloudinary_id, slack_id, title):
-        self.client.create_image(cloudinary_id = cloudinary_id, slack_id = slack_id, title = title)
+    def save_image(self, cloudinary_id, slack_id, team_id, title):
+        self.client.create_image(cloudinary_id=cloudinary_id, slack_id=slack_id, team_id=team_id, title=title)
 
     def get_invited_users(self):
         return self.client.get_invited_unanswered_user_ids()
@@ -307,8 +307,8 @@ class BotApi:
         self.logger.info("finalized event got updated for users %s" % ", ".join(slack_ids))
         slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blit endret til %s, %s." % (ids_string, old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
 
-    def send_slack_message_old(self, channel_id, text, slack_client, attachments=None, thread_ts=None):
-        return slack_client.send_slack_message_old(channel_id, text, attachments, thread_ts)
+    def send_slack_message(self, channel_id, text, slack_client, blocks=None, thread_ts=None):
+        return slack_client.send_slack_message(channel_id=channel_id, text=text, blocks=blocks, thread_ts=thread_ts)
 
     def update_slack_message(self, channel_id, ts, slack_client, text=None, blocks=None):
         return slack_client.update_slack_message(channel_id, ts, text, blocks)

@@ -126,7 +126,7 @@ def handle_file_share(event, say, token, client):
     if 'files' in event:
         files = event['files']
         with injector.get(BotApi) as ba:
-            ba.send_slack_message_old(channel_id=channel, text=u'Takk for fil! 🤙', slack_client=client)
+            ba.send_slack_message(channel_id=channel, text=u'Takk for fil! 🤙', slack_client=client)
             headers = {u'Authorization': u'Bearer %s' % token}
             for file in files:
                 r = requests.get(
@@ -137,7 +137,10 @@ def handle_file_share(event, say, token, client):
                 r2 = requests.post(
                     'https://api.cloudinary.com/v1_1/blank/image/upload', data=payload)
                 ba.save_image(
-                    r2.json()['public_id'], file['user'], file['title'])
+                    cloudinary_id=r2.json()['public_id'],
+                    slack_id=file['user'],
+                    team_id=file['user_team'],
+                    title=file['title'])
 
 # We don't use app mentions at the moment, but perhaps it'll be useful in the future
 @slack_app.event("app_mention")
