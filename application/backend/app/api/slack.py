@@ -60,6 +60,10 @@ class Slack(views.MethodView):
             logger.error(response["error"])
             return abort(500)
 
+        if response['is_enterprise_install']:
+            logger.warn("NOT SUPPORTED: User tried to install app into enterprise workspace.")
+            return abort(501)
+
         schema = SlackOrganizationSchema()
         schema_data = {
             'team_id': response['team']['id'],

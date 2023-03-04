@@ -9,7 +9,9 @@
   },
   "install": {
     "button": "Add to Slack",
-    "successAlert": "App installed"
+    "successAlert": "App installed",
+    "enterpriseInstallAlert": "We currently don't support enterprise workspaces. Sorry!",
+    "genericErrorAlert": "Something went wrong."
   },
   "login": {
     "logo": "Pizzabot By",

@@ -9,7 +9,9 @@
   },
   "install": {
     "button": "Legg til Slack",
-    "successAlert": "App installert"
+    "successAlert": "App installert",
+    "enterpriseInstallAlert": "Vi støtter for øyeblikket ikke enterprise workspaces. Beklager!",
+    "genericErrorAlert": "Noe gikk galt."
   },
   "login": {
     "logo": "Pizzabot av",

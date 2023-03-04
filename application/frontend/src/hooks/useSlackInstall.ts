@@ -1,4 +1,4 @@
-import {useHttpClient} from "../api/httpClient";
+import { useHttpClient } from '../api/httpClient';
 
 const installEndpoint = '/slack/install';
 const callbackEndpoint = '/slack/callback';
@@ -14,7 +14,9 @@ const useSlackInstall = () => {
         httpGetClient<SlackResponse>(installEndpoint).then((response) => response.data);
 
     const installApp = (token: string) =>
-        httpPostClient<boolean>(callbackEndpoint, { code: token }).then((response) => response.status == 200);
+        httpPostClient<number>(callbackEndpoint, { code: token })
+            .then((response) => response.status)
+            .catch((reason) => reason.response.status);
 
     return {
         createInstallURI,
@@ -22,6 +24,4 @@ const useSlackInstall = () => {
     };
 };
 
-export {
-    useSlackInstall
-}
+export { useSlackInstall };

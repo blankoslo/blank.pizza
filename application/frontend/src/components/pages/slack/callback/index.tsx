@@ -19,9 +19,15 @@ export const Callback: React.FC = () => {
         const init = async () => {
             const code = query.get('code');
             if (code) {
-                const success = await installApp(code);
-                if (success) {
+                const status = await installApp(code);
+                if (status == 200) {
                     toast.success(t('install.successAlert'));
+                    navigate('/login');
+                } else if (status == 501) {
+                    toast.error(t('install.enterpriseInstallAlert'));
+                    navigate('/login');
+                } else {
+                    toast.error(t('install.genericErrorAlert'));
                     navigate('/login');
                 }
             }
