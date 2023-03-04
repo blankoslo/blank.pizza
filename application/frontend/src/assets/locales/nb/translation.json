@@ -8,12 +8,12 @@
     } 
   },
   "install": {
-    "button": "Installer",
+    "button": "Legg til Slack",
     "successAlert": "App installert"
   },
   "login": {
     "logo": "Pizzabot av",
-    "loginButton": "Logg Inn",
+    "loginButton": "Logg inn med Slack",
     "installButton": "Legg til PizzaBot?",
     "error": {
       "401": "Noe gikk galt. Er epostadressen din verifisert?",

@@ -8,12 +8,12 @@
     } 
   },
   "install": {
-    "button": "Install",
+    "button": "Add to Slack",
     "successAlert": "App installed"
   },
   "login": {
     "logo": "Pizzabot By",
-    "loginButton": "Login",
+    "loginButton": "Sign in with Slack",
     "installButton": "Add PizzaBot?",
     "error": {
       "401": "Something went wrong. Is your email verified?",
