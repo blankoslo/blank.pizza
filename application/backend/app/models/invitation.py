@@ -22,6 +22,40 @@ class Invitation(CrudMixin, db.Model):
   __table_args__ = (sa.ForeignKeyConstraint([slack_message_channel, slack_message_ts], ['slack_messages.channel_id', 'slack_messages.ts']), {})
 
   @classmethod
+  def get(cls, filters = None, order_by = None, page = None, per_page = None, team_id = None, session=db.session):
+    query = cls.query
+
+    if team_id:
+      query = query.filter(cls.slack_organization_id == team_id)
+
+    if filters is None:
+      filters = {}
+    # Add filters to the query
+    for attr, value in filters.items():
+      query = query.filter(getattr(cls, attr) == value)
+    # Add order by to the query
+    if (order_by):
+      query = query.order_by(order_by())
+    # If pagination is on, paginate the query
+    if (page and per_page):
+      pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+      return pagination.total, pagination.items
+
+    res = query.count(), query.all()
+    return res
+
+  @classmethod
+  def get_by_filter(cls, filters, team_id = None, session=db.session):
+    query = cls.query
+
+    if team_id:
+      query = query.filter(cls.slack_organization_id == team_id)
+
+    for attr, value in filters.items():
+      query = query.filter(getattr(cls, attr) == value)
+    return query.all()
+
+  @classmethod
   def get_by_id(cls, event_id, slack_id, session=db.session):
     return cls.query.get((event_id, slack_id))
 

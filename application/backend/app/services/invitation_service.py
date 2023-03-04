@@ -30,14 +30,17 @@ class InvitationService:
         )
         Invitation.upsert(invitation)
 
-    def get(self, filters, page, per_page):
-        return Invitation.get(filters = filters, page = page, per_page = per_page)
+    def get(self, filters, page, per_page, team_id):
+        return Invitation.get(filters = filters, page = page, per_page = per_page, team_id=team_id)
 
-    def get_by_filter(self, key, value):
-        return Invitation.get_by_filter({key: value})
+    def get_by_filter(self, key, value, team_id):
+        return Invitation.get_by_filter(filters={key: value}, team_id=team_id)
 
-    def get_by_id(self, event_id):
-        return Invitation.get_by_id(event_id)
+    def get_by_id(self, id, team_id):
+        invitation = Invitation.get_by_id(id)
+        if invitation.event.slack_organization_id != team_id:
+            return None
+        return invitation
 
     def get_unanswered_invitations_on_finished_events_and_set_not_attending(self):
         invitations = Invitation.get_unanswered_invitations_on_finished_events()
@@ -48,12 +51,15 @@ class InvitationService:
             )
         return invitations
 
-    def update_invitation_status(self, event_id, user_id, rsvp):
+    def update_invitation_status(self, event_id, user_id, rsvp, team_id):
         invitation = Invitation.get_by_id(event_id, user_id)
 
         # If invitation doesnt exist then we cant update it
         if invitation is None:
             self.logger.info("No invitation was found for user %s and event %s" % (user_id, event_id))
+            return None
+        if invitation.event.slack_organization_id != team_id:
+            self.logger.info("user %s tried to update invitation for event %s without being in the team" % (user_id, event_id))
             return None
 
         event = self.event_service.get_by_id(invitation.event_id)
