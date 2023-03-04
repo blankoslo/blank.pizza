@@ -35,7 +35,7 @@ class RestaurantsById(views.MethodView):
     def get(self, restaurant_id):
         """Get restaurant by ID"""
         restaurant_service = injector.get(RestaurantService)
-        restaurant = restaurant_service.get_by_id(restaurant_id=restaurant_id, team_id=current_user.slack_organization.team_id)
+        restaurant = restaurant_service.get_by_id(restaurant_id=restaurant_id, team_id=current_user.slack_organization_id)
         if restaurant is None:
             abort(404, message = "Restaurant not found.")
         return restaurant
@@ -46,7 +46,7 @@ class RestaurantsById(views.MethodView):
     def put(self, update_data, restaurant_id):
         """Update existing restaurant"""
         restaurant_service = injector.get(RestaurantService)
-        updated_restaurant = restaurant_service.update(restaurant_id=restaurant_id, data=update_data, team_id=current_user.slack_organization.team_id)
+        updated_restaurant = restaurant_service.update(restaurant_id=restaurant_id, data=update_data, team_id=current_user.slack_organization_id)
         if updated_restaurant is None:
             abort(422, message = "Restaurant not found.")
         return updated_restaurant
@@ -56,4 +56,4 @@ class RestaurantsById(views.MethodView):
     def delete(self, restaurant_id):
         """Delete restaurant"""
         restaurant_service = injector.get(RestaurantService)
-        restaurant_service.delete(restaurant_id=restaurant_id, team_id=current_user.slack_organization.team_id)
+        restaurant_service.delete(restaurant_id=restaurant_id, team_id=current_user.slack_organization_id)

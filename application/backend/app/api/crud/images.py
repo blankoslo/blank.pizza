@@ -19,7 +19,7 @@ class Images(views.MethodView):
         order = None
         if 'order' in args:
             order = args.pop('order')
-        total, images = image_service.get(filters=args, order_by=order, page=pagination_parameters.page, per_page=pagination_parameters.page_size, team_id=current_user.slack_organization.team_id)
+        total, images = image_service.get(filters=args, order_by=order, page=pagination_parameters.page, per_page=pagination_parameters.page_size, team_id=current_user.slack_organization_id)
         pagination_parameters.item_count = total
         return images
 
@@ -30,7 +30,7 @@ class ImagesById(views.MethodView):
     def get(self, image_id):
         """Get image by ID"""
         image_service = injector.get(ImageService)
-        image = image_service.get_by_id(image_id=image_id, team_id=current_user.slack_organization.team_id)
+        image = image_service.get_by_id(image_id=image_id, team_id=current_user.slack_organization_id)
         if image is None:
             abort(404, message = "Image not found.")
         return image
@@ -40,4 +40,4 @@ class ImagesById(views.MethodView):
     def delete(self, image_id):
         """Delete image"""
         image_service = injector.get(ImageService)
-        image_service.delete(image_id=image_id, team_id=current_user.slack_organization.team_id)
+        image_service.delete(image_id=image_id, team_id=current_user.slack_organization_id)

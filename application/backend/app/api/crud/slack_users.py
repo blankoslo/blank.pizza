@@ -16,7 +16,7 @@ class SlackUsers(views.MethodView):
     def get(self, args, pagination_parameters):
         """List slack_users"""
         slack_user_service = injector.get(SlackUserService)
-        total, slack_users = slack_user_service.get(filters=args, page=pagination_parameters.page, per_page=pagination_parameters.page_size, order_by_ascending=True, team_id=current_user.slack_organization.team_id)
+        total, slack_users = slack_user_service.get(filters=args, page=pagination_parameters.page, per_page=pagination_parameters.page_size, order_by_ascending=True, team_id=current_user.slack_organization_id)
         pagination_parameters.item_count = total
         return slack_users
 
@@ -27,7 +27,7 @@ class SlackUsersById(views.MethodView):
     def get(self, slack_user_id):
         """Get slack_user by ID"""
         slack_user_service = injector.get(SlackUserService)
-        slack_user = slack_user_service.get_by_id(slack_user_id=slack_user_id, team_id=current_user.slack_organization.team_id)
+        slack_user = slack_user_service.get_by_id(slack_user_id=slack_user_id, team_id=current_user.slack_organization_id)
         if slack_user is None:
             abort(404, message = "User not found.")
         return slack_user
@@ -38,7 +38,7 @@ class SlackUsersById(views.MethodView):
     def put(self, update_data, slack_user_id):
         """Update existing user"""
         slack_user_service = injector.get(SlackUserService)
-        updated_slack_user = slack_user_service.update(slack_user_id=slack_user_id, data=update_data, team_id=current_user.slack_organization.team_id)
+        updated_slack_user = slack_user_service.update(slack_user_id=slack_user_id, data=update_data, team_id=current_user.slack_organization_id)
         if updated_slack_user is None:
             abort(422, message = "User not found.")
         return updated_slack_user
