@@ -27,7 +27,6 @@ slack_app = App(
         client_id=client_id,
         client_secret=client_secret,
         state_store=FileOAuthStateStore(expiration_seconds=600),
-        #scopes=os.environ["SLACK_SCOPES"].split(","),
     ),
 )
 slack_handler = SocketModeHandler(slack_app, slack_app_token)
@@ -141,12 +140,6 @@ def handle_file_share(event, say, token, client):
                     slack_id=file['user'],
                     team_id=file['user_team'],
                     title=file['title'])
-
-# We don't use app mentions at the moment, but perhaps it'll be useful in the future
-@slack_app.event("app_mention")
-@request_time_monitor()
-def handle_mention_event(body):
-    pass
 
 # This only exists to make bolt not throw a warning that we dont handle the file_shared event
 # We dont use this as we use the message event with subtype file_shared as that one

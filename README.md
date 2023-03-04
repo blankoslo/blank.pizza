@@ -11,7 +11,7 @@
 8. Click `Event Subscriptions`
 9. Turn on `Enable Events`
 10. Open `Subscribe to bot events`
-11. Add the events `app_mention` `file_shared` `message.channels` `message.im`
+11. Add the events `file_shared` `message.channels` `message.im`
 12. Click `OAuth & Permissions` in the menu
 13. Go down to `Scopes` and click `Add an OAuth Scope` and add the scopes `chat:write` `im:write` `users:read` `users:read.email`
 14. Go to `App Home`

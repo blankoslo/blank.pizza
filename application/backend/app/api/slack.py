@@ -14,7 +14,6 @@ bp = Blueprint("slack", "slack", url_prefix="/slack", description="Slack OAUTH A
 class Slack(views.MethodView):
     def get(self):
         scopes = [
-            'app_mentions:read',
             'channels:history',
             'chat:write',
             'files:read',
