@@ -75,3 +75,30 @@ class BrokerInstallationStore(InstallationStore):
             token_type=None,
             installed_at=None,
         )
+
+    def delete_bot(
+            self,
+            *,
+            enterprise_id: Optional[str],
+            team_id: Optional[str],
+    ) -> None:
+        """Deletes a bot scope installation per workspace / org"""
+        self._delete_workspace(team_id=team_id, enterprise_id=enterprise_id)
+
+    def delete_installation(
+            self,
+            *,
+            enterprise_id: Optional[str],
+            team_id: Optional[str],
+            user_id: Optional[str] = None,
+    ) -> None:
+        """Deletes an installation that matches the given IDs"""
+        self._delete_workspace(team_id=team_id, enterprise_id=enterprise_id)
+
+    def _delete_workspace(self, team_id, enterprise_id):
+        client = injector.get(BrokerClient)
+        client.deleted_slack_organization_event(team_id=team_id, enterprise_id=enterprise_id)
+        client.disconnect()
+        self.storage.delete(team_id)
+
+

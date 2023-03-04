@@ -5,7 +5,7 @@ from app.services.injector import injector
 from flask import views, request, redirect, jsonify, current_app, Response
 from flask_smorest import Blueprint, abort
 from app.models.slack_organization_schema import SlackOrganizationSchema
-from app.models.slack_organization import SlackOrganization
+from app.services.slack_organization_service import SlackOrganizationService
 
 
 bp = Blueprint("slack", "slack", url_prefix="/slack", description="Slack OAUTH API")
@@ -35,6 +35,7 @@ class Slack(views.MethodView):
 class Slack(views.MethodView):
     def post(self):
         logger = injector.get(logging.Logger)
+        slack_organization_service = injector.get(SlackOrganizationService)
         url = "https://slack.com/api/oauth.v2.access"
 
         code = request.json.get('code')
@@ -70,6 +71,6 @@ class Slack(views.MethodView):
             'access_token': response['access_token']
         }
         slack_organization = schema.load(schema_data)
-        SlackOrganization.upsert(slack_organization)
+        slack_organization_service.upsert(slack_organization)
 
         return Response(status=200)

@@ -1,9 +1,8 @@
 import sqlalchemy as sa
 from app.db import db
-from app.models.mixins import get_field, CrudMixin
 
 
-class SlackOrganization(CrudMixin, db.Model):
+class SlackOrganization(db.Model):
     __tablename__ = "slack_organizations"
     team_id = sa.Column(sa.String, primary_key=True)
     team_name = sa.Column(sa.String, nullable=True)

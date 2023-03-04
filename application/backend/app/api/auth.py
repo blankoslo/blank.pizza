@@ -5,9 +5,10 @@ from flask import views, request, redirect, jsonify, current_app
 from flask_smorest import Blueprint, abort
 from app.models.user import User
 from app.models.user_schema import UserSchema
-from app.models.slack_organization import SlackOrganization
 from app.auth import auth
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from app.services.slack_organization_service import SlackOrganizationService
+from app.services.injector import injector
 
 bp = Blueprint("auth", "auth", url_prefix="/auth", description="Authentication")
 
@@ -98,6 +99,8 @@ class Auth(views.MethodView):
         userinfo_response_data = userinfo_response.json()
 
         if userinfo_response_data.get("email_verified"):
+            slack_organization_service = injector.get(SlackOrganizationService)
+
             data = {
               "id": userinfo_response_data["sub"],
               "email": userinfo_response_data["email"],
@@ -106,7 +109,7 @@ class Auth(views.MethodView):
               "slack_organization_id": userinfo_response_data['https://slack.com/team_id']
             }
 
-            slack_organization = SlackOrganization.get_by_id(data["slack_organization_id"])
+            slack_organization = slack_organization_service.get_by_id(data["slack_organization_id"])
             if slack_organization is None:
                 return abort(403, message = "slack team id not found as a registered workspace.")
 

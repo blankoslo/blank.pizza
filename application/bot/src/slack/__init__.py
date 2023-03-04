@@ -29,6 +29,9 @@ slack_app = App(
         state_store=FileOAuthStateStore(expiration_seconds=600),
     ),
 )
+# Enable delete_installation handling in the Installation store
+slack_app.enable_token_revocation_listeners()
+# Enable socket mode
 slack_handler = SocketModeHandler(slack_app, slack_app_token)
 
 def request_time_monitor(timeout=3000):

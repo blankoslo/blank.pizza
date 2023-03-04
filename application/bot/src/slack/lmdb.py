@@ -19,3 +19,10 @@ class LMDB:
             if value is not None:
                 value = value.decode('utf-8')
         return value
+
+    def delete(self, key):
+        with self.env.begin(write=True) as txn:
+            try:
+                txn.delete(key.encode('utf-8'))
+            except lmdb.NotFoundError:
+                print(f"Key {key} not found in database. Key was not cached")
