@@ -184,7 +184,7 @@ class BotApi:
         invitations = self.client.get_unanswered_invitations_on_finished_events_and_set_not_attending()
 
         for invitation in invitations:
-            slack_client = SlackApi(token = "TODO")
+            slack_client = SlackApi(token = invitation['bot_token'])
             # Update invitation message - remove buttons and tell user it expired
             if not 'invitation' in invitation:
                 continue
