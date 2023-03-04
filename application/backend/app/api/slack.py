@@ -24,7 +24,8 @@ class Slack(views.MethodView):
             'im:history',
             'im:write',
             'users:read',
-            'users:read.email'
+            'users:read.email',
+            'commands'
         ]
         frontend_base_url = os.environ.get("FRONTEND_URI").rstrip('/')
         callback_redirect_uri = f'{frontend_base_url}/slack/callback'

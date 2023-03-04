@@ -160,7 +160,7 @@ def handle_some_command(ack, body, say, context):
         else:
             ba.send_slack_message(
                 channel_id=channel_id,
-                text='Pizza kanal er nå satt til #%s' % channel_id,
+                text='Pizza kanal er nå satt til <#%s>' % channel_id,
                 slack_client=client
             )
     ack()
