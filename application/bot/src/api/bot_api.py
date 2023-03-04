@@ -293,19 +293,23 @@ class BotApi:
                 slack_client=slack_client
             )
 
-    def inform_users_unfinalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids):
+    def inform_users_unfinalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids, slack_client):
         self.logger.info("unfinalized event got updated")
-        slack_client = SlackApi(token = "TODO")
         for slack_id in slack_ids:
-            slack_client.send_slack_message(slack_id, "Halloi! Besøket til %s, %s har blit endret til %s, %s." % (old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+            slack_client.send_slack_message(
+                channel_id=slack_id,
+                text="Halloi! Besøket til %s, %s har blit endret til %s, %s." % (old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M"))
+            )
             self.logger.info("Informed user: %s" % slack_id)
 
-    def inform_users_finalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids):
-        slack_client = SlackApi(token = "TODO")
+    def inform_users_finalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids, slack_client):
         users = ['<@%s>' % user for user in slack_ids]
         ids_string = ", ".join(users)
         self.logger.info("finalized event got updated for users %s" % ", ".join(slack_ids))
-        slack_client.send_slack_message(self.pizza_channel_id, "Halloi! %s! Besøket til %s, %s har blit endret til %s, %s." % (ids_string, old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M")))
+        slack_client.send_slack_message(
+            channel_id=self.pizza_channel_id,
+            text="Halloi! %s! Besøket til %s, %s har blit endret til %s, %s." % (ids_string, old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M"))
+        )
 
     def send_slack_message(self, channel_id, text, slack_client, blocks=None, thread_ts=None):
         return slack_client.send_slack_message(channel_id=channel_id, text=text, blocks=blocks, thread_ts=thread_ts)

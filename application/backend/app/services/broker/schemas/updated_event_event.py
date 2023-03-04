@@ -8,3 +8,5 @@ class UpdatedEventEventSchema(Schema):
     old_restaurant_name = fields.Str(required=True)
     restaurant_name = fields.Str(required=True)
     slack_ids = fields.List(fields.Str(), required=True)
+    team_id = fields.Str(required=True)
+    bot_token = fields.Str(required=True)

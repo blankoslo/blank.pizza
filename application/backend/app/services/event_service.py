@@ -109,7 +109,9 @@ class EventService:
             'timestamp': event.time.isoformat(),
             'old_restaurant_name': old_restaurant_name,
             'restaurant_name': event.restaurant.name,
-            'slack_ids': attending_or_unanswered_users
+            'slack_ids': attending_or_unanswered_users,
+            'team_id': event.slack_organization_id,
+            'bot_token': event.slack_organization.access_token
         })
         BrokerService.publish("updated_event", queue_event)
 
