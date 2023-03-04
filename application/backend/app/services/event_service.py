@@ -3,7 +3,7 @@ import pytz
 from datetime import datetime
 
 from app.models.event import Event
-from app.models.invitation import Invitation
+from app.repositories.invitation_repository import InvitationRepository
 from app.models.event_schema import EventSchema
 from app.services.broker.schemas.deleted_event_event import DeletedEventEventSchema
 from app.services.broker.schemas.updated_event_event import UpdatedEventEventSchema
@@ -56,7 +56,7 @@ class EventService:
 
         # Has to be lazy loaded before we delete event
         restaurant = event.restaurant
-        invitations = Invitation.get_attending_or_unanswered_invitations(event.id)
+        invitations = InvitationRepository.get_attending_or_unanswered_invitations(event.id)
         slack_data = []
         for invitation in invitations:
             slack_data_entry = {
@@ -97,7 +97,7 @@ class EventService:
 
         updated_event = Event.update(event_id, data)
 
-        attending_or_unanswered_users = [invitation.slack_id for invitation in Invitation.get_attending_or_unanswered_invitations(event.id)]
+        attending_or_unanswered_users = [invitation.slack_id for invitation in InvitationRepository.get_attending_or_unanswered_invitations(event.id)]
         queue_event_schema = UpdatedEventEventSchema()
         queue_event = queue_event_schema.load({
             'is_finalized': event.finalized,

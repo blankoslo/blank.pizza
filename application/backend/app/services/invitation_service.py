@@ -2,9 +2,8 @@ import pytz
 import logging
 from datetime import datetime
 
-from app.models.invitation import Invitation
+from app.repositories.invitation_repository import InvitationRepository
 from app.models.slack_message_schema import SlackMessageSchema
-from app.models.slack_message import SlackMessage
 from app.models.enums import RSVP
 
 from app.services.event_service import EventService
@@ -28,22 +27,22 @@ class InvitationService:
             data={"event_id": event_id, "slack_id": user_id},
             partial=True
         )
-        Invitation.upsert(invitation)
+        InvitationRepository.upsert(invitation)
 
     def get(self, filters, page, per_page, team_id):
-        return Invitation.get(filters = filters, page = page, per_page = per_page, team_id=team_id)
+        return InvitationRepository.get(filters = filters, page = page, per_page = per_page, team_id=team_id)
 
     def get_by_filter(self, key, value, team_id = None):
-        return Invitation.get_by_filter(filters={key: value}, team_id=team_id)
+        return InvitationRepository.get_by_filter(filters={key: value}, team_id=team_id)
 
     def get_by_id(self, id, team_id):
-        invitation = Invitation.get_by_id(id)
+        invitation = InvitationRepository.get_by_id(id)
         if invitation.event.slack_organization_id != team_id:
             return None
         return invitation
 
     def get_unanswered_invitations_on_finished_events_and_set_not_attending(self):
-        invitations = Invitation.get_unanswered_invitations_on_finished_events()
+        invitations = InvitationRepository.get_unanswered_invitations_on_finished_events()
         for invitation in invitations:
             self._update_invitation(
                 {'rsvp': RSVP.not_attending},
@@ -52,7 +51,7 @@ class InvitationService:
         return invitations
 
     def update_invitation_status(self, event_id, user_id, rsvp, team_id):
-        invitation = Invitation.get_by_id(event_id, user_id)
+        invitation = InvitationRepository.get_by_id(event_id, user_id)
 
         # If invitation doesnt exist then we cant update it
         if invitation is None:
@@ -103,7 +102,7 @@ class InvitationService:
             return None
 
     def update_reminded_at(self, event_id, slack_id, date):
-        invitation = Invitation.get_by_id(event_id, slack_id)
+        invitation = InvitationRepository.get_by_id(event_id, slack_id)
 
         if invitation is None:
             return None
@@ -117,7 +116,7 @@ class InvitationService:
             return None
 
     def update_slack_message(self, event_id, slack_id, ts, channel_id):
-        invitation = Invitation.get_by_id(event_id, slack_id)
+        invitation = InvitationRepository.get_by_id(event_id, slack_id)
 
         if invitation is None:
             return None
@@ -129,7 +128,7 @@ class InvitationService:
                 'channel_id': channel_id
             })
 
-            return Invitation.add_message(message, invitation)
+            return InvitationRepository.add_message(message, invitation)
         except:
             return None
 
@@ -138,7 +137,7 @@ class InvitationService:
         updated_invitation = self._update_invitation({'rsvp': rsvp}, invitation)
         if event.finalized:
             restaurant = self.restaurant_service.get_by_id(event.restaurant_id)
-            attending_users = [user[0] for user in Invitation.get_attending_users(event.id)]
+            attending_users = [user[0] for user in InvitationRepository.get_attending_users(event.id)]
             # Publish event that user withdrew after finalization
             queue_event_schema = UserWithdrewAfterFinalizationEventSchema()
             queue_event = queue_event_schema.load({
@@ -184,7 +183,7 @@ class InvitationService:
                 'event_id': event.id,
                 'timestamp': event.time.isoformat(),
                 'restaurant_name': restaurant.name,
-                'slack_ids': [user[0] for user in Invitation.get_attending_users(event.id)],
+                'slack_ids': [user[0] for user in InvitationRepository.get_attending_users(event.id)],
                 'team_id': event.slack_organization.team_id,
                 'bot_token': event.slack_organization.access_token
             })
@@ -193,5 +192,5 @@ class InvitationService:
 
     def _update_invitation(self, update_data, invitation):
         updated_invitation = InvitationSchema().load(data=update_data, instance=invitation, partial=True)
-        Invitation.upsert(updated_invitation)
+        InvitationRepository.upsert(updated_invitation)
         return updated_invitation
