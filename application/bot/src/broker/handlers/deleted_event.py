@@ -13,6 +13,7 @@ def deleted_event(event: dict):
                 time=event['timestamp'],
                 restaurant_name=event['restaurant_name'],
                 slack_data=event['slack'],
+                channel_id=event['channel_id'],
                 slack_client=slack_client
             )
         else:

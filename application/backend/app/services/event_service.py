@@ -80,7 +80,8 @@ class EventService:
             'restaurant_name': restaurant.name,
             'slack': slack_data,
             'team_id': slack_organization.team_id,
-            'bot_token': slack_organization.access_token
+            'bot_token': slack_organization.access_token,
+            'channel_id': slack_organization.channel_id
         })
         BrokerService.publish("deleted_event", queue_event)
         return True
