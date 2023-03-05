@@ -15,35 +15,43 @@ class SlackApi:
         self.logger = injector.get(logging.Logger)
 
     def get_slack_users(self):
-        return self.client.api_call(
-            api_method="users.list"
-        )['members']
+        first_page = self.client.users_list()
+
+        if not first_page["ok"]:
+            self.logger(first_page["error"])
+            return []
+
+        members = first_page["members"]
+
+        # Continue to loop over pages to find the default channel
+        next_cursor = first_page["response_metadata"]["next_cursor"]
+        while next_cursor != "":
+            page = self.client.conversations_list(cursor=next_cursor)
+            next_cursor = page["response_metadata"]["next_cursor"]
+
+            members = members.extend(page["members"])
+
+        return members
 
     def get_real_users(self, all_users):
         return [u for u in all_users if not u['deleted'] and not u['is_bot'] and not u['is_restricted'] and not u['name'] == "slackbot"] # type : list
 
     def send_slack_message(self, channel_id, text=None, blocks=None, thread_ts=None):
-        return self.client.api_call(
-            api_method="chat.postMessage",
-            params={
-                "channel": channel_id,
-                "as_user": True,
-                "blocks": blocks,
-                "thread_ts": thread_ts,
-                "text": text,
-            }
+        return self.client.chat_postMessage(
+            channel=channel_id,
+            as_user=True,
+            blocks=blocks,
+            thread_ts=thread_ts,
+            text=text
         )
 
     def update_slack_message(self, channel_id, ts, text=None, blocks=None):
-        return self.client.api_call(
-            api_method="chat.update",
-            params={
-                "channel": channel_id,
-                "as_user": True,
-                "text": text,
-                "blocks": blocks,
-                "ts": ts
-            }
+        return self.client.chat_update(
+            channel=channel_id,
+            as_user=True,
+            text=text,
+            blocks=blocks,
+            ts=ts
         )
 
     def get_slack_message(self, channel_id, ts):
