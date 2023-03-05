@@ -42,26 +42,24 @@ variable "PRODUCTION_SECRET_KEY_BACKEND" {
 }
 
 # ************* STAGING ************* #
-/*variable "STAGING_SLACK_BOT_TOKEN" {
-  type = string
-}
-
+/*
 variable "STAGING_SLACK_APP_TOKEN" {
   type = string
 }
 
-variable "STAGING_PIZZA_CHANNEL_ID" {
+variable "STAGING_SLACK_CLIENT_ID" {
+  type = string
+}
+
+variable "STAGING_SLACK_CLIENT_SECRET" {
+  type = string
+}
+
+variable "STAGING_SLACK_SIGNING_SECRET" {
   type = string
 }
 
 variable "STAGING_SECRET_KEY_BACKEND" {
   type = string
 }
-
-variable "STAGING_GOOGLE_CLIENT_ID" {
-  type = string
-}
-
-variable "STAGING_GOOGLE_CLIENT_SECRET" {
-  type = string
-}*/
+*/
