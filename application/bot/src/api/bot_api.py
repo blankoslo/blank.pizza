@@ -342,12 +342,12 @@ class BotApi:
             )
             self.logger.info("Informed user: %s" % slack_id)
 
-    def inform_users_finalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids, slack_client):
+    def inform_users_finalized_event_got_updated(self, old_time, time, old_restaurant_name, restaurant_name, slack_ids, channel_id, slack_client):
         users = ['<@%s>' % user for user in slack_ids]
         ids_string = ", ".join(users)
         self.logger.info("finalized event got updated for users %s" % ", ".join(slack_ids))
         slack_client.send_slack_message(
-            channel_id=self.pizza_channel_id,
+            channel_id=channel_id,
             text="Halloi! %s! Besøket til %s, %s har blit endret til %s, %s." % (ids_string, old_restaurant_name, old_time.strftime("%A %d. %B kl %H:%M"), restaurant_name, time.strftime("%A %d. %B kl %H:%M"))
         )
 

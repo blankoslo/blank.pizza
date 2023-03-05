@@ -112,7 +112,8 @@ class EventService:
             'restaurant_name': event.restaurant.name,
             'slack_ids': attending_or_unanswered_users,
             'team_id': event.slack_organization_id,
-            'bot_token': event.slack_organization.access_token
+            'bot_token': event.slack_organization.access_token,
+            'channel_id': event.slack_organization.channel_id
         })
         BrokerService.publish("updated_event", queue_event)
 

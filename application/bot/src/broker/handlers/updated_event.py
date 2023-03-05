@@ -15,6 +15,7 @@ def updated_event(event: dict):
                 old_restaurant_name=event['old_restaurant_name'],
                 restaurant_name=event['restaurant_name'],
                 slack_ids=event['slack_ids'],
+                channel_id=event['channel_id'],
                 slack_client=slack_client
             )
         else:
