@@ -45,7 +45,7 @@ class BotApi:
                 slack_client=slack_client
             )
 
-    def join_channel(self, slack_client, team_id, channel_id = None):
+    def join_channel(self, slack_client, team_id, channel_id=None):
         # Get default channel if non is given
         if channel_id is None:
             default_channel = slack_client.get_default_channel()
@@ -56,18 +56,25 @@ class BotApi:
             self.logger.error("Was unable to find channel")
             return None
 
-        success = slack_client.join_channel(channel_id)
-
+        # Join channel
+        join_success = slack_client.join_channel(channel_id)
         # If we were unable to join the channel
-        if not success:
-            self.logger.error("Was unable to join channel", channel_id)
+        if not join_success:
+            self.logger.error("Was unable to join channel %s", channel_id)
             return
 
         # Send a rpc message to set the channel
-        success = self.client.set_slack_channel(channel_id=channel_id, team_id=team_id)
+        set_channel_response = self.client.set_slack_channel(channel_id=channel_id, team_id=team_id)
 
-        if not success:
+        if not set_channel_response['success']:
             return None
+
+        # Leave channel
+        if set_channel_response['old_channel_id'] is not None:
+            leave_success = slack_client.leave_channel(set_channel_response['old_channel_id'])
+            # If we were unable to leave the channel, we dont exit function as it isnt critical to leave
+            if not leave_success:
+                self.logger.error("Was unable to leave channel %s", channel_id)
 
         # return channel
         return channel_id

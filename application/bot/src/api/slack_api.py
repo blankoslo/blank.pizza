@@ -96,7 +96,18 @@ class SlackApi:
 
     def join_channel(self, channel_id):
         try:
-            self.client.conversations_join(channel=channel_id)
+            res = self.client.conversations_join(channel=channel_id)
+            if not res["ok"]:
+                raise Exception(res["error"])
+        except:
+            return False
+        return True
+
+    def leave_channel(self, channel_id):
+        try:
+            res = self.client.conversations_leave(channel=channel_id)
+            if not res["ok"]:
+                raise Exception(res["error"])
         except:
             return False
         return True

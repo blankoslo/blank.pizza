@@ -16,5 +16,6 @@ class SlackOrganizationService:
 
     def set_channel(self, team_id, channel_id):
         slack_organization = SlackOrganizationRepository.get_by_id(id=team_id)
+        old_channel_id = slack_organization.channel_id
         slack_organization.channel_id = channel_id
-        return SlackOrganizationRepository.upsert(schema=slack_organization)
+        return old_channel_id, SlackOrganizationRepository.upsert(schema=slack_organization)

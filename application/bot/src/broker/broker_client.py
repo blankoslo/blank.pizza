@@ -97,7 +97,7 @@ class BrokerClient:
             return False
         response_schema = SetSlackChannelResponseSchema()
         response = response_schema.load(response_payload)
-        return response['success']
+        return response
 
     def get_slack_installation(self, team_id: str):
         request_payload = {

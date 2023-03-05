@@ -102,12 +102,13 @@ def set_slack_channel(request: dict):
     team_id = request.get('team_id')
     channel_id = request.get('channel_id')
 
-    response = True
+    success = True
+    old_channel_id = None
     try:
-        slack_organization_service.set_channel(team_id=team_id, channel_id=channel_id)
+        old_channel_id, slack_organization = slack_organization_service.set_channel(team_id=team_id, channel_id=channel_id)
     except Exception as e:
         logger.error(e)
-        response = False
+        success = False
 
-    return {'success': response}
+    return {'success': success, 'old_channel_id': old_channel_id}
 
