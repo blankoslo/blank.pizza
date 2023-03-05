@@ -20,8 +20,29 @@ variable "heroku_team_name" {
   type = string
 }
 
+# ************* PRODUCTION ************* #
+variable "PRODUCTION_SLACK_APP_TOKEN" {
+  type = string
+}
+
+variable "PRODUCTION_SLACK_CLIENT_ID" {
+  type = string
+}
+
+variable "PRODUCTION_SLACK_CLIENT_SECRET" {
+  type = string
+}
+
+variable "PRODUCTION_SLACK_SIGNING_SECRET" {
+  type = string
+}
+
+variable "PRODUCTION_SECRET_KEY_BACKEND" {
+  type = string
+}
+
 # ************* STAGING ************* #
-variable "STAGING_SLACK_BOT_TOKEN" {
+/*variable "STAGING_SLACK_BOT_TOKEN" {
   type = string
 }
 
@@ -43,29 +64,4 @@ variable "STAGING_GOOGLE_CLIENT_ID" {
 
 variable "STAGING_GOOGLE_CLIENT_SECRET" {
   type = string
-}
-
-# ************* PRODUCTION ************* #
-variable "PRODUCTION_SLACK_BOT_TOKEN" {
-  type = string
-}
-
-variable "PRODUCTION_SLACK_APP_TOKEN" {
-  type = string
-}
-
-variable "PRODUCTION_PIZZA_CHANNEL_ID" {
-  type = string
-}
-
-variable "PRODUCTION_SECRET_KEY_BACKEND" {
-  type = string
-}
-
-variable "PRODUCTION_GOOGLE_CLIENT_ID" {
-  type = string
-}
-
-variable "PRODUCTION_GOOGLE_CLIENT_SECRET" {
-  type = string
-}
+}*/

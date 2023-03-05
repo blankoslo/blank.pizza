@@ -46,27 +46,23 @@ variable "HOURS_BETWEEN_REMINDERS" {
   type = number
 }
 
-variable "SLACK_BOT_TOKEN" {
-  type = string
-}
-
 variable "SLACK_APP_TOKEN" {
   type = string
 }
 
-variable "PIZZA_CHANNEL_ID" {
+variable "SLACK_CLIENT_ID" {
+  type = string
+}
+
+variable "SLACK_CLIENT_SECRET" {
+  type = string
+}
+
+variable "SLACK_SIGNING_SECRET" {
   type = string
 }
 
 variable "SECRET_KEY_BACKEND" {
-  type = string
-}
-
-variable "GOOGLE_CLIENT_ID" {
-  type = string
-}
-
-variable "GOOGLE_CLIENT_SECRET" {
   type = string
 }
 
