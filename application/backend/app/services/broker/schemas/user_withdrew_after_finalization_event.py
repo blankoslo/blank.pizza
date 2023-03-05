@@ -7,3 +7,4 @@ class UserWithdrewAfterFinalizationEventSchema(Schema):
     restaurant_name = fields.Str(required=True)
     team_id = fields.Str(required=True)
     bot_token = fields.Str(required=True)
+    channel_id = fields.Str(required=True)

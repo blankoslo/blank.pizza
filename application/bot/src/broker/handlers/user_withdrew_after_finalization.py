@@ -12,5 +12,6 @@ def withdraw_invitation(event: dict):
             user_id=event['slack_id'],
             timestamp=event['timestamp'],
             restaurant_name=event['restaurant_name'],
+            channel_id=event['channel_id'],
             slack_client=slack_client
         )

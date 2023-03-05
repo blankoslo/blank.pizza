@@ -175,11 +175,11 @@ class BotApi:
         # Invite more users for the event
         self.invite_multiple_if_needed()
 
-    def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name, slack_client):
+    def send_user_withdrew_after_finalization(self, user_id, timestamp, restaurant_name, channel_id, slack_client):
         self.logger.info("User %s withdrew from event %s %s", user_id, timestamp, restaurant_name)
         # Send message that the user withdrew
         slack_client.send_slack_message(
-            channel_id=self.pizza_channel_id,
+            channel_id=channel_id,
             text="Halloi! <@%s> meldte seg nettopp av besøket til %s %s." % (user_id, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"))
         )
         # Invite more users for the event
