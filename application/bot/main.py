@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import os
 import locale
 import threading
 import pytz
@@ -17,8 +14,6 @@ from src.injector import injector, singleton
 from src.broker.amqp_connection import AmqpConnection
 from src.broker.amqp_connection_pool import AmqpConnectionPool
 from src.broker.handlers import on_message
-
-pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
 
 def setup_logger():
     logger = logging.getLogger(__name__)
@@ -46,7 +41,7 @@ def setup_consumption_queue_listener():
 
 def main():
     # Set up injector
-    api_config = BotApiConfiguration(pizza_channel_id, pytz.timezone('Europe/Oslo'))
+    api_config = BotApiConfiguration(pytz.timezone('Europe/Oslo'))
     injector.binder.bind(BotApiConfiguration, to=api_config)
 
     # Set up logging

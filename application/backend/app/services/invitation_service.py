@@ -50,14 +50,14 @@ class InvitationService:
             )
         return invitations
 
-    def update_invitation_status(self, event_id, user_id, rsvp, team_id):
+    def update_invitation_status(self, event_id, user_id, rsvp, team_id=None):
         invitation = InvitationRepository.get_by_id(event_id, user_id)
 
         # If invitation doesnt exist then we cant update it
         if invitation is None:
             self.logger.info("No invitation was found for user %s and event %s" % (user_id, event_id))
             return None
-        if invitation.event.slack_organization_id != team_id:
+        if team_id is not None and invitation.event.slack_organization_id != team_id:
             self.logger.info("user %s tried to update invitation for event %s without being in the team" % (user_id, event_id))
             return None
 
@@ -162,7 +162,8 @@ class InvitationService:
                 'restaurant_name': restaurant.name,
                 'slack_ids': attending_users,
                 'team_id': event.slack_organization.team_id,
-                'bot_token': event.slack_organization.access_token
+                'bot_token': event.slack_organization.access_token,
+                'channel_id': event.slack_organization.channel_id
             })
             BrokerService.publish("finalization", queue_event)
         return updated_invitation
@@ -189,7 +190,8 @@ class InvitationService:
                 'restaurant_name': restaurant.name,
                 'slack_ids': [user[0] for user in InvitationRepository.get_attending_users(event.id)],
                 'team_id': event.slack_organization.team_id,
-                'bot_token': event.slack_organization.access_token
+                'bot_token': event.slack_organization.access_token,
+                'channel_id': event.slack_organization.channel_id
             })
             BrokerService.publish("finalization", queue_event)
         return updated_invitation

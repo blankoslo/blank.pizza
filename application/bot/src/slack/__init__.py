@@ -14,7 +14,6 @@ from src.injector import injector
 from src.slack.installation_store import BrokerInstallationStore
 from src.api.slack_api import SlackApi
 
-pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
 slack_signing_secret = os.environ["SLACK_SIGNING_SECRET"]
 client_id = os.environ["SLACK_CLIENT_ID"],
 client_secret = os.environ["SLACK_CLIENT_SECRET"],

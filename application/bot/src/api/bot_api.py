@@ -12,8 +12,7 @@ from src.injector import injector
 import logging
 
 class BotApiConfiguration:
-    def __init__(self, pizza_channel_id, timezone):
-        self.pizza_channel_id = pizza_channel_id
+    def __init__(self, timezone):
         self.timezone = timezone
 
 class BotApi:
@@ -21,7 +20,6 @@ class BotApi:
     def __init__(self, config: BotApiConfiguration, logger: logging.Logger):
         self.REPLY_DEADLINE_IN_HOURS = int(os.environ["REPLY_DEADLINE_IN_HOURS"])
         self.HOURS_BETWEEN_REMINDERS = int(os.environ["HOURS_BETWEEN_REMINDERS"])
-        self.pizza_channel_id = config.pizza_channel_id
         self.timezone = config.timezone
         self.logger = logger
 
@@ -145,7 +143,7 @@ class BotApi:
                 else:
                     self.logger.warning("failed to update invitation")
 
-    def send_event_finalized(self, timestamp, restaurant_name, slack_ids, slack_client):
+    def send_event_finalized(self, timestamp, restaurant_name, slack_ids, channel_id, slack_client):
         self.logger.info("Finalizing event %s %s", timestamp, restaurant_name)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
@@ -158,11 +156,11 @@ class BotApi:
         payer = users[1] if len(users) > 1 else users[0]
         # Send the finalization Slack message
         slack_client.send_slack_message(
-            channel_id=self.pizza_channel_id,
+            channel_id=channel_id,
             text="Halloi! %s! Dere skal spise 🍕 på %s, %s. %s booker bord, og %s legger ut for maten. Blank betaler!" % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"), booker, payer)
         )
 
-    def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids, slack_client):
+    def send_event_unfinalized(self, timestamp, restaurant_name, slack_ids, channel_id, slack_client):
         self.logger.info("Unfinalizing event %s %s", timestamp, restaurant_name)
         # Convert timestamp to Norwegian timestamp
         timestamp = pytz.utc.localize(timestamp.replace(tzinfo=None), is_dst=None).astimezone(self.timezone)
@@ -171,7 +169,7 @@ class BotApi:
         ids_string = ", ".join(users)
         # Send message that the event unfinalized
         slack_client.send_slack_message(
-            channel_id=self.pizza_channel_id,
+            channel_id=channel_id,
             text="Halloi! %s! Hvis den som meldte seg av besøket til  %s  %s skulle betale eller booke så må nesten en av dere andre sørge for det. I mellomtiden letes det etter en erstatter." % (ids_string, restaurant_name, timestamp.strftime("%A %d. %B kl %H:%M"))
         )
         # Invite more users for the event
