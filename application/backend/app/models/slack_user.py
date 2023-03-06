@@ -53,6 +53,7 @@ class SlackUser(CrudMixin, db.Model):
         number_of_events_regarded = math.ceil(total_number_of_employees / employees_per_event)
 
         AliasInvitation = aliased(Invitation)
+        AliasEvent = aliased(Event)
 
         subquery_join = session.query(Event.id) \
             .filter(
@@ -70,6 +71,8 @@ class SlackUser(CrudMixin, db.Model):
                     AliasInvitation.slack_id == cls.slack_id
                 )
             )
+        subquery_organization = session.query(Event.slack_organization_id) \
+            .filter(Event.id == event_id)
 
         query = session.query(cls.slack_id) \
             .join(
@@ -83,10 +86,13 @@ class SlackUser(CrudMixin, db.Model):
                 ),
                 isouter = True
             ) \
-            .filter(
+            .filter(  # Filter out those we're already invited and those who arent active, and only those in the organization of the event
                 sa.and_(
-                    ~subquery_filter.exists(),
-                    cls.active == True
+                    cls.slack_organization_id == subquery_organization.scalar_subquery(),
+                    sa.and_(
+                        ~subquery_filter.exists(),
+                        cls.active == True
+                    )
                 )
             ) \
             .group_by(cls.slack_id) \
