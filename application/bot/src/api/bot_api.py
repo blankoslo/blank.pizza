@@ -365,6 +365,7 @@ class BotApi:
         return slack_client.update_slack_message(channel_id, ts, text, blocks)
 
     def send_pizza_invite(self, channel_id, event_id, place, datetime, deadline, slack_client):
+        top_level_title_text = f"Pizzainvitasjon: {place}, {datetime}"
         blocks = [
             {
                 "type": "header",
@@ -407,7 +408,7 @@ class BotApi:
                 ]
             }
         ]
-        return slack_client.send_slack_message(channel_id=channel_id, blocks=blocks)
+        return slack_client.send_slack_message(channel_id=channel_id, text=top_level_title_text, blocks=blocks)
 
     def clean_blocks(self, blocks):
         for block in blocks:
