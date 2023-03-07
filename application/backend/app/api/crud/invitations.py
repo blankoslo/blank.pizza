@@ -1,7 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
 from flask_jwt_extended import jwt_required, current_user
-from app.models.invitation_schema import InvitationSchema, InvitationResponseSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
+from app.models.invitation_schema import InvitationResponseSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
 from app.services.injector import injector
 from app.services.invitation_service import InvitationService
 
