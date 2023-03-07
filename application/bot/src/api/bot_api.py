@@ -32,6 +32,7 @@ class BotApi:
 
     def welcome(self, slack_client, team_id):
         channel_id = self.join_channel(slack_client=slack_client, team_id=team_id)
+        print(channel_id)
         if channel_id is None:
             self.send_slack_message(
                 channel_id=channel_id,
@@ -69,8 +70,9 @@ class BotApi:
         if not set_channel_response['success']:
             return None
 
-        # Leave channel
-        if set_channel_response['old_channel_id'] is not None:
+        # Leave channel if old and new channel isnt the same
+        # they can be the same if someone reinstall the app
+        if 'old_channel_id' in set_channel_response and channel_id != set_channel_response['old_channel_id']:
             leave_success = slack_client.leave_channel(set_channel_response['old_channel_id'])
             # If we were unable to leave the channel, we dont exit function as it isnt critical to leave
             if not leave_success:

@@ -110,5 +110,9 @@ def set_slack_channel(request: dict):
         logger.error(e)
         success = False
 
-    return {'success': success, 'old_channel_id': old_channel_id}
+    response = {'success': success}
+    if old_channel_id is not None:
+        response['old_channel_id'] = old_channel_id
+
+    return response
 

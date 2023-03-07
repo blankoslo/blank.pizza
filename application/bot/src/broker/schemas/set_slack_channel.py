@@ -8,4 +8,4 @@ class SetSlackChannelRequestSchema(Schema):
 
 class SetSlackChannelResponseSchema(Schema):
     success = fields.Boolean(required=True)
-    old_channel_id = fields.Str(required=True)
+    old_channel_id = fields.Str()
