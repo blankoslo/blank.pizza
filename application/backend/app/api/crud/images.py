@@ -1,6 +1,6 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.image_schema import ImageSchema, ImageQueryArgsSchema
+from app.models.image_schema import ImageResponseSchema, ImageQueryArgsSchema
 from flask_jwt_extended import jwt_required, current_user
 from app.services.injector import injector
 from app.services.image_service import ImageService
@@ -10,7 +10,7 @@ bp = Blueprint("images", "images", url_prefix="/images", description="Operations
 @bp.route("/")
 class Images(views.MethodView):
     @bp.arguments(ImageQueryArgsSchema, location="query")
-    @bp.response(200, ImageSchema(many=True))
+    @bp.response(200, ImageResponseSchema(many=True))
     @bp.paginate()
     @jwt_required()
     def get(self, args, pagination_parameters):
@@ -25,7 +25,7 @@ class Images(views.MethodView):
 
 @bp.route("/<image_id>")
 class ImagesById(views.MethodView):
-    @bp.response(200, ImageSchema)
+    @bp.response(200, ImageResponseSchema)
     @jwt_required()
     def get(self, image_id):
         """Get image by ID"""

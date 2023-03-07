@@ -22,12 +22,19 @@ class SlackUserSchema(SQLAlchemySchema):
     slack_organization_id = auto_field()
     slack_organization = fields.Nested(SlackOrganizationSchema, dump_only=True)
 
+
+class SlackUserResponseSchema(SlackUserSchema):
+    class Meta(SlackUserSchema.Meta):
+        exclude = ("slack_organization", "slack_organization_id")
+
+
 class SlackUserUpdateSchema(SQLAlchemySchema):
     class Meta(SlackUserSchema.Meta):
         load_instance = False
 
     priority = auto_field()
     active = auto_field()
+
 
 class SlackUserQueryArgsSchema(Schema):
     current_username = get_field(SlackUserSchema, SlackUser.current_username)

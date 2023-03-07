@@ -1,16 +1,17 @@
 from flask import views
 from flask_smorest import Blueprint, abort
-from app.models.event_schema import EventSchema, EventQueryArgsSchema, EventUpdateSchema
+from app.models.event_schema import EventCreateSchema, EventResponseSchema, EventQueryArgsSchema, EventUpdateSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity, current_user
 from app.services.injector import injector
 from app.services.event_service import EventService
+import json
 
 bp = Blueprint("events", "events", url_prefix="/events", description="Operations on events")
 
 @bp.route("/")
 class Events(views.MethodView):
     @bp.arguments(EventQueryArgsSchema, location="query")
-    @bp.response(200, EventSchema(many=True))
+    @bp.response(200, EventResponseSchema(many=True))
     @bp.paginate()
     @jwt_required()
     def get(self, args, pagination_parameters):
@@ -20,18 +21,19 @@ class Events(views.MethodView):
         pagination_parameters.item_count = total
         return events
 
-    @bp.arguments(EventSchema)
-    @bp.response(201, EventSchema)
+    @bp.arguments(EventCreateSchema)
+    @bp.response(201, EventResponseSchema)
     @jwt_required()
     def post(self, new_data):
         """Add an event"""
         event_service = injector.get(EventService)
+        print(vars(new_data))
         new_event = event_service.add(data=new_data, team_id=current_user.slack_organization_id)
         return new_event
 
 @bp.route("/<event_id>")
 class EventsById(views.MethodView):
-    @bp.response(200, EventSchema)
+    @bp.response(200, EventResponseSchema)
     @jwt_required()
     def get(self, event_id):
         """Get event by ID"""
@@ -42,7 +44,7 @@ class EventsById(views.MethodView):
         return event
 
     @bp.arguments(EventUpdateSchema)
-    @bp.response(200, EventSchema)
+    @bp.response(200, EventResponseSchema)
     @jwt_required()
     def patch(self, update_data, event_id):
         """Update event by ID"""

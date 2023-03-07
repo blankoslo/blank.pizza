@@ -1,7 +1,7 @@
 from flask import views
 from flask_smorest import Blueprint, abort
 from flask_jwt_extended import jwt_required, current_user
-from app.models.invitation_schema import InvitationSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
+from app.models.invitation_schema import InvitationSchema, InvitationResponseSchema, InvitationUpdateSchema, InvitationQueryArgsSchema
 from app.services.injector import injector
 from app.services.invitation_service import InvitationService
 
@@ -10,7 +10,7 @@ bp = Blueprint("invitations", "invitations", url_prefix="/invitations", descript
 @bp.route("/")
 class Invitations(views.MethodView):
     @bp.arguments(InvitationQueryArgsSchema, location="query")
-    @bp.response(200, InvitationSchema(many=True))
+    @bp.response(200, InvitationResponseSchema(many=True))
     @bp.paginate()
     @jwt_required()
     def get(self, args, pagination_parameters):
@@ -22,7 +22,7 @@ class Invitations(views.MethodView):
 
 @bp.route("/<event_id>")
 class InvitationsById(views.MethodView):
-    @bp.response(200, InvitationSchema(many=True))
+    @bp.response(200, InvitationResponseSchema(many=True))
     @jwt_required()
     def get(self, event_id):
         """Get invitation by ID"""
@@ -31,7 +31,7 @@ class InvitationsById(views.MethodView):
 
 @bp.route("/<event_id>/<user_id>")
 class InvitationsById(views.MethodView):
-    @bp.response(200, InvitationSchema)
+    @bp.response(200, InvitationResponseSchema)
     @jwt_required()
     def get(self, event_id, user_id):
         """Get invitation by ID"""
@@ -42,7 +42,7 @@ class InvitationsById(views.MethodView):
         return invitation
     
     @bp.arguments(InvitationUpdateSchema)
-    @bp.response(200, InvitationSchema)
+    @bp.response(200, InvitationResponseSchema)
     @jwt_required()
     def put(self, update_data, event_id, user_id):
         """Update existing invitation"""

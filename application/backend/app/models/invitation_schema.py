@@ -3,7 +3,7 @@ from app.models.mixins import get_field, CrudMixin
 from app.models.enums import RSVP
 from marshmallow_enum import EnumField
 from app.models.event_schema import EventSchema
-from app.models.slack_user_schema import SlackUserSchema
+from app.models.slack_user_schema import SlackUserSchema, SlackUserResponseSchema
 from app.models.invitation import Invitation
 from app.models.slack_message_schema import SlackMessageSchema
 
@@ -28,11 +28,25 @@ class InvitationSchema(SQLAlchemySchema):
     slack_message_ts = auto_field()
     slack_message = fields.Nested(SlackMessageSchema, dump_only=True)
 
+
+class InvitationResponseSchema(InvitationSchema):
+    class Meta(InvitationSchema.Meta):
+        exclude = (
+            "slack_message_channel",
+            "slack_message_ts",
+            "slack_message",
+            "event",
+        )
+
+    slack_user = fields.Nested(SlackUserResponseSchema, dump_only=True)
+
+
 class InvitationUpdateSchema(SQLAlchemySchema):
     class Meta(InvitationSchema.Meta):
         load_instance = False
 
     rsvp = get_field(InvitationSchema, Invitation.rsvp)
+
 
 class InvitationQueryArgsSchema(Schema):
     event_id = get_field(InvitationSchema, Invitation.event_id)
