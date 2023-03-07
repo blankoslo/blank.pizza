@@ -15,9 +15,9 @@ module "production" {
   hostname = "bot.blank.pizza"
   prefix = var.prefix
   environment = "prod"
-  CLOUDAMQP_PLAN = "cloudamqp:lemur"
+  CLOUDAMQP_PLAN = "cloudamqp:tiger"
   PAPERTRAIL_PLAN = "papertrail:choklad"
-  POSTGRES_PLAN = "heroku-postgresql:basic"
+  POSTGRES_PLAN = "heroku-postgresql:standard-0"
   FORMATION_SIZE_FRONTEND = "Basic"
   FORMATION_SIZE_BACKEND = "Basic"
   FORMATION_SIZE_BOT_WORKER = "Basic"
