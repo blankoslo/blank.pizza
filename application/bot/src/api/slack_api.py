@@ -94,14 +94,28 @@ class SlackApi:
         self.logger.warn("Was unable to find default channel")
         return None
 
+    def get_channel_info(self, channel_id):
+        try:
+            res = self.client.conversations_info(channel=channel_id)
+            if not res["ok"]:
+                raise Exception(res["error"])
+            return res["channel"]
+        except:
+            return None
+
     def join_channel(self, channel_id):
         try:
+            channel = self.get_channel_info(channel_id=channel_id)
+            if channel["is_member"]:
+                return True
+
             res = self.client.conversations_join(channel=channel_id)
             if not res["ok"]:
                 raise Exception(res["error"])
+
+            return True
         except:
             return False
-        return True
 
     def leave_channel(self, channel_id):
         try:

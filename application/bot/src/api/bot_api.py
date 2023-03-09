@@ -32,19 +32,11 @@ class BotApi:
 
     def welcome(self, slack_client, team_id):
         channel_id = self.join_channel(slack_client=slack_client, team_id=team_id)
-        print(channel_id)
-        if channel_id is None:
-            self.send_slack_message(
-                channel_id=channel_id,
-                text="Hei! Jeg er pizzabot. For å sette hvilke kanal jeg bruker så må dere gå inn i riktig kanal og bruke kommandoen '/set-pizza-channel'",
-                slack_client=slack_client
-            )
-        else:
-            self.send_slack_message(
-                channel_id=channel_id,
-                text="Hei! Jeg er pizzabot. Hvis dere vil endre hvilke kanal jeg bruker så kan dere gå inn i riktig kanal og bruke kommandoen '/set-pizza-channel'",
-                slack_client=slack_client
-            )
+        self.send_slack_message(
+            channel_id=channel_id,
+            text="Hei! Jeg er pizzabot. Hvis dere vil endre hvilke kanal jeg bruker så kan dere gå inn i riktig kanal og bruke kommandoen '/set-pizza-channel'. Hvis kanalen er privat må dere legge meg til først.",
+            slack_client=slack_client
+        )
 
     def join_channel(self, slack_client, team_id, channel_id=None):
         # Get default channel if non is given

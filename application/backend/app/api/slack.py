@@ -20,6 +20,7 @@ class Slack(views.MethodView):
             'channels:history',
             'channels:join',
             'channels:manage',
+            'groups:read',
             'chat:write',
             'files:read',
             'im:history',

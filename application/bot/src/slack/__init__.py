@@ -147,12 +147,12 @@ def handle_file_share(event, say, token, client):
 def handle_some_command(ack, body, say, context):
     with injector.get(BotApi) as ba:
         team_id = body["team_id"]
-        channel_id = body["channel_id"]
+        message_channel_id = body["channel_id"]
         client = SlackApi(client=context["client"])
-        channel_id = ba.join_channel(client, team_id, channel_id)
+        channel_id = ba.join_channel(client, team_id, message_channel_id)
         if channel_id is None:
             ba.send_slack_message(
-                channel_id=channel_id,
+                channel_id=message_channel_id,
                 text='Noe gikk galt. Klarte ikke å sette Pizza kanal',
                 slack_client=client
             )
