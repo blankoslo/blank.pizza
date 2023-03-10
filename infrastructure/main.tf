@@ -88,7 +88,6 @@ module "staging" {
   MQ_EVENT_QUEUE = "Pizza_Queue"
   MQ_EXCHANGE = "Pizza_Exchange"
   MQ_RPC_KEY = "rpc"
-  PEOPLE_PER_EVENT = 5
   DAYS_IN_ADVANCE_TO_INVITE = 10
   HOURS_BETWEEN_REMINDERS = 4
   REPLY_DEADLINE_IN_HOURS = 24
