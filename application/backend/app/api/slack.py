@@ -55,10 +55,14 @@ class Slack(views.MethodView):
             logger.warn("client_id or client_secret is None")
             return abort(500)
 
+        frontend_base_url = os.environ.get("FRONTEND_URI").rstrip('/')
+        callback_redirect_uri = f'{frontend_base_url}/slack/callback'
+
         data = {
             "code": code,
             "client_id": client_id,
-            "client_secret": client_secret
+            "client_secret": client_secret,
+            "redirect_uri": callback_redirect_uri
         }
 
         response = requests.post(url, data=data).json()
