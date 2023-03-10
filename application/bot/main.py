@@ -15,6 +15,7 @@ from src.broker.amqp_connection import AmqpConnection
 from src.broker.amqp_connection_pool import AmqpConnectionPool
 from src.broker.handlers import on_message
 
+
 def setup_logger():
     logger = logging.getLogger(__name__)
     logging_handler = logging.StreamHandler(sys.stdout)
@@ -24,9 +25,11 @@ def setup_logger():
     logger.propagate = False
     return logger
 
+
 def setup_connection_pool():
     connection_pool = AmqpConnectionPool()
     injector.binder.bind(AmqpConnectionPool, to=connection_pool, scope=singleton)
+
 
 def setup_consumption_queue_listener():
     mq = injector.get(AmqpConnection)
@@ -38,6 +41,7 @@ def setup_consumption_queue_listener():
         mq.consume(on_message)
     consuming_thread = threading.Thread(target = consume)
     consuming_thread.start()
+
 
 def main():
     # Set up injector
@@ -63,6 +67,7 @@ def main():
 
     # Start slack app
     slack_handler.start()
+
 
 if __name__ == "__main__":
     main()
