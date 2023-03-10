@@ -49,12 +49,14 @@ resource "heroku_pipeline_coupling" "production-backend" {
   stage = "production"
 }
 
+# Add production apps to pipeline under production stage
 resource "heroku_pipeline_coupling" "production-bot" {
   app_id = module.production.app_bot_id
   pipeline = heroku_pipeline.pizzabot.id
   stage = "production"
 }
 
+# Add production apps to pipeline under production stage
 resource "heroku_pipeline_coupling" "production-frontend" {
   app_id = module.production.app_frontend_id
   pipeline = heroku_pipeline.pizzabot.id
