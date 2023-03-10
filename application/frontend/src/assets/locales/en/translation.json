@@ -110,7 +110,8 @@
       },
       "errors": {
         "noSelectedDate": "You must choose a week before you can create an event",
-        "noRestaurantsExists": "No restaurants exists in the system. Add a restaurant before you add a new event"
+        "noRestaurantsExists": "No restaurants exists in the system. Add a restaurant before you add a new event",
+        "peoplePerEvent": "People per event must be between 2 and 100"
       },
       "title": "New Pizza Event 🍕",
       "button": "Create"
@@ -154,7 +155,8 @@
         },
         "normal": {
           "place": "Pizza at " 
-        }
+        },
+        "peoplePerEventEnding": "people"
       },
       "futureEvents": {
         "title": "Future Events 🍕"

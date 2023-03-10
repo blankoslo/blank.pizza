@@ -5,7 +5,7 @@ from app.models.event import Event
 from app.models.mixins import get_field
 from app.models.slack_organization_schema import SlackOrganizationSchema
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validates, ValidationError
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 from marshmallow_enum import EnumField
 
@@ -25,6 +25,13 @@ class EventSchema(SQLAlchemySchema):
     slack_organization_id = auto_field()
     slack_organization = fields.Nested(SlackOrganizationSchema, dump_only=True)
     people_per_event = auto_field()
+
+    @validates('people_per_event')
+    def validate_people_per_event(self, value):
+        if value < 2:
+            raise ValidationError('People per event must be at least 2')
+        elif value > 100:
+            raise ValidationError('People per event cannot be greater than 100')
 
 
 class EventResponseSchema(EventSchema):

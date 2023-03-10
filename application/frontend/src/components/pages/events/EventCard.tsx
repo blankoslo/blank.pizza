@@ -17,7 +17,7 @@ import { Box } from '@mui/material';
 import { useState } from 'react';
 import DialogEditEvent from './DialogEditEvent';
 
-const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
+const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, people_per_event, restaurant }) => {
     const { t } = useTranslation();
 
     const { isLoading, data: invitations } = useInvitations(id);
@@ -62,7 +62,11 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, restaurant }) => {
                                 <p>{datetimeToReadableString(time)}</p>
                                 <Typography variant="h5" component="h3">
                                     {`${t('events.list.eventCard.normal.place')} ${
-                                        restaurant ? restaurant.name : t('events.list.deletedRestaurant')
+                                        restaurant
+                                            ? `${restaurant.name} - (${people_per_event} ${t(
+                                                  'events.list.eventCard.peoplePerEventEnding',
+                                              )})`
+                                            : t('events.list.deletedRestaurant')
                                     }`}
                                 </Typography>
                             </CardContent>

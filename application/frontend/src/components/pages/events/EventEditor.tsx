@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import DateTimePicker from '../../DateTimePicker';
 import { useState } from 'react';
 import { useRestaurants } from '../../../hooks/useRestaurants';
-import { ApiEventPost, eventsDefaultQueryKey, useEventService } from '../../../api/EventService';
+import {ApiEventPatch, ApiEventPost, eventsDefaultQueryKey, useEventService} from '../../../api/EventService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Paper } from '@mui/material';
@@ -59,7 +59,7 @@ export const EventEditor: React.FC<Props> = ({ onSubmitFinished, eventId, eventT
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(eventTime);
 
-    const addEventMutation = useMutation((newEvent: ApiEventPost) => patchEvent(newEvent, eventId), {
+    const addEventMutation = useMutation((newEvent: ApiEventPatch) => patchEvent(newEvent, eventId), {
         onSuccess: () => {
             toast.success(t('events.edit.mutation.onSuccess'));
         },

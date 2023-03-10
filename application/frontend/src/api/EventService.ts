@@ -14,6 +14,7 @@ export interface ApiEvent extends ApiEventBase {
     id: string;
     finalized: boolean;
     restaurant?: ApiRestaurant;
+    people_per_event: number;
 }
 
 export interface ApiEvents extends Pagination {
@@ -22,6 +23,7 @@ export interface ApiEvents extends Pagination {
 
 export interface ApiEventPost extends ApiEventBase {
     restaurant_id: string;
+    people_per_event: number;
 }
 
 export interface ApiEventPatch extends ApiEventBase {
