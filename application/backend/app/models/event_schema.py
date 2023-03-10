@@ -24,6 +24,7 @@ class EventSchema(SQLAlchemySchema):
     finalized = auto_field()
     slack_organization_id = auto_field()
     slack_organization = fields.Nested(SlackOrganizationSchema, dump_only=True)
+    people_per_event = auto_field()
 
 
 class EventResponseSchema(EventSchema):

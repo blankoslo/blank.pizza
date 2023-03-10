@@ -53,7 +53,6 @@ services:
       DB_USER: "postgres"
       DB_PASSWD: "postgres"
       DB_PORT: "5432"
-      PEOPLE_PER_EVENT: 5
       DAYS_IN_ADVANCE_TO_INVITE: 10
       <<: *common-variables
       <<: *common-rabbitmq-variables
@@ -78,7 +77,6 @@ services:
       <<: *common-variables
       <<: *common-rabbitmq-variables
       <<: *common-slack-variables
-      PIZZA_CHANNEL_ID: ""
       REPLY_DEADLINE_IN_HOURS: 24
       HOURS_BETWEEN_REMINDERS: 4
     restart: always

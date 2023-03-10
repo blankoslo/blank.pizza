@@ -20,6 +20,11 @@ class Event(CrudMixin, db.Model):
     finalized = sa.Column(sa.Boolean, nullable=False, server_default='f')
     invitations = relationship("Invitation", backref="event", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=False)
+    people_per_event = sa.Column(sa.Integer, nullable=False, server_default=5)
+    __table_args__ = (
+        sa.CheckConstraint(people_per_event >= 2, name='check_people_per_event_min'),
+        sa.CheckConstraint(people_per_event <= 100, name='check_people_per_event_max'),
+    )
 
     @classmethod
     def get(cls, filters, order_by = None, page = None, per_page = None, team_id = None, session=db.session):
@@ -45,8 +50,8 @@ class Event(CrudMixin, db.Model):
         return res
 
     @classmethod
-    def get_events_in_need_of_invitations(cls, days_in_advance_to_invite, people_per_event, session=db.session):
-        query = session.query(cls.id, cls.time, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token, func.count(Invitation.event_id).label("invited"))\
+    def get_events_in_need_of_invitations(cls, days_in_advance_to_invite, session=db.session):
+        query = session.query(cls.id, cls.time, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token, cls.people_per_event, func.count(Invitation.event_id).label("invited"))\
             .outerjoin(
                 Restaurant,
                 cls.restaurant_id == Restaurant.id
@@ -72,25 +77,11 @@ class Event(CrudMixin, db.Model):
                 )
             )\
             .group_by(cls.id, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token)\
-            .having(func.count(Invitation.event_id) < people_per_event)
+            .having(func.count(Invitation.event_id) < cls.people_per_event)
         return query.all()
 
     @classmethod
-    def get_event_ready_to_finalize(cls, people_per_event, session=db.session):
-        query = session.query(cls)\
-            .join(Invitation, Invitation.event_id == cls.id)\
-            .filter(
-                and_(
-                    Invitation.rsvp == RSVP.attending,
-                    not_(cls.finalized)
-                )
-            )\
-            .group_by(cls.id, cls.time, cls.restaurant_id)\
-            .having(func.count(cls.id) == people_per_event)
-        return query.first()
-
-    @classmethod
-    def get_event_by_id_if_ready_to_finalize(cls, event_id, people_per_event, session=db.session):
+    def get_event_by_id_if_ready_to_finalize(cls, event_id, session=db.session):
         query = session.query(cls) \
             .join(Invitation, Invitation.event_id == cls.id) \
             .filter(
@@ -103,7 +94,7 @@ class Event(CrudMixin, db.Model):
                 )
             )\
             .group_by(cls.id, cls.time, cls.restaurant_id) \
-            .having(func.count(cls.id) == people_per_event)
+            .having(func.count(cls.id) == cls.people_per_event)
         return query.first()
 
     def __repr__(self):

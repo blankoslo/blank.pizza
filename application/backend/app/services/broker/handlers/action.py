@@ -40,7 +40,6 @@ def invite_multiple_if_needed():
     slack_user_service = injector.get(SlackUserService)
     event_service = injector.get(EventService)
     # Get events in need of invitation
-    people_per_event = int(os.environ["PEOPLE_PER_EVENT"])
     events = event_service.get_events_in_need_of_invitations()
     events = [{
         "event_id": event[0],
@@ -48,15 +47,16 @@ def invite_multiple_if_needed():
         "restaurant_name": event[2],
         "team_id": event[3],
         "bot_token": event[4],
-        "number_of_already_invited": event[5]
+        "people_per_event": event[5],
+        "number_of_already_invited": event[6]
     } for event in events]
 
     # Get numbers of users to invite
     events_where_users_were_invited = []
     for event in events:
         number_of_user, users = slack_user_service.get()
-        number_to_invite = people_per_event - event['number_of_already_invited']
-        user_ids_to_invite = slack_user_service.get_user_ids_to_invite(number_to_invite, event['event_id'], number_of_user, people_per_event)
+        number_to_invite = event["people_per_event"] - event['number_of_already_invited']
+        user_ids_to_invite = slack_user_service.get_user_ids_to_invite(number_to_invite, event['event_id'], number_of_user, event["people_per_event"])
 
         if len(user_ids_to_invite) == 0:
             logger.warning("Event %s in need of users, but noone to invite" % event['event_id']) # TODO: needs to be handled
