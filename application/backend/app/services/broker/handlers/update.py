@@ -51,13 +51,13 @@ def update_slack_user(request: dict):
             result = slack_user_service.update(user['slack_id'], {
                 'current_username': user['current_username'],
                 'email': user['email']
-            })
+            }, user['team_id'])
             if result is None:
                 slack_user_service.add({
                     'slack_id': user['slack_id'],
                     'current_username': user['current_username'],
                     'email': user['email']
-                })
+                }, user['team_id'])
             updated_users.append(user['slack_id'])
         except Exception as e:
             logger.warning(e)

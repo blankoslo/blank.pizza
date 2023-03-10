@@ -1,7 +1,7 @@
 from app.db import db
 from app.models.mixins import get_field, CrudMixin
 from app.models.image import Image
-from app.models.slack_user_schema import SlackUserSchema
+from app.models.slack_user_schema import SlackUserSchema, SlackUserResponseSchema
 
 from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
@@ -18,6 +18,9 @@ class ImageSchema(SQLAlchemySchema):
     uploaded_by = fields.Nested(SlackUserSchema, dump_only=True)
     uploaded_at = auto_field()
     title = auto_field()
+
+class ImageResponseSchema(ImageSchema):
+    uploaded_by = fields.Nested(SlackUserResponseSchema, dump_only=True)
 
 class ImageQueryArgsSchema(Schema):
     order = fields.Str()

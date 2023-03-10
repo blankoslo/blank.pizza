@@ -6,7 +6,7 @@ def get_field(schema, field):
     field.required = False
     return field
 
-class CrudMixin(object):
+class CrudMixin():
     @classmethod
     def get(cls, filters = None, order_by = None, page = None, per_page = None, session=db.session):
         query = cls.query

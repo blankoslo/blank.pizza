@@ -7,9 +7,20 @@
       "expired": "Your session has expired, please log in again" 
     } 
   },
+  "install": {
+    "button": "Add to Slack",
+    "successAlert": "App installed",
+    "enterpriseInstallAlert": "We currently don't support enterprise workspaces. Sorry!",
+    "genericErrorAlert": "Something went wrong."
+  },
   "login": {
     "logo": "Pizzabot By",
-    "button": "Login"
+    "loginButton": "Sign in with Slack",
+    "installButton": "Add PizzaBot?",
+    "error": {
+      "401": "Something went wrong. Is your email verified?",
+      "403": "Something went wrong. Is PizzaBot installed on your workspace?"
+    }
   },
   "logout": "Logging you out...",
   "header": {

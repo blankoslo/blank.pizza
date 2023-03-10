@@ -14,14 +14,15 @@ def create_image(request: dict):
     cloudinary_id = request.get('cloudinary_id')
     slack_id = request.get('slack_id')
     title = request.get('title')
+    team_id = request.get('team_id')
 
     result = True
     try:
-        image_service.add({
+        image_service.add(data={
             "cloudinary_id": cloudinary_id,
             "uploaded_by_id": slack_id,
-            "title": title
-        })
+            "title": title,
+        }, team_id=team_id)
     except Exception as e:
         logger.error(e)
         result = False

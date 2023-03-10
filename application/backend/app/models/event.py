@@ -8,6 +8,8 @@ from app.models.mixins import get_field, CrudMixin
 from app.models.enums import Age, RSVP
 from app.models.restaurant import Restaurant
 from app.models.invitation import Invitation
+from app.models.slack_organization import SlackOrganization
+
 
 class Event(CrudMixin, db.Model):
     __tablename__ = "events"
@@ -17,10 +19,15 @@ class Event(CrudMixin, db.Model):
     restaurant = relationship("Restaurant", backref = "events", uselist=False)
     finalized = sa.Column(sa.Boolean, nullable=False, server_default='f')
     invitations = relationship("Invitation", backref="event", cascade="all, delete-orphan")
+    slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=True)
 
     @classmethod
-    def get(cls, filters, order_by = None, page = None, per_page = None, session=db.session):
+    def get(cls, filters, order_by = None, page = None, per_page = None, team_id = None, session=db.session):
         query = session.query(cls)
+
+        if team_id:
+            query = query.filter(cls.slack_organization_id == team_id)
+
         # Add filters to the query
         if 'age' in filters and filters['age'] == Age.New:
             query = query.filter(cls.time > datetime.now())
@@ -39,10 +46,14 @@ class Event(CrudMixin, db.Model):
 
     @classmethod
     def get_events_in_need_of_invitations(cls, days_in_advance_to_invite, people_per_event, session=db.session):
-        query = session.query(cls.id, cls.time, Restaurant.name, func.count(Invitation.event_id).label("invited"))\
+        query = session.query(cls.id, cls.time, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token, func.count(Invitation.event_id).label("invited"))\
             .outerjoin(
                 Restaurant,
                 cls.restaurant_id == Restaurant.id
+            )\
+            .outerjoin(
+                SlackOrganization,
+                cls.slack_organization_id == SlackOrganization.team_id
             )\
             .outerjoin(
                 Invitation,
@@ -60,7 +71,7 @@ class Event(CrudMixin, db.Model):
                     cls.time < (datetime.now() + timedelta(days=days_in_advance_to_invite))
                 )
             )\
-            .group_by(cls.id, Restaurant.name)\
+            .group_by(cls.id, Restaurant.name, SlackOrganization.team_id, SlackOrganization.access_token)\
             .having(func.count(Invitation.event_id) < people_per_event)
         return query.all()
 

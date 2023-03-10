@@ -16,6 +16,10 @@ from src.broker.schemas.get_invited_unanswered_user_ids import GetInvitedUnanswe
 from src.broker.schemas.update_slack_user import UpdateSlackUserRequestSchema, UpdateSlackUserResponseSchema
 from src.broker.schemas.create_image import CreateImageRequestSchema, CreateImageResponseSchema
 from src.broker.schemas.withdraw_invitation import WithdrawInvitationRequestSchema, WithdrawInvitationResponseSchema
+from src.broker.schemas.get_slack_installation import GetSlackInstallationRequestSchema, GetSlackInstallationResponseSchema
+from src.broker.schemas.get_slack_organizations import GetSlackOrganizationsResponseSchema
+from src.broker.schemas.deleted_slack_organization_event import DeletedSlackOrganizationEventSchema
+from src.broker.schemas.set_slack_channel import SetSlackChannelRequestSchema, SetSlackChannelResponseSchema
 
 class BrokerClient:
     messages = {}
@@ -73,6 +77,48 @@ class BrokerClient:
         request = request_schema.load(request_data)
         return request
 
+    def deleted_slack_organization_event(self, team_id, enterprise_id=None):
+        request_payload = {
+            "team_id": team_id
+        }
+        if enterprise_id is not None:
+            request_payload['enterprise_id'] = enterprise_id
+        request_payload_schema = DeletedSlackOrganizationEventSchema()
+        self._call(self._create_request("deleted_slack_organization_event", request_payload_schema.load(request_payload)))
+
+    def set_slack_channel(self, channel_id, team_id):
+        request_payload = {
+            "channel_id": channel_id,
+            "team_id": team_id
+        }
+        request_payload_schema = SetSlackChannelRequestSchema()
+        response_payload = self._call(self._create_request("set_slack_channel", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return False
+        response_schema = SetSlackChannelResponseSchema()
+        response = response_schema.load(response_payload)
+        return response
+
+    def get_slack_installation(self, team_id: str):
+        request_payload = {
+            "team_id": team_id,
+        }
+        request_payload_schema = GetSlackInstallationRequestSchema()
+        response_payload = self._call(self._create_request("get_slack_installation", request_payload_schema.load(request_payload)))
+        if response_payload is None:
+            return None
+        response_schema = GetSlackInstallationResponseSchema()
+        response = response_schema.load(response_payload)
+        return response
+
+    def get_slack_organizations(self):
+        response_payload = self._call(self._create_request("get_slack_organizations"))
+        if response_payload is None:
+            return []
+        response_schema = GetSlackOrganizationsResponseSchema()
+        response = response_schema.load(response_payload)
+        return response['organizations']
+
     def invite_multiple_if_needed(self):
         response_payload = self._call(self._create_request("invite_multiple_if_needed"))
         if response_payload is None:
@@ -119,7 +165,7 @@ class BrokerClient:
         response = response_schema.load(response_payload)
         return response['user_ids']
 
-    def  update_slack_user(self, slack_users):
+    def update_slack_user(self, slack_users):
         request_payload = {
             'users_to_update': []
         }
@@ -127,11 +173,14 @@ class BrokerClient:
             slack_id = slack_user['id']
             current_username = slack_user['name']
             email = slack_user['profile']['email']
+            team_id = slack_user['team_id']
+
 
             request_payload['users_to_update'].append({
                 'slack_id': slack_id,
                 'current_username': current_username,
                 'email': email,
+                'team_id': team_id
             })
         request_payload_schema = UpdateSlackUserRequestSchema()
         response_payload = self._call(self._create_request("update_slack_user", request_payload_schema.load(request_payload)))
@@ -145,11 +194,12 @@ class BrokerClient:
         response = response_schema.load(response_payload)
         return response
 
-    def create_image(self, cloudinary_id, slack_id, title):
+    def create_image(self, cloudinary_id, slack_id, team_id, title):
         request_payload = {
             "cloudinary_id": cloudinary_id,
             "slack_id": slack_id,
-            'title': title
+            'title': title,
+            'team_id': team_id
         }
         request_payload_schema = CreateImageRequestSchema()
         response_payload = self._call(self._create_request("create_image", request_payload_schema.load(request_payload)))

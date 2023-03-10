@@ -3,7 +3,7 @@ import pytz
 from datetime import datetime
 
 from app.models.event import Event
-from app.models.invitation import Invitation
+from app.repositories.invitation_repository import InvitationRepository
 from app.models.event_schema import EventSchema
 from app.services.broker.schemas.deleted_event_event import DeletedEventEventSchema
 from app.services.broker.schemas.updated_event_event import UpdatedEventEventSchema
@@ -32,26 +32,32 @@ class EventService:
         return False
 
     def unfinalize_event(self, event_id):
-        event = Event.get_by_id(event_id)
+        event = Event.get_by_id(id=event_id)
         update_data = {
             'finalized': False
         }
         updated_invitation = EventSchema().load(data=update_data, instance=event, partial=True)
         Event.upsert(updated_invitation)
 
-    def get(self, filters, page, per_page):
-        return Event.get(filters = filters, page = page, per_page = per_page)
+    def get(self, filters, page, per_page, team_id):
+        return Event.get(filters = filters, page = page, per_page = per_page, team_id = team_id)
 
-    def get_by_id(self, event_id):
-        return Event.get_by_id(event_id)
+    def get_by_id(self, event_id, team_id = None):
+        event = Event.get_by_id(id=event_id)
+        if event is None or (team_id is not None and event.slack_organization_id != team_id):
+            return None
+        return event
 
-    def delete(self, event_id):
-        event = Event.get_by_id(event_id)
-        if event.time < datetime.now(pytz.utc):
+    def delete(self, event_id, team_id):
+        event = Event.get_by_id(id=event_id)
+
+        if event is None or event.slack_organization_id != team_id or event.time < datetime.now(pytz.utc):
             return False
+
         # Has to be lazy loaded before we delete event
         restaurant = event.restaurant
-        invitations = Invitation.get_attending_or_unanswered_invitations(event.id)
+        slack_organization = event.slack_organization
+        invitations = InvitationRepository.get_attending_or_unanswered_invitations(event.id)
         slack_data = []
         for invitation in invitations:
             slack_data_entry = {
@@ -72,17 +78,22 @@ class EventService:
             'event_id': event.id,
             'timestamp': event.time.isoformat(),
             'restaurant_name': restaurant.name,
-            'slack': slack_data
+            'slack': slack_data,
+            'team_id': slack_organization.team_id,
+            'bot_token': slack_organization.access_token,
+            'channel_id': slack_organization.channel_id
         })
         BrokerService.publish("deleted_event", queue_event)
         return True
 
-    def add(self, data):
+    def add(self, data, team_id):
+        data.slack_organization_id = team_id
         return Event.upsert(data)
 
-    def update(self, event_id, data):
-        event = Event.get_by_id(event_id)
-        if event.time < datetime.now(pytz.utc):
+    def update(self, event_id, data, team_id):
+        event = Event.get_by_id(id=event_id)
+
+        if event is None or event.slack_organization_id != team_id or event.time < datetime.now(pytz.utc):
             return None
 
         old_time = event.time
@@ -90,7 +101,7 @@ class EventService:
 
         updated_event = Event.update(event_id, data)
 
-        attending_or_unanswered_users = [invitation.slack_id for invitation in Invitation.get_attending_or_unanswered_invitations(event.id)]
+        attending_or_unanswered_users = [invitation.slack_id for invitation in InvitationRepository.get_attending_or_unanswered_invitations(event.id)]
         queue_event_schema = UpdatedEventEventSchema()
         queue_event = queue_event_schema.load({
             'is_finalized': event.finalized,
@@ -99,7 +110,10 @@ class EventService:
             'timestamp': event.time.isoformat(),
             'old_restaurant_name': old_restaurant_name,
             'restaurant_name': event.restaurant.name,
-            'slack_ids': attending_or_unanswered_users
+            'slack_ids': attending_or_unanswered_users,
+            'team_id': event.slack_organization_id,
+            'bot_token': event.slack_organization.access_token,
+            'channel_id': event.slack_organization.channel_id
         })
         BrokerService.publish("updated_event", queue_event)
 

@@ -176,3 +176,7 @@ terraform.rc
 
 #IDE
 .idea
+
+# lmdb
+data.mdb
+lock.mdb

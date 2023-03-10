@@ -6,15 +6,31 @@ import time
 from functools import wraps
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from slack_bolt.oauth.oauth_settings import OAuthSettings
+from slack_sdk.oauth.state_store import FileOAuthStateStore
 
 from src.api.bot_api import BotApi, BotApiConfiguration
 from src.injector import injector
+from src.slack.installation_store import BrokerInstallationStore
+from src.api.slack_api import SlackApi
 
-pizza_channel_id = os.environ["PIZZA_CHANNEL_ID"]
-slack_bot_token = os.environ["SLACK_BOT_TOKEN"]
+slack_signing_secret = os.environ["SLACK_SIGNING_SECRET"]
+client_id = os.environ["SLACK_CLIENT_ID"],
+client_secret = os.environ["SLACK_CLIENT_SECRET"],
 slack_app_token = os.environ["SLACK_APP_TOKEN"]
 
-slack_app = App(token=slack_bot_token)
+slack_app = App(
+    signing_secret=slack_signing_secret,
+    installation_store=BrokerInstallationStore(),
+    oauth_settings=OAuthSettings(
+        client_id=client_id,
+        client_secret=client_secret,
+        state_store=FileOAuthStateStore(expiration_seconds=600),
+    ),
+)
+# Enable delete_installation handling in the Installation store
+slack_app.enable_token_revocation_listeners()
+# Enable socket mode
 slack_handler = SocketModeHandler(slack_app, slack_app_token)
 
 def request_time_monitor(timeout=3000):
@@ -43,21 +59,15 @@ def request_time_monitor(timeout=3000):
 
 @slack_app.event("message")
 @request_time_monitor()
-def handle_event(body, say):
+def handle_event(body, say, context):
     event = body["event"]
-    channel = event["channel"]
-    channel_type = event["channel_type"]
-    # Handle a channel message in the pizza channel
-    if "subtype" not in event and channel_type == 'channel' and channel == pizza_channel_id:
-        handle_channel_message(event, say)
-    # Handle a direct message to bot
-    elif "subtype" not in event and channel_type == 'im':
-        handle_direct_message(event, say)
+    token = context["token"]
+    client = SlackApi(client=context["client"])
     # Handle a file share
-    elif "subtype" in event and event["subtype"] == 'file_share':
-        handle_file_share(event, say)
+    if "subtype" in event and event["subtype"] == 'file_share':
+        handle_file_share(event=event, say=say, token=token, client=client)
 
-def handle_rsvp(body, ack, attending):
+def handle_rsvp(body, ack, attending, client):
     user = body["user"]
     user_id = user["id"]
     channel = body["channel"]
@@ -70,27 +80,30 @@ def handle_rsvp(body, ack, attending):
             event_id = body["actions"][0]["value"]
             blocks = message["blocks"][0:3]
             if attending:
-                ba.accept_invitation(event_id, user_id)
+                ba.accept_invitation(event_id=event_id, slack_id=user_id)
             else:
-                ba.decline_invitation(event_id, user_id)
+                ba.decline_invitation(event_id=event_id, slack_id=user_id)
                 ba.invite_multiple_if_needed()
-            ba.send_pizza_invite_answered(channel_id, ts, event_id, blocks, attending)
+            ba.send_pizza_invite_answered(channel_id=channel_id, ts=ts, event_id=event_id, old_blocks=blocks, attending=attending, slack_client=client)
     ack()
 
 @slack_app.action("rsvp_yes")
 @request_time_monitor()
-def handle_rsvp_yes(ack, body):
-    handle_rsvp(body, ack, True)
+def handle_rsvp_yes(ack, body, context):
+    client = SlackApi(client=context["client"])
+    handle_rsvp(body=body, ack=ack, attending=True, client=client)
 
 @slack_app.action("rsvp_no")
 @request_time_monitor()
-def handle_rsvp_no(ack, body):
-    handle_rsvp(body, ack, False)
+def handle_rsvp_no(ack, body, context):
+    client = SlackApi(client=context["client"])
+    handle_rsvp(body=body, ack=ack, attending=False, client=client)
 
 @slack_app.action("rsvp_withdraw")
 @request_time_monitor()
-def handle_rsvp_withdraw(ack, body):
+def handle_rsvp_withdraw(ack, body, context):
     logger = injector.get(logging.Logger)
+    client = SlackApi(client=context["client"])
     message = body["message"]
     user = body["user"]
     user_id = user["id"]
@@ -100,39 +113,22 @@ def handle_rsvp_withdraw(ack, body):
     ts = message['ts']
     blocks = message["blocks"][0:3]
     with injector.get(BotApi) as ba:
-        success = ba.withdraw_invitation(event_id, user_id)
+        success = ba.withdraw_invitation(event_id=event_id, slack_id=user_id)
         if success:
             logger.info("%s withdrew their invitation", user_id)
-            ba.send_pizza_invite_withdraw(channel_id, ts, blocks)
+            ba.send_pizza_invite_withdraw(channel_id=channel_id, ts=ts, old_blocks=blocks, slack_client=client)
         else:
             logger.warning("failed to withdraw invitation for %s", user_id)
-            ba.send_pizza_invite_withdraw_failure(channel_id, ts, blocks)
+            ba.send_pizza_invite_withdraw_failure(channel_id=channel_id, ts=ts, old_blocks=blocks, slack_client=client)
     ack()
 
-# We don't use channel messages, but perhaps it'll be useful in the future
-def handle_channel_message(event, say):
-    logger = injector.get(logging.Logger)
-    logger.info(event)
-
-# We don't use direct messages, but perhaps it'll be useful in the future
-def handle_direct_message(event, say):
-    logger = injector.get(logging.Logger)
-    logger.info(event)
-
-# We don't use app mentions at the moment, but perhaps it'll be useful in the future
-@slack_app.event("app_mention")
-@request_time_monitor()
-def handle_mention_event(body):
-    logger = injector.get(logging.Logger)
-    logger.info(body)
-
-def handle_file_share(event, say):
+def handle_file_share(event, say, token, client):
     channel = event["channel"]
     if 'files' in event:
         files = event['files']
         with injector.get(BotApi) as ba:
-            ba.send_slack_message_old(channel, u'Takk for fil! 🤙')
-            headers = {u'Authorization': u'Bearer %s' % slack_bot_token}
+            ba.send_slack_message(channel_id=channel, text=u'Takk for fil! 🤙', slack_client=client)
+            headers = {u'Authorization': u'Bearer %s' % token}
             for file in files:
                 r = requests.get(
                     file['url_private'], headers=headers)
@@ -142,7 +138,31 @@ def handle_file_share(event, say):
                 r2 = requests.post(
                     'https://api.cloudinary.com/v1_1/blank/image/upload', data=payload)
                 ba.save_image(
-                    r2.json()['public_id'], file['user'], file['title'])
+                    cloudinary_id=r2.json()['public_id'],
+                    slack_id=file['user'],
+                    team_id=file['user_team'],
+                    title=file['title'])
+
+@slack_app.command("/set-pizza-channel")
+def handle_some_command(ack, body, say, context):
+    with injector.get(BotApi) as ba:
+        team_id = body["team_id"]
+        message_channel_id = body["channel_id"]
+        client = SlackApi(client=context["client"])
+        channel_id = ba.join_channel(client, team_id, message_channel_id)
+        if channel_id is None:
+            ba.send_slack_message(
+                channel_id=message_channel_id,
+                text='Noe gikk galt. Klarte ikke å sette Pizza kanal',
+                slack_client=client
+            )
+        else:
+            ba.send_slack_message(
+                channel_id=channel_id,
+                text='Pizza kanal er nå satt til <#%s>' % channel_id,
+                slack_client=client
+            )
+    ack()
 
 # This only exists to make bolt not throw a warning that we dont handle the file_shared event
 # We dont use this as we use the message event with subtype file_shared as that one
@@ -151,5 +171,4 @@ def handle_file_share(event, say):
 @slack_app.event("file_shared")
 @request_time_monitor()
 def handle_file_shared_events(body):
-    logger = injector.get(logging.Logger)
-    logger.info(body)
+    pass

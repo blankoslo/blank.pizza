@@ -34,9 +34,9 @@ def clean_up_invitations():
     with injector.get(BotApi) as ba:
         ba.clean_up_invitations()
 
-@scheduler.scheduled_job('interval', id='sync_db_with_slack', hours=6, jitter=120)
-def sync_db_with_slack():
+@scheduler.scheduled_job('interval', id='sync_users_from_organizations', hours=6, jitter=120)
+def sync_users_from_organizations():
     logger = injector.get(logging.Logger)
     logger.info("Syncing db with slack on scheduled task")
     with injector.get(BotApi) as ba:
-        ba.sync_db_with_slack()
+        ba.sync_users_from_organizations()

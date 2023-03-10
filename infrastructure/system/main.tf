@@ -29,8 +29,8 @@ resource "heroku_app" "backend" {
 
   sensitive_config_vars = {
     "SECRET_KEY" = var.SECRET_KEY_BACKEND
-    "GOOGLE_CLIENT_ID" = var.GOOGLE_CLIENT_ID
-    "GOOGLE_CLIENT_SECRET" = var.GOOGLE_CLIENT_SECRET
+    "SLACK_CLIENT_ID" = var.SLACK_CLIENT_ID
+    "SLACK_CLIENT_SECRET" = var.SLACK_CLIENT_SECRET
   }
 }
 
@@ -53,9 +53,10 @@ resource "heroku_app" "bot" {
   }
 
   sensitive_config_vars = {
-    "SLACK_BOT_TOKEN" = var.SLACK_BOT_TOKEN
     "SLACK_APP_TOKEN" = var.SLACK_APP_TOKEN
-    "PIZZA_CHANNEL_ID" = var.PIZZA_CHANNEL_ID
+    "SLACK_SIGNING_SECRET": var.SLACK_SIGNING_SECRET,
+    "SLACK_CLIENT_ID": var.SLACK_CLIENT_ID
+    "SLACK_CLIENT_SECRET": var.SLACK_CLIENT_SECRET
   }
 }
 
