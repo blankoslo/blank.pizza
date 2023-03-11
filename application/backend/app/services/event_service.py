@@ -9,17 +9,14 @@ from app.services.broker.schemas.deleted_event_event import DeletedEventEventSch
 from app.services.broker.schemas.updated_event_event import UpdatedEventEventSchema
 from app.services.broker import BrokerService
 
-class EventService:
-    def __init__(self):
-        self.people_per_event = os.environ["PEOPLE_PER_EVENT"]
 
+class EventService:
     def get_events_in_need_of_invitations(self):
         days_in_advance_to_invite = int(os.environ["DAYS_IN_ADVANCE_TO_INVITE"])
-        people_per_event = int(os.environ["PEOPLE_PER_EVENT"])
-        return Event.get_events_in_need_of_invitations(days_in_advance_to_invite, people_per_event)
+        return Event.get_events_in_need_of_invitations(days_in_advance_to_invite=days_in_advance_to_invite)
 
     def finalize_event_if_complete(self, event_id):
-        event_ready_to_finalize = Event.get_event_by_id_if_ready_to_finalize(event_id, self.people_per_event)
+        event_ready_to_finalize = Event.get_event_by_id_if_ready_to_finalize(event_id=event_id)
 
         if event_ready_to_finalize is not None:
             # Update event to be finalized

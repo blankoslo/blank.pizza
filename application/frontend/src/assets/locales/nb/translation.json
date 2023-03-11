@@ -100,13 +100,17 @@
   },
   "events": {
     "new": {
+      "peoplePerEventInput": {
+        "label": "Antall deltakere"
+      },
       "mutation": {
         "onSuccess": "Registrering av nytt arrangement var vellykket",
         "onError": "Registrering av nytt arrangement var mislykket"
       },
       "errors": {
         "noSelectedDate": "Du må velge en uke før du lager et ntt arrangement",
-        "noRestaurantsExists": "Ingen restauranter eksisterer i systemet. Legg til en ny restaurant før du prøver å legge til et nytt arrangement"
+        "noRestaurantsExists": "Ingen restauranter eksisterer i systemet. Legg til en ny restaurant før du prøver å legge til et nytt arrangement",
+        "peoplePerEvent": "Antall deltakere må være mellom 2 and 100"
       },
       "title": "Nytt pizza arrangement 🍕",
       "button": "Opprett"
@@ -150,7 +154,8 @@
         },
         "normal": {
           "place": "Pizza hos " 
-        }
+        },
+        "peoplePerEventEnding": "stykk"
       },
       "futureEvents": {
         "title": "Framtidige arrangementer 🍕"

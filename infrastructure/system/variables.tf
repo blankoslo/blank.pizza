@@ -30,10 +30,6 @@ variable "MQ_EVENT_KEY" {
   type = string
 }
 
-variable "PEOPLE_PER_EVENT" {
-  type = number
-}
-
 variable "DAYS_IN_ADVANCE_TO_INVITE" {
   type = number
 }

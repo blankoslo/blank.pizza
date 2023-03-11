@@ -5,9 +5,15 @@ import { useRestaurants } from '../../../hooks/useRestaurants';
 import { ApiEventPost, eventsDefaultQueryKey, useEventService } from '../../../api/EventService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Box, Paper } from '@mui/material';
+import { Box, Paper, styled } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+const StyledInput = styled('input')({
+    padding: '1rem',
+    width: '100%',
+    fontSize: '1.25rem',
+});
 
 interface Props {
     onSubmitFinished: () => void;
@@ -19,6 +25,7 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
     const { postEvent } = useEventService();
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(setPizzaDay(new Date()));
+    const [peoplePerEvent, setPeoplePerEvent] = useState(5);
     const { isLoading, data: restaurants } = useRestaurants();
 
     const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent), {
@@ -44,6 +51,11 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
             return;
         }
 
+        if (!Number.isInteger(peoplePerEvent) || peoplePerEvent < 2 || peoplePerEvent > 100) {
+            toast.warn(t('events.new.errors.peoplePerEvent'));
+            return;
+        }
+
         let randomNumber = Math.floor(getRandomInteger(0, restaurants.restaurants.length));
         if (restaurants.restaurants.length === 3) {
             randomNumber = Math.random() > 0.5 ? 1 : 0;
@@ -54,9 +66,23 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
         addEventMutation.mutate({
             time: selectedDate.toISOString(),
             restaurant_id: restaurant.id,
+            people_per_event: peoplePerEvent,
         });
 
         onSubmitFinished();
+    };
+
+    const onPeoplePerEventChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value);
+        if (!Number.isInteger(value) || value < 2) {
+            setPeoplePerEvent(2);
+            return;
+        }
+        if (value > 100) {
+            setPeoplePerEvent(100);
+            return;
+        }
+        setPeoplePerEvent(parseInt(event.target.value));
     };
 
     return (
@@ -69,6 +95,24 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
             })}
         >
             <WeekPicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                }}
+            >
+                <label htmlFor="peoplePerEventInput">{t('events.new.peoplePerEventInput.label')}</label>
+                <StyledInput
+                    id="peoplePerEventInput"
+                    name="peoplePerEvent"
+                    type="number"
+                    min={2}
+                    max={100}
+                    value={peoplePerEvent}
+                    onChange={onPeoplePerEventChange}
+                />
+            </Box>
             <Button sx={{ marginY: 1 }} color="success" variant="contained" fullWidth onClick={() => handleOnClick()}>
                 {t('events.new.button')}
             </Button>
