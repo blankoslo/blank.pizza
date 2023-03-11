@@ -104,6 +104,9 @@
         "label": "Week picker",
         "inputFormat": "'Week of' MMM d"
       },
+      "peoplePerEventInput": {
+        "label": "Number of participants"
+      },
       "mutation": {
         "onSuccess": "New event registered",
         "onError": "Failed to register event"

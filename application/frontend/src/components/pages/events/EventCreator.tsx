@@ -95,14 +95,24 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
             })}
         >
             <WeekPicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-            <StyledInput
-                name="peoplePerEvent"
-                type="number"
-                min={2}
-                max={100}
-                value={peoplePerEvent}
-                onChange={onPeoplePerEventChange}
-            />
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                }}
+            >
+                <label htmlFor="peoplePerEventInput">{t('events.new.peoplePerEventInput.label')}</label>
+                <StyledInput
+                    id="peoplePerEventInput"
+                    name="peoplePerEvent"
+                    type="number"
+                    min={2}
+                    max={100}
+                    value={peoplePerEvent}
+                    onChange={onPeoplePerEventChange}
+                />
+            </Box>
             <Button sx={{ marginY: 1 }} color="success" variant="contained" fullWidth onClick={() => handleOnClick()}>
                 {t('events.new.button')}
             </Button>
