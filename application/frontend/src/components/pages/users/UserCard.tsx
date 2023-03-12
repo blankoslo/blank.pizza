@@ -70,11 +70,11 @@ const UserCard: React.FC<ApiUser> = ({ slack_id, current_username, first_seen, e
             <Paper
                 component="form"
                 sx={{
-                    marginX: 1,
                     marginBottom: 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    overflow: 'auto',
                 }}
             >
                 <Box

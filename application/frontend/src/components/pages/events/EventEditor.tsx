@@ -110,7 +110,6 @@ export const EventEditor: React.FC<Props> = ({ onSubmitFinished, eventId, eventT
                     component="form"
                     onSubmit={onSubmit}
                     sx={() => ({
-                        minWidth: '300px',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',

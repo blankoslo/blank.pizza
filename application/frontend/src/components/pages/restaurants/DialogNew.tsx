@@ -16,7 +16,7 @@ const DialogNew: React.FC<Props> = ({ open, handleClose }) => {
     const { t } = useTranslation();
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={handleClose} PaperProps={{ style: { width: '100%', maxWidth: '400px' } }}>
             <DialogTitle>
                 <Box display="flex" alignItems="center">
                     <Box flexGrow={1}>{t('restaurants.new.title')}</Box>

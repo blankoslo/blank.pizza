@@ -18,16 +18,14 @@ export const Template: React.FC<Props> = ({ children }) => {
                     padding: 2,
                     backgroundColor: theme.palette.primary.main,
                     maxHeight: `Calc(100vh - ${theme.mixins.toolbar.minHeight}px - ${theme.mixins.footer.minHeight}px)`,
+                    [theme.breakpoints.down('md')]: {
+                        maxHeight: `Calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
+                    },
                     [theme.breakpoints.up('sm')]: {
                         // eslint-disable-next-line
-              // @ts-expect-error
-                        maxHeight: `Calc(100vh - ${theme.mixins.toolbar['@media (min-width:600px)']['minHeight']}px - ${theme.mixins.footer['@media (min-width:600px)']['minHeight']}px)`,
+                        // @ts-expect-error
+                        maxHeight: `Calc(100vh - ${theme.mixins.toolbar['@media (min-width:600px)']['minHeight']}px - ${theme.mixins.footer.minHeight}px)`,
                     },
-                    /*[`${theme.breakpoints.up("xs")} and (orientation: landscape)`]: {
-              // eslint-disable-next-line
-              // @ts-expect-error
-              maxHeight: `Calc(100vh - ${theme.mixins.toolbar['@media (min-width:0px) and (orientation: landscape)'].minHeight}px)` 
-            },*/
                 })}
             >
                 {children}

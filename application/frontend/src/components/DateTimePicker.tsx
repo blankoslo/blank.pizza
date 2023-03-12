@@ -29,6 +29,8 @@ const StyledDatePicker = styled(Box, {
     slot: 'Root',
 })<StyledProps>(
     ({ theme, highlightWeek }) => `
+    width: max-content;
+    
     .react-datepicker__day--keyboard-selected {
         background-color: #216ba5;
         border-radius: 0.3rem;

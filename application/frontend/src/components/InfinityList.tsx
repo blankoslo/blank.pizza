@@ -7,9 +7,10 @@ interface Props {
     fetchData: () => void;
     hasMore: boolean;
     items: React.ReactNode[];
+    showEndMessage?: boolean;
 }
 
-export const InfinityList: React.FC<Props> = ({ parentId, fetchData, hasMore, items }) => {
+export const InfinityList: React.FC<Props> = ({ parentId, fetchData, hasMore, items, showEndMessage = true }) => {
     const { t } = useTranslation();
 
     return (
@@ -24,9 +25,11 @@ export const InfinityList: React.FC<Props> = ({ parentId, fetchData, hasMore, it
                 </p>
             }
             endMessage={
-                <p style={{ textAlign: 'center' }}>
-                    <b>{t('infinityLoadingList.end')}</b>
-                </p>
+                showEndMessage ? (
+                    <p style={{ textAlign: 'center' }}>
+                        <b>{t('infinityLoadingList.end')}</b>
+                    </p>
+                ) : null
             }
         >
             {items}

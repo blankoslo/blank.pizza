@@ -80,7 +80,6 @@ export const RestaurantCreator: React.FC<Props> = ({ onSubmitFinished }) => {
                     flexDirection: 'column',
                     color: '#ffffff',
                     marginTop: 1,
-                    minWidth: '300px',
                 }}
             >
                 <TextInput name="name" label={t('restaurants.new.form.name')} type="text" />

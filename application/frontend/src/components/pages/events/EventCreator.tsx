@@ -88,7 +88,6 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
     return (
         <Box
             sx={(theme) => ({
-                minWidth: '300px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',

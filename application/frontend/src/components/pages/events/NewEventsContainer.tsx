@@ -28,7 +28,6 @@ const NewEventsContainer: React.FC = () => {
             id={INFINITY_LIST_ID}
             sx={{
                 overflow: 'auto',
-                paddingX: 3,
                 display: 'flex',
                 flexDirection: 'column',
                 flex: 1,
@@ -39,6 +38,7 @@ const NewEventsContainer: React.FC = () => {
                     parentId={INFINITY_LIST_ID}
                     fetchData={fetchNextPage}
                     hasMore={hasMore}
+                    showEndMessage={false}
                     items={events.map((event) => (
                         <EventCard {...event} key={event.id} />
                     ))}

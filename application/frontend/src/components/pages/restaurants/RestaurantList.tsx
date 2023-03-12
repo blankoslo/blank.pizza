@@ -11,6 +11,9 @@ import { RestaurantEntry } from './RestaurantEntry';
 import { useTranslation } from 'react-i18next';
 import { Button3D } from '../../Button3D';
 import { InfinityList } from '../../InfinityList';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { TabPanel } from '../../TabPanel';
 
 export const RestaurantList: React.FC = () => {
     const { t } = useTranslation();
@@ -66,58 +69,65 @@ export const RestaurantList: React.FC = () => {
                 onDelete={deleteRestaurantCallback}
             />
             <DialogNew open={showNewModal} handleClose={toggleCreateNewForm} />
-            <Paper
+            <Box
                 sx={(theme) => ({
-                    padding: 1,
                     height: '100%',
                     width: '30vw',
                     minWidth: '600px',
-                    backgroundColor: theme.palette.secondary.main,
-                    borderRadius: 3,
                     display: 'flex',
                     flexDirection: 'column',
+                    [theme.breakpoints.down('md')]: {
+                        width: '100%',
+                        minWidth: 'unset',
+                    },
                 })}
             >
-                <Box
-                    sx={{
-                        fontSize: '1.2rem',
-                        fontWeight: 'bold',
-                        margin: '24px 24px 12px 24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                    }}
+                <Tabs
+                    value={0}
+                    textColor="primary"
+                    indicatorColor="primary"
+                    aria-label="Event tabs"
+                    variant="fullWidth"
+                    sx={(theme) => ({ width: '100%', backgroundColor: theme.palette.secondary.main, marginBottom: 1 })}
                 >
-                    <Typography variant="h5" component="h2" align="center">
-                        {t('restaurants.list.title')}
-                    </Typography>
-                    <Button3D text={t('restaurants.list.newRestaurantButton')} onClick={toggleCreateNewForm} />
-                </Box>
-                <Box
-                    id={INFINITY_LIST_ID}
-                    sx={{
-                        overflow: 'auto',
-                    }}
-                >
-                    {restaurants && (
-                        <InfinityList
-                            parentId={INFINITY_LIST_ID}
-                            fetchData={() => fetchNextPage()}
-                            hasMore={hasMore}
-                            items={restaurants.map((restaurant) => (
-                                <RestaurantEntry
-                                    key={restaurant.id}
-                                    restaurant={restaurant}
-                                    deleteRestaurantButton={deleteRestaurantButton}
-                                />
-                            ))}
-                        />
-                    )}
-                    {restaurants && restaurants.length == 0 && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>{t('restaurants.list.noResults')}</Box>
-                    )}
-                </Box>
-            </Paper>
+                    <Tab value={0} label={t('restaurants.list.title')} sx={{ fontWeight: 700 }} />
+                </Tabs>
+                <TabPanel value={0} index={0}>
+                    <Box sx={{ marginY: 1 }}>
+                        <Button3D text={t('restaurants.list.newRestaurantButton')} onClick={toggleCreateNewForm} />
+                    </Box>
+                    <Box
+                        sx={{
+                            overflow: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            flex: 1,
+                        }}
+                        id={INFINITY_LIST_ID}
+                    >
+                        {restaurants && (
+                            <InfinityList
+                                parentId={INFINITY_LIST_ID}
+                                fetchData={() => fetchNextPage()}
+                                hasMore={hasMore}
+                                showEndMessage={false}
+                                items={restaurants.map((restaurant) => (
+                                    <RestaurantEntry
+                                        key={restaurant.id}
+                                        restaurant={restaurant}
+                                        deleteRestaurantButton={deleteRestaurantButton}
+                                    />
+                                ))}
+                            />
+                        )}
+                        {restaurants && restaurants.length == 0 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                {t('restaurants.list.noResults')}
+                            </Box>
+                        )}
+                    </Box>
+                </TabPanel>
+            </Box>
         </>
     );
 };

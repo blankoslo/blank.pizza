@@ -9,6 +9,7 @@ const EventPage: React.FC = () => (
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            width: '100%',
         }}
     >
         <EventList />

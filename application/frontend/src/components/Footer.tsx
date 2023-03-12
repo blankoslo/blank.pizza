@@ -15,6 +15,9 @@ const Footer: React.FC = () => {
                 padding: 2,
                 backgroundColor: theme.palette.primary.main,
                 ...theme.mixins.footer,
+                [theme.breakpoints.down('md')]: {
+                    display: 'none',
+                },
                 /*[`${theme.breakpoints.up("xs")} and (orientation: landscape)`]: {
             // eslint-disable-next-line
             // @ts-expect-error

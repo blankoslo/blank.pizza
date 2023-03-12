@@ -68,6 +68,9 @@ const theme = createTheme({
         ].join(','),
     },
     palette: {
+        background: {
+            default: '#272d2a',
+        },
         primary: {
             main: '#272d2a',
         },

@@ -6,6 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { UserCard } from './UserCard';
 import { InfinityList } from '../../InfinityList';
 import { useInfiniteUsers } from '../../../hooks/useUsers';
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import {TabPanel} from "../../TabPanel";
 
 const UserList: React.FC = () => {
     const { t } = useTranslation();
@@ -17,53 +20,56 @@ const UserList: React.FC = () => {
     const INFINITY_LIST_ID = 'userInfinityListContainer';
 
     return (
-        <Paper
+        <Box
             sx={(theme) => ({
                 height: '100%',
                 width: '30vw',
-                minWidth: '500px',
-                borderRadius: 3,
-                backgroundColor: theme.palette.secondary.main,
+                minWidth: '600px',
                 display: 'flex',
                 flexDirection: 'column',
-                overflow: 'auto',
+                [theme.breakpoints.down('md')]: {
+                    width: '100%',
+                    minWidth: 'unset',
+                },
             })}
         >
-            <Box
-                sx={{
-                    fontSize: '1.2rem',
-                    fontWeight: 'bold',
-                    margin: '24px 24px 12px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                }}
+            <Tabs
+                value={0}
+                textColor="primary"
+                indicatorColor="primary"
+                aria-label="Event tabs"
+                variant="fullWidth"
+                sx={(theme) => ({ width: '100%', backgroundColor: theme.palette.secondary.main, marginBottom: 1 })}
             >
-                <Typography variant="h5" component="h3">
-                    {t('users.list.title')}
-                </Typography>
-            </Box>
-            <Box
-                id={INFINITY_LIST_ID}
-                sx={{
-                    overflow: 'auto',
-                }}
-            >
-                {users && (
-                    <InfinityList
-                        parentId={INFINITY_LIST_ID}
-                        fetchData={fetchNextPage}
-                        hasMore={hasMore}
-                        items={users.map((user) => (
-                            <UserCard key={user.slack_id} {...user} />
-                        ))}
-                    />
-                )}
-                {users && users.length == 0 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>{t('users.list.noResults')}</Box>
-                )}
-            </Box>
-        </Paper>
+                <Tab value={0} label={t('users.list.title')} sx={{ fontWeight: 700 }} />
+            </Tabs>
+            <TabPanel value={0} index={0}>
+                <Box
+                    id={INFINITY_LIST_ID}
+                    sx={{
+                        overflow: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                    }}
+                >
+                    {users && (
+                        <InfinityList
+                            parentId={INFINITY_LIST_ID}
+                            fetchData={fetchNextPage}
+                            hasMore={hasMore}
+                            showEndMessage={false}
+                            items={users.map((user) => (
+                                <UserCard key={user.slack_id} {...user} />
+                            ))}
+                        />
+                    )}
+                    {users && users.length == 0 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>{t('users.list.noResults')}</Box>
+                    )}
+                </Box>
+            </TabPanel>
+        </Box>
     );
 };
 
