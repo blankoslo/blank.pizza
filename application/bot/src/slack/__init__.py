@@ -76,10 +76,12 @@ def handle_rsvp(body, ack, attending, client):
     ts = message['ts']
     event_id = body["actions"][0]["value"]
     blocks = message["blocks"][0:3]
-    with injector.get(BotApi) as ba:
-        # Send loading message and acknowledge the slack request
-        ba.send_pizza_invite_loading(channel_id=channel_id, ts=ts, old_blocks=blocks, event_id=event_id, slack_client=client)
-        ack()
+    # Use bot client outside `with` to not get slowed down by getting a connection
+    bot_client = injector.get(BotApi)
+    # Send loading message and acknowledge the slack request
+    bot_client.send_pizza_invite_loading(channel_id=channel_id, ts=ts, old_blocks=blocks, event_id=event_id, slack_client=client)
+    ack()
+    with bot_client as ba:
         # Handle request
         invited_users = ba.get_invited_users()
         if user_id in invited_users:
@@ -120,10 +122,11 @@ def handle_rsvp_withdraw(ack, body, context):
     event_id = body["actions"][0]["value"]
     ts = message['ts']
     blocks = message["blocks"][0:3]
-    with injector.get(BotApi) as ba:
-        # Send loading message and acknowledge the slack request
-        ba.send_pizza_invite_loading(channel_id=channel_id, ts=ts, old_blocks=blocks, event_id=event_id, slack_client=client)
-        ack()
+    bot_client = injector.get(BotApi)
+    # Send loading message and acknowledge the slack request
+    bot_client.send_pizza_invite_loading(channel_id=channel_id, ts=ts, old_blocks=blocks, event_id=event_id, slack_client=client)
+    ack()
+    with bot_client as ba:
         # Try to withdraw the user
         success = ba.withdraw_invitation(event_id=event_id, slack_id=user_id)
         if success:
