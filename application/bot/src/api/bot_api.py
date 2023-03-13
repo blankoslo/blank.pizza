@@ -414,6 +414,34 @@ class BotApi:
                 del block["text"]["emoji"]
         return blocks
 
+    def send_pizza_invite_loading(self, channel_id, ts, old_blocks, event_id, slack_client):
+        self.logger.info('updating invitation message to LOADING for %s, %s' % (channel_id, event_id))
+        new_blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": ":hourglass_flowing_sand: Behandler forespørselen din...",
+                }
+            }
+        ]
+        blocks = old_blocks + new_blocks
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+
+    def send_pizza_invite_not_among_invited_users(self, channel_id, ts, old_blocks, event_id, slack_client):
+        self.logger.info('updating invitation message to not among invited for %s, %s' % (channel_id, event_id))
+        new_blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Kunne ikke oppdatere invitasjonen. Du var ikke blant de inviterte.",
+                }
+            }
+        ]
+        blocks = old_blocks + new_blocks
+        return slack_client.update_slack_message(channel_id=channel_id, ts=ts, blocks=blocks)
+
     def send_update_pizza_invite_attending(self, channel_id, ts, event_id, slack_client):
         self.logger.info('updating invitation message to attending for %s, %s' % (channel_id, event_id))
         invitation_message = slack_client.get_slack_message(channel_id, ts)
