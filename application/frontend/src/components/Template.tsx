@@ -17,14 +17,17 @@ export const Template: React.FC<Props> = ({ children }) => {
                     display: 'flex',
                     padding: 2,
                     backgroundColor: theme.palette.primary.main,
-                    maxHeight: `Calc(100vh - ${theme.mixins.toolbar.minHeight}px - ${theme.mixins.footer.minHeight}px)`,
+                    maxHeight: `Calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
                     [theme.breakpoints.down('md')]: {
-                        maxHeight: `Calc(100vh - ${theme.mixins.toolbar.minHeight}px)`,
+                        // @ts-expect-error ...
+                        maxHeight: `Calc(100vh - ${theme.mixins.toolbar[theme.breakpoints.up('sm')].minHeight}px)`,
                     },
                     [theme.breakpoints.up('sm')]: {
-                        // eslint-disable-next-line
-                        // @ts-expect-error
-                        maxHeight: `Calc(100vh - ${theme.mixins.toolbar['@media (min-width:600px)']['minHeight']}px - ${theme.mixins.footer.minHeight}px)`,
+                        maxHeight: `Calc(100vh - ${
+                            // @ts-expect-error ...
+                            theme.mixins.toolbar[theme.breakpoints.up('sm')].minHeight
+                            // @ts-expect-error ...
+                        }px - ${theme.mixins.footer[theme.breakpoints.up('sm')].minHeight}px)`,
                     },
                 })}
             >

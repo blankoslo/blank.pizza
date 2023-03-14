@@ -144,6 +144,7 @@ const Header: React.FC = () => {
                             flexGrow: 1,
                             display: { xs: 'flex', md: 'none' },
                             color: theme.palette.secondary.main,
+                            fontSize: 13,
                             fontFamily: '"Respira"',
                             fontStyle: 'normal',
                             fontWeight: 400,

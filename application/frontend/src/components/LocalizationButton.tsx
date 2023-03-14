@@ -21,7 +21,9 @@ export const LocalizationButton: React.FC = () => {
                 onClick={changeLocale}
             >
                 <LanguageIcon fontSize="large" />
-                <Typography sx={{ marginLeft: 0.5 }}>{i18n.language == 'en' ? 'English' : 'Norsk'}</Typography>
+                <Typography sx={{ marginLeft: 0.5, fontSize: { xs: 13, md: '1rem' } }}>
+                    {i18n.language == 'en' ? 'English' : 'Norsk'}
+                </Typography>
             </IconButton>
         </Box>
     );

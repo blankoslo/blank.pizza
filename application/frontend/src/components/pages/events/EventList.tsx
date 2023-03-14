@@ -7,7 +7,7 @@ import Tab from '@mui/material/Tab';
 import { Button3D } from '../../Button3D';
 import DialogNewEvent from './DialogNewEvent';
 import { useTranslation } from 'react-i18next';
-import {TabPanel} from "../../TabPanel";
+import { TabPanel } from '../../TabPanel';
 
 const EventList: React.FC = () => {
     const [value, setValue] = React.useState(0);
@@ -46,7 +46,13 @@ const EventList: React.FC = () => {
                 indicatorColor="primary"
                 aria-label="Event tabs"
                 variant="fullWidth"
-                sx={(theme) => ({ width: '100%', backgroundColor: theme.palette.secondary.main, marginBottom: 1 })}
+                sx={(theme) => ({
+                    width: '100%',
+                    backgroundColor: theme.palette.secondary.main,
+                    marginBottom: 1,
+                    overflow: 'unset',
+                    minHeight: 'unset',
+                })}
             >
                 <Tab value={0} label={t('events.list.futureEvents.title')} sx={{ fontWeight: 700 }} />
                 <Tab value={1} label={t('events.list.pastEvents.title')} sx={{ fontWeight: 700 }} />

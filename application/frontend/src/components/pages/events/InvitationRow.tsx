@@ -93,7 +93,7 @@ const InvitationRow: React.FC<Props> = ({ eventTime, event_id, slack_id, slack_u
                             alignItems: 'center',
                         }}
                     >
-                        <Image src="" height={50} width={50} wrapperStyle={{ marginRight: 12 }} showLoading />
+                        <Image src="" height={50} width={50} showLoading />
                     </Box>
                     <Box>
                         <Typography>{slack_user.current_username}</Typography>
@@ -121,6 +121,7 @@ const InvitationRow: React.FC<Props> = ({ eventTime, event_id, slack_id, slack_u
                         disabled={eventTime < new Date()}
                         name="rsvp"
                         width={140}
+                        fullWidthMobile={true}
                         marginLeft={false}
                         items={[
                             { value: 'attending', text: 'attending' },

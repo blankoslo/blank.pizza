@@ -14,6 +14,8 @@ interface Props {
     marginLeft?: boolean;
     disabled?: boolean;
     width?: number;
+    fullWidth?: boolean;
+    fullWidthMobile?: boolean;
     variant?: 'outlined' | 'filled' | 'standard';
 }
 
@@ -25,9 +27,20 @@ const TextInput: React.FC<Props> = ({
     marginLeft = true,
     disabled = false,
     width,
+    fullWidth = false,
+    fullWidthMobile = false,
     variant = 'outlined',
 }) => {
     const { control } = useFormContext();
+
+    let normalWidth = width ? `${width}px` : null;
+    if (fullWidth) {
+        normalWidth = '100%';
+    }
+    let mobileWidth = normalWidth;
+    if (fullWidthMobile) {
+        mobileWidth = '100%';
+    }
 
     return (
         <Box
@@ -36,7 +49,7 @@ const TextInput: React.FC<Props> = ({
                 marginLeft: marginLeft ? 2 : 0,
                 display: 'flex',
                 flexDirection: 'column',
-                width: width ? `${width}px` : null,
+                width: { xs: mobileWidth, md: normalWidth },
             }}
         >
             <Controller
