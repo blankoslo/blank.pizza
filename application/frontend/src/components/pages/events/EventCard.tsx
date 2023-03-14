@@ -17,7 +17,7 @@ import { Box } from '@mui/material';
 import { useState } from 'react';
 import DialogEditEvent from './DialogEditEvent';
 
-const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, people_per_event, restaurant }) => {
+const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, people_per_event, restaurant, group }) => {
     const { t } = useTranslation();
 
     const { isLoading, data: invitations } = useInvitations(id);
@@ -58,8 +58,14 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, people_per_event, 
                                 alignItems: 'center',
                             }}
                         >
-                            <CardContent>
-                                <p>{datetimeToReadableString(time)}</p>
+                            <CardContent
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 1,
+                                    padding: 1,
+                                }}
+                            >
                                 <Typography variant="h5" component="h3">
                                     {`${t('events.list.eventCard.normal.place')} ${
                                         restaurant
@@ -69,6 +75,17 @@ const EventCard: React.FC<ApiEvent> = ({ id, time, finalized, people_per_event, 
                                             : t('events.list.deletedRestaurant')
                                     }`}
                                 </Typography>
+                                <Typography component="p">{datetimeToReadableString(time)}</Typography>
+                                {group && (
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            fontSize: '0.85rem',
+                                        }}
+                                    >
+                                        <span>{`${t('events.list.group')}: ${group.name}`}</span>
+                                    </Box>
+                                )}
                             </CardContent>
                             {new Date(time) >= new Date() && (
                                 <Box

@@ -5,6 +5,8 @@ import { addDays, isSameDay, set } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
 import isSameISOWeek from 'date-fns/isSameISOWeek';
 import { _DateTimePicker } from '../../DateTimePicker';
+import {Controller, useFormContext} from "react-hook-form";
+import {useEffect} from "react";
 
 export const PIZZA_EVENT_TIME_IN_HOURS_24_HOURS = 18;
 
@@ -28,7 +30,7 @@ const setTime = (date: Date | null) => {
     });
 };
 
-const selectRandomPizzaDay = (selectedDate: Date | null) => {
+export const selectRandomPizzaDay = (selectedDate: Date | null) => {
     if (!selectedDate) {
         return null;
     }
@@ -70,12 +72,17 @@ export const setPizzaDay = (date: Date | null) => {
     return setTime(selectRandomPizzaDay(date));
 };
 
-type Props = {
+type _Props = {
     selectedDate: Date | null;
     setSelectedDate: React.Dispatch<React.SetStateAction<Date | null>>;
+    name?: string;
 };
 
-const WeekPicker: React.FC<Props> = ({ selectedDate, setSelectedDate }) => {
+const _WeekPicker: React.FC<_Props> = ({ selectedDate, setSelectedDate, name }) => {
+    useEffect(() => {
+        console.log("test", selectedDate)
+        onChange(selectedDate);
+    }, []);
     const onChange = (newValue: Date | null) => {
         if (newValue === null || selectedDate === null || isSameDay(newValue, selectedDate)) {
             setSelectedDate(newValue);
@@ -109,6 +116,25 @@ const WeekPicker: React.FC<Props> = ({ selectedDate, setSelectedDate }) => {
             dayClassNameSetter={dayClassNameSetter}
             onChange={onChange}
             highlightWeek={true}
+            name={name}
+        />
+    );
+};
+
+interface Props {
+    name: string;
+}
+
+const WeekPicker: React.FC<Props> = ({ name }) => {
+    const { control } = useFormContext();
+
+    return (
+        <Controller
+            render={({ field: { ref, onChange, onBlur, value, name }, formState }) => (
+                <_WeekPicker selectedDate={value} setSelectedDate={onChange} name={name} />
+            )}
+            name={name}
+            control={control}
         />
     );
 };

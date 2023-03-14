@@ -5,25 +5,27 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useTranslation } from 'react-i18next';
 import { Box, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { EventCreator } from './EventCreator';
+import { GroupForm } from './GroupForm';
 
 interface Props {
     open: boolean;
     handleClose: () => void;
 }
 
-const DialogNewEvent: React.FC<Props> = ({ open, handleClose }) => {
+const DialogNew: React.FC<Props> = ({ open, handleClose }) => {
     const { t } = useTranslation();
 
     return (
         <Dialog
             open={open}
             onClose={handleClose}
-            PaperProps={{ style: { overflowY: 'visible', width: '100%', maxWidth: '500px' } }}
+            fullWidth
+            maxWidth="xs"
+            PaperProps={{ style: { overflowY: 'visible', width: '100%', maxWidth: '400px' } }}
         >
             <DialogTitle>
                 <Box display="flex" alignItems="center">
-                    <Box flexGrow={1}>{t('events.new.title')}</Box>
+                    <Box flexGrow={1}>{t('groups.new.title')}</Box>
                     <Box>
                         <IconButton onClick={handleClose}>
                             <CloseIcon />
@@ -32,10 +34,10 @@ const DialogNewEvent: React.FC<Props> = ({ open, handleClose }) => {
                 </Box>
             </DialogTitle>
             <DialogContent sx={{ overflowY: 'visible' }}>
-                <EventCreator onSubmitFinished={handleClose} />
+                <GroupForm onSubmitFinished={handleClose} />
             </DialogContent>
         </Dialog>
     );
 };
 
-export default DialogNewEvent;
+export { DialogNew };

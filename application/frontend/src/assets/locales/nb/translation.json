@@ -45,6 +45,10 @@
       "images": {
         "name": "bilder",
         "link": "/images"
+      },
+      "groups": {
+        "name": "grupper",
+        "link": "/groups"
       }
     },
     "settings": {
@@ -121,6 +125,7 @@
         "onError": "Endring av arrangement var mislykket"
       },
       "title": "Endre pizza arrangement \uD83C\uDF55",
+      "restaurantSelectLabel": "Restaurant",
       "buttons": {
         "save": "Lagre",
         "open": "Endre"
@@ -165,7 +170,8 @@
       },
       "deletedRestaurant": "N/A (Restauranten har blitt slettet fra systemet)",
       "newEventButton": "Nytt arrangement",
-      "noResults":"Ingen arrangementer funnet"
+      "noResults":"Ingen arrangementer funnet",
+      "group": "Gruppe"
     }
   },
   "restaurants": {
@@ -193,7 +199,7 @@
       "label": "Restaurant"
     },
     "list": {
-      "title": "List over restaurants",
+      "title": "Liste over restauranter",
       "noResults": "Ingen restauranter funnet",
       "optionalValue": "N/A",
       "entry": {
@@ -220,6 +226,73 @@
       "mutation": {
         "onSuccess": "Sletting av restauranten var vellykket",
         "onError": "Sletting av restauranten var mislykket"
+      }
+    }
+  },
+  "groups": {
+    "new": {
+      "title": "Ny gruppe",
+      "validation": {
+        "name": {
+          "min": "Navnet må være minst 1 bokstav lang",
+          "required": "Navn er påkrevd"
+        }
+      },
+      "mutation": {
+        "onSuccess": "Registrering av ny gruppe var vellykket",
+        "onError": "Registrering av ny gruppe var mislykket"
+      },
+      "form": {
+        "name": "Gruppens navn",
+        "button": "Opprett"
+      }
+    },
+    "usersSelect": {
+      "label": "Gruppemedlemmer"
+    },
+    "groupSelect": {
+      "placeholder": "Gruppe",
+      "label": "Invitasjonsgruppe (bare medlemmer fra denne gruppen vil bli invitert)"
+    },
+    "list": {
+      "title": "Liste over grupper",
+      "noResults": "Ingen grupper funnet",
+      "optionalValue": "N/A",
+      "entry": {
+        "name": "Navn",
+        "numberOf": "medlemmer"
+      },
+      "confirmation": {
+        "title": "Slett gruppe",
+        "content": {
+          "line1": "Er du sikker på at du vil slette gruppen?",
+          "line2": "Denne handlingen kan ikke bli angret."
+        },
+        "action": {
+          "cancel": "Avbryt",
+          "accept": "Slett"
+        }
+      },
+      "newGroupButton": "Ny gruppe"
+    },
+    "delete": {
+      "mutation": {
+        "onSuccess": "Sletting av gruppen var vellykket",
+        "onError": "Sletting av gruppen var mislykket"
+      }
+    },
+    "edit": {
+      "mutation": {
+        "onSuccess": "Endring av gruppe var vellykket",
+        "onError": "Endring av gruppe var mislykket"
+      },
+      "title": "Endre gruppe",
+      "form": {
+        "name": "Gruppens navn",
+        "buttons": {
+          "save": "Lagre",
+          "open": "Endre"
+        }
       }
     }
   }

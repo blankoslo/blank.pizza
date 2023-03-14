@@ -42,6 +42,8 @@ class InvitationRepository(Invitation, CrudMixin):
 
         for attr, value in filters.items():
             query = query.filter(getattr(cls, attr) == value)
+
+        query = query.order_by(cls.invited_at.asc())
         return query.all()
 
     @classmethod

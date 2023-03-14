@@ -2,12 +2,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Additional, Group, Option, SelectPaginate } from './SelectPaginate';
 import { OptionsOrGroups } from 'react-select';
-import { useInfiniteRestaurants } from '../hooks/useRestaurants';
+import { useInfiniteUsers } from '../hooks/useUsers';
 
-const SelectRestaurant: React.FC = () => {
+interface Props {
+    name?: string;
+}
+
+const SelectUsers: React.FC<Props> = ({ name }) => {
     const { t } = useTranslation();
 
-    const { isLoading, data: _restaurants, hasNextPage, fetchNextPage } = useInfiniteRestaurants({ page_size: 10 });
+    const { isLoading, data: _users, hasNextPage, fetchNextPage } = useInfiniteUsers({ page_size: 10 });
 
     const loadOptions = async (
         inputValue: string,
@@ -16,21 +20,21 @@ const SelectRestaurant: React.FC = () => {
     ) => {
         await fetchNextPage();
 
-        const page = additional?.page !== undefined ? additional?.page : (_restaurants?.pages ?? []).length;
-        const restaurants = _restaurants?.pages[page - 1].data ?? [];
+        const page = additional?.page !== undefined ? additional?.page : (_users?.pages ?? []).length;
+        const users = _users?.pages[page - 1].data ?? [];
 
         let hasMore = isLoading ? true : hasNextPage ?? false;
         if (hasNextPage != undefined && !hasNextPage) {
-            hasMore = page < (_restaurants ? _restaurants.pages.length : 0);
+            hasMore = page < (_users ? _users.pages.length : 0);
         }
 
-        const restaurantOptions = restaurants.map((restaurant) => ({
-            value: restaurant.id,
-            label: restaurant.name,
+        const usersOptions = users.map((user) => ({
+            value: user.slack_id,
+            label: user.current_username,
         }));
 
         return {
-            options: restaurantOptions,
+            options: usersOptions,
             hasMore: hasMore,
             additional: {
                 page: page + 1,
@@ -40,14 +44,14 @@ const SelectRestaurant: React.FC = () => {
 
     return (
         <SelectPaginate
-            id="restaurant-select-input"
-            name="restaurant"
-            label={t('restaurants.select.label')}
+            name={name ?? 'users'}
+            label={t('groups.usersSelect.label')}
             fullWidth={true}
             marginLeft={false}
             loadOptions={loadOptions}
+            multi={true}
         />
     );
 };
 
-export { SelectRestaurant };
+export { SelectUsers };

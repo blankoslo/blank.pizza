@@ -11,6 +11,7 @@ import RestaurantPage from '../components/pages/restaurants';
 import EventPage from '../components/pages/events';
 import UsersPage from '../components/pages/users';
 import ImagesPage from '../components/pages/images';
+import GroupsPage from '../components/pages/groups';
 import {Callback} from "../components/pages/slack/callback";
 
 type Props = {
@@ -54,6 +55,7 @@ export const Router: React.FC = () => {
                         <Route path="/users" element={<UsersPage />} />
                         <Route path="/images" element={<ImagesPage />} />
                         <Route path="/logout" element={<Logout />} />
+                        <Route path="/groups" element={<GroupsPage />} />
                     </Route>
                 </Routes>
             </RouterContainer>

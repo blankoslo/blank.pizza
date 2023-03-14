@@ -18,5 +18,6 @@ class SlackOrganization(db.Model):
     events = relationship("Event", backref="slack_organization", cascade="all, delete-orphan")
     images = relationship("Image", backref="slack_organization", cascade="all, delete-orphan")
     restaurants = relationship("Restaurant", backref="slack_organization", cascade="all, delete-orphan")
+    groups = relationship("Group", backref="slack_organization", cascade="all, delete-orphan")
 
 

@@ -20,7 +20,7 @@ const DialogEditEvent: React.FC<Props> = ({ open, handleClose, eventId, eventTim
     const { t } = useTranslation();
 
     return (
-        <Dialog open={open} onClose={handleClose} PaperProps={{ style: { width: '100%', maxWidth: '400px' } }}>
+        <Dialog open={open} onClose={handleClose} PaperProps={{ style: { overflowY: 'visible', width: '100%', maxWidth: '500px' } }}>
             <DialogTitle>
                 <Box display="flex" alignItems="center">
                     <Box flexGrow={1}>{t('events.edit.title')}</Box>
@@ -31,7 +31,7 @@ const DialogEditEvent: React.FC<Props> = ({ open, handleClose, eventId, eventTim
                     </Box>
                 </Box>
             </DialogTitle>
-            <DialogContent>
+            <DialogContent sx={{ overflowY: 'visible' }}>
                 <EventEditor
                     eventId={eventId}
                     eventTime={eventTime}

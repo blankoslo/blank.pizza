@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import DateTimePicker from '../../DateTimePicker';
 import { useState } from 'react';
 import { useRestaurants } from '../../../hooks/useRestaurants';
-import {ApiEventPatch, ApiEventPost, eventsDefaultQueryKey, useEventService} from '../../../api/EventService';
+import { ApiEventPatch, ApiEventPost, eventsDefaultQueryKey, useEventService } from '../../../api/EventService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Paper } from '@mui/material';
@@ -115,8 +115,11 @@ export const EventEditor: React.FC<Props> = ({ onSubmitFinished, eventId, eventT
                         alignItems: 'center',
                     })}
                 >
-                    <SelectRestaurant />
                     <DateTimePicker name="date" />
+                    <Box sx={{ width: '100%' }}>
+                        <label htmlFor="restaurant-select-input">{`${t('events.edit.restaurantSelectLabel')}:`}</label>
+                        <SelectRestaurant />
+                    </Box>
                     <Box
                         sx={{
                             display: 'flex',

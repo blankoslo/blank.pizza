@@ -21,6 +21,8 @@ class Event(CrudMixin, db.Model):
     invitations = relationship("Invitation", backref="event", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=False)
     people_per_event = sa.Column(sa.Integer, nullable=False, server_default=sa.text("5"))
+    group_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey('groups.id', ondelete='SET NULL'), nullable=True)
+    group = relationship("Group", uselist=False)
     __table_args__ = (
         sa.CheckConstraint(people_per_event >= 2, name='check_people_per_event_min'),
         sa.CheckConstraint(people_per_event <= 100, name='check_people_per_event_max'),

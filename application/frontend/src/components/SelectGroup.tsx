@@ -2,12 +2,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Additional, Group, Option, SelectPaginate } from './SelectPaginate';
 import { OptionsOrGroups } from 'react-select';
-import { useInfiniteRestaurants } from '../hooks/useRestaurants';
+import { useInfiniteGroups } from '../hooks/useGroups';
 
-const SelectRestaurant: React.FC = () => {
+interface Props {
+    disabled?: boolean;
+}
+
+const SelectGroup: React.FC<Props> = ({ disabled = false }) => {
     const { t } = useTranslation();
 
-    const { isLoading, data: _restaurants, hasNextPage, fetchNextPage } = useInfiniteRestaurants({ page_size: 10 });
+    const { isLoading, data: _groups, hasNextPage, fetchNextPage } = useInfiniteGroups({ page_size: 10 });
 
     const loadOptions = async (
         inputValue: string,
@@ -16,17 +20,17 @@ const SelectRestaurant: React.FC = () => {
     ) => {
         await fetchNextPage();
 
-        const page = additional?.page !== undefined ? additional?.page : (_restaurants?.pages ?? []).length;
-        const restaurants = _restaurants?.pages[page - 1].data ?? [];
+        const page = additional?.page !== undefined ? additional?.page : (_groups?.pages ?? []).length;
+        const groups = _groups?.pages[page - 1].data ?? [];
 
         let hasMore = isLoading ? true : hasNextPage ?? false;
         if (hasNextPage != undefined && !hasNextPage) {
-            hasMore = page < (_restaurants ? _restaurants.pages.length : 0);
+            hasMore = page < (_groups ? _groups.pages.length : 0);
         }
 
-        const restaurantOptions = restaurants.map((restaurant) => ({
-            value: restaurant.id,
-            label: restaurant.name,
+        const restaurantOptions = groups.map((groups) => ({
+            value: groups.id,
+            label: groups.name,
         }));
 
         return {
@@ -40,14 +44,15 @@ const SelectRestaurant: React.FC = () => {
 
     return (
         <SelectPaginate
-            id="restaurant-select-input"
-            name="restaurant"
-            label={t('restaurants.select.label')}
+            id="groupSelect"
+            name="group"
+            label={t('groups.groupSelect.placeholder')}
             fullWidth={true}
             marginLeft={false}
             loadOptions={loadOptions}
+            disabled={disabled}
         />
     );
 };
 
-export { SelectRestaurant };
+export { SelectGroup };

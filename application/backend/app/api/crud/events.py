@@ -27,7 +27,6 @@ class Events(views.MethodView):
     def post(self, new_data):
         """Add an event"""
         event_service = injector.get(EventService)
-        print(vars(new_data))
         new_event = event_service.add(data=new_data, team_id=current_user.slack_organization_id)
         return new_event
 

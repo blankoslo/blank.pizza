@@ -21,6 +21,7 @@ type Additional = {
 type IsMulti = boolean;
 
 interface Props {
+    id?: string;
     name: string;
     label: string;
     triggerNames?: string[];
@@ -36,6 +37,7 @@ interface Props {
 }
 
 const SelectPaginate: React.FC<Props> = ({
+    id,
     name,
     label,
     triggerNames,
@@ -59,11 +61,13 @@ const SelectPaginate: React.FC<Props> = ({
         option: (provided) => ({
             ...provided,
             borderRadius: theme.shape.borderRadius,
+            color: theme.palette.action.active,
         }),
         control: (provided) => ({
             ...provided,
+            color: theme.palette.action.active,
             // @ts-expect-error: theme (in theme.ts) has root defined as an object with height, but the type says root is string
-            height: theme.components.MuiInputBase.styleOverrides.root.height,
+            minHeight: theme.components.MuiInputBase.styleOverrides.root.height,
             borderColor: isValid
                 ? // @ts-expect-error: theme (in theme.ts) has root defined as an object with fieldset (and bordercolor), but the type says root is string
                   theme.components.MuiInputBase.styleOverrides.root.fieldset.borderColor
@@ -118,6 +122,7 @@ const SelectPaginate: React.FC<Props> = ({
             <Controller
                 render={({ field: { ref, ...rest }, formState }) => (
                     <AsyncPaginate
+                        id={id}
                         components={{ DropdownIndicator, IndicatorSeparator }}
                         styles={customStyles(!formState.errors[name])}
                         {...rest}

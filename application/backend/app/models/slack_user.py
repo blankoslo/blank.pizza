@@ -8,6 +8,7 @@ from app.models.mixins import get_field, CrudMixin
 from app.models.event import Event
 from app.models.invitation import Invitation
 from app.models.enums import RSVP
+from app.models.slack_user_group_association import slack_user_group_association_table
 
 
 class SlackUser(CrudMixin, db.Model):
@@ -20,6 +21,11 @@ class SlackUser(CrudMixin, db.Model):
     email = sa.Column(sa.String, nullable=True)
     ratings = relationship("Rating", backref="slack_user", cascade="all, delete-orphan")
     slack_organization_id = sa.Column(sa.String, sa.ForeignKey('slack_organizations.team_id'), nullable=False)
+    groups = relationship(
+        "Group",
+        secondary=slack_user_group_association_table,
+        back_populates="members"
+    )
     __table_args__ = (
         sa.CheckConstraint(priority >= 1, name='check_priority_range_min'),
         sa.CheckConstraint(priority <= 10, name='check_priority_range_max'),
@@ -53,51 +59,73 @@ class SlackUser(CrudMixin, db.Model):
         number_of_events_regarded = math.ceil(total_number_of_employees / employees_per_event)
 
         AliasInvitation = aliased(Invitation)
-        AliasEvent = aliased(Event)
 
-        subquery_join = session.query(Event.id) \
-            .filter(
-                sa.and_(
-                    Event.time < datetime.now(),
-                    Event.finalized == True
-                )
-            ) \
-            .order_by(Event.time.desc()) \
-            .limit(number_of_events_regarded)
-        subquery_filter = session.query(AliasInvitation) \
-            .filter(
-                sa.and_(
-                    AliasInvitation.event_id == event_id,
-                    AliasInvitation.slack_id == cls.slack_id
-                )
+        # Get events to be regarded in counting
+        subquery_join = session.query(
+            Event.id
+        ).filter(
+            sa.and_(
+                Event.time < datetime.now(),
+                Event.finalized == True
             )
-        subquery_organization = session.query(Event.slack_organization_id) \
-            .filter(Event.id == event_id)
+        ).order_by(
+            Event.time.desc()
+        ).limit(
+            number_of_events_regarded
+        )
+        # Only get invitations that are connected specified event and given slack_user
+        subquery_filter = session.query(
+            AliasInvitation
+        ).filter(
+            sa.and_(
+                AliasInvitation.event_id == event_id,
+                AliasInvitation.slack_id == cls.slack_id
+            )
+        )
+        # Get valid slack_user ids from slack organization and group if it is specified
+        subquery_group = session.query(
+            SlackUser.slack_id
+        ).distinct().outerjoin(
+            slack_user_group_association_table
+        ).join(
+            Event,
+            sa.and_(Event.slack_organization_id == SlackUser.slack_organization_id, Event.id == event_id)
+        ).filter(
+            sa.or_(
+                Event.group_id.is_(None),
+                sa.and_(Event.group_id.is_not(None), Event.group_id == slack_user_group_association_table.c.group_id)
+            )
+        )
 
-        query = session.query(cls.slack_id) \
-            .join(
-                Invitation,
+        # Main query
+        subquery_query_main = session.query(
+            cls.slack_id
+        ).join(
+            Invitation,
+            sa.and_(
+                cls.slack_id == Invitation.slack_id,
                 sa.and_(
-                    cls.slack_id == Invitation.slack_id,
-                    sa.and_(
-                        Invitation.rsvp == RSVP.attending,
-                        Invitation.event_id.in_(subquery_join)
-                    )
-                ),
-                isouter = True
-            ) \
-            .filter(  # Filter out those we're already invited and those who arent active, and only those in the organization of the event
-                sa.and_(
-                    cls.slack_organization_id == subquery_organization.scalar_subquery(),
-                    sa.and_(
-                        ~subquery_filter.exists(),
-                        cls.active == True
-                    )
+                    Invitation.rsvp == RSVP.attending,
+                    Invitation.event_id.in_(subquery_join)
                 )
-            ) \
-            .group_by(cls.slack_id) \
-            .order_by(func.count(Invitation.rsvp), func.random()) \
-            .limit(number_of_users_to_invite)
+            ),
+            isouter=True
+        ).filter(
+            sa.and_(
+                ~subquery_filter.exists(),
+                cls.active
+            )
+        ).group_by(
+            cls.slack_id
+        ).order_by(
+            func.count(Invitation.rsvp), func.random()
+        ).subquery()
+
+        # Filter out ids that isnt in the specified group if the group isnt null and limit to the number to be invited
+        query = session.query(subquery_query_main).filter(subquery_query_main.c.slack_id.in_(subquery_group)).limit(
+            number_of_users_to_invite
+        )
+
         return query.all()
 
     @classmethod
@@ -112,4 +140,4 @@ class SlackUser(CrudMixin, db.Model):
         return query.all()
 
     def __repr__(self):
-        return "<SlackUsers(id={self.id!r})".format(self=self)
+        return "<SlackUsers(id={self.slack_id!r})".format(self=self)
