@@ -3,12 +3,13 @@ import pytz
 from datetime import datetime
 
 from app.models.event import Event
+from app.models.restaurant import Restaurant
+from app.models.group import Group
 from app.repositories.invitation_repository import InvitationRepository
 from app.models.event_schema import EventSchema
 from app.services.broker.schemas.deleted_event_event import DeletedEventEventSchema
 from app.services.broker.schemas.updated_event_event import UpdatedEventEventSchema
 from app.services.broker import BrokerService
-
 
 class EventService:
     def get_events_in_need_of_invitations(self):
@@ -85,6 +86,17 @@ class EventService:
 
     def add(self, data, team_id):
         data.slack_organization_id = team_id
+
+        restaurant = Restaurant.get_by_id(data.restaurant_id)
+
+        if restaurant.slack_organization_id != team_id:
+            return None
+
+        if data.group_id is not None:
+            group = Group.get_by_id(data.group_id)
+            if group.slack_organization_id != team_id:
+                return None
+
         return Event.upsert(data)
 
     def update(self, event_id, data, team_id):

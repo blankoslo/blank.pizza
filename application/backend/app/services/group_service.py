@@ -15,9 +15,15 @@ class GroupService:
 
     def add(self, data, team_id):
         slack_users = []
-        for slack_user in SlackUser.query.filter(SlackUser.slack_id.in_(data['members'])).filter(SlackUser.slack_organization_id == team_id).all():
+        verified_slack_users = SlackUser.query.filter(SlackUser.slack_id.in_(data['members'])).filter(SlackUser.slack_organization_id == team_id).all()
+
+        if len(verified_slack_users) != len(data['members']):
+            return None
+
+        for slack_user in verified_slack_users:
             dumped_slack_user = SlackUserSchema(exclude=['slack_organization']).dump(slack_user)
             slack_users.append(dumped_slack_user)
+
         data = {
             'name': data["name"],
             'members': slack_users,

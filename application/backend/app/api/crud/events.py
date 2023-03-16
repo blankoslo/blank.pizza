@@ -28,6 +28,8 @@ class Events(views.MethodView):
         """Add an event"""
         event_service = injector.get(EventService)
         new_event = event_service.add(data=new_data, team_id=current_user.slack_organization_id)
+        if new_event is None:
+            abort(400, message="Something went wrong.")
         return new_event
 
 @bp.route("/<event_id>")
@@ -39,7 +41,7 @@ class EventsById(views.MethodView):
         event_service = injector.get(EventService)
         event = event_service.get_by_id(event_id=event_id, team_id=current_user.slack_organization_id)
         if event is None:
-            abort(404, message = "Event not found.")
+            abort(404, message="Event not found.")
         return event
 
     @bp.arguments(EventUpdateSchema)
@@ -50,7 +52,7 @@ class EventsById(views.MethodView):
         event_service = injector.get(EventService)
         updated_event = event_service.update(event_id=event_id, data=update_data, team_id=current_user.slack_organization_id)
         if updated_event is None:
-            abort(404, message = "Event not found.")
+            abort(404, message="Event not found.")
         return updated_event
 
     @bp.response(204)
@@ -60,4 +62,4 @@ class EventsById(views.MethodView):
         event_service = injector.get(EventService)
         success = event_service.delete(event_id=event_id, team_id=current_user.slack_organization_id)
         if not success:
-            abort(400, message = "Something went wrong.")
+            abort(400, message="Something went wrong.")

@@ -26,6 +26,8 @@ class Groups(views.MethodView):
         """Add a group"""
         group_service = injector.get(GroupService)
         new_group = group_service.add(data=new_data, team_id=current_user.slack_organization_id)
+        if new_group is None:
+            abort(400, message="Something went wrong.")
         return new_group
 
 @bp.route("/<group_id>")
