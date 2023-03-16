@@ -1,7 +1,6 @@
-import Button from '@mui/material/Button';
 import WeekPicker, { getRandomInteger, setPizzaDay } from './WeekPicker';
-import { useState } from 'react';
-import { useRestaurants } from '../../../hooks/useRestaurants';
+import { useEffect } from 'react';
+import { useInfiniteRestaurants } from '../../../hooks/useRestaurants';
 import { ApiEventPost, eventsDefaultQueryKey, useEventService } from '../../../api/EventService';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,7 +11,7 @@ import { SelectGroup } from '../../SelectGroup';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import i18n from 'i18next';
+import { LoadingButton } from '@mui/lab';
 
 const StyledInput = styled('input')({
     padding: '1rem',
@@ -69,7 +68,14 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
 
     const usingGroup = useWatch({ control: formMethods.control, name: 'usingGroup' });
 
-    const { isLoading, data: restaurants } = useRestaurants();
+    const { isLoading, data, hasNextPage, fetchNextPage } = useInfiniteRestaurants();
+    const restaurants = data?.pages.flatMap((users) => users.data) ?? [];
+
+    useEffect(() => {
+        if (hasNextPage) {
+            fetchNextPage();
+        }
+    }, [data, hasNextPage, fetchNextPage]);
 
     const addEventMutation = useMutation((newEvent: ApiEventPost) => postEvent(newEvent), {
         onSuccess: () => {
@@ -84,17 +90,17 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
     });
 
     const onSubmit = formMethods.handleSubmit(async (data) => {
-        if (restaurants === undefined || restaurants.restaurants.length === 0) {
+        if (restaurants === undefined || restaurants.length === 0) {
             toast.warn(t('events.new.errors.noRestaurantsExists'));
             return;
         }
 
-        let randomNumber = Math.floor(getRandomInteger(0, restaurants.restaurants.length));
-        if (restaurants.restaurants.length === 3) {
+        let randomNumber = Math.floor(getRandomInteger(0, restaurants.length));
+        if (restaurants.length === 3) {
             randomNumber = Math.random() > 0.5 ? 1 : 0;
         }
 
-        const restaurant = restaurants.restaurants[randomNumber];
+        const restaurant = restaurants[randomNumber];
 
         const event: ApiEventPost = {
             time: data.date.toISOString(),
@@ -155,9 +161,17 @@ export const EventCreator: React.FC<Props> = ({ onSubmitFinished }) => {
                         {...formMethods.register('peoplePerEvent')}
                     />
                 </Box>
-                <Button sx={{ marginY: 1 }} color="success" variant="contained" fullWidth type="submit">
+                <LoadingButton
+                    sx={{ marginY: 1 }}
+                    color="success"
+                    variant="contained"
+                    fullWidth
+                    type="submit"
+                    loading={isLoading}
+                    disabled={isLoading}
+                >
                     {t('events.new.button')}
-                </Button>
+                </LoadingButton>
             </Box>
         </FormProvider>
     );
