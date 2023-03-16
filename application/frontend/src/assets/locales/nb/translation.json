@@ -23,6 +23,24 @@
     }
   },
   "logout": "Logger deg ut...",
+  "home": {
+    "faq": {
+      "title": "Ofte stilte spørsmål:",
+      "question1": {
+        "question": "Hvordan kan jeg slette appen fra Slack workspacen min?",
+        "answer": "For å fjerne Pizzabot fra workspacen din, må du avinstallere den gjennom Slack. Når appen er avinstallert, vil ALL data som er knyttet til workspacen din bli slettet, inkludert alle opplastede bilder.",
+        "answer2": "Du kan sjekke om workspacen din har blitt slettet ved å logge ut og inn. Hvis Slack workspacen er slettet så vil du ikke få lov til å logge inn igjen."
+      },
+      "question2": {
+        "question": "Hvordan kan jeg slette all data som er knyttet til Slack workspacen og kontoen min fra Pizzabot.",
+        "answer": "For å fjerne all data som er knyttet til Slack workspacen og kontoen din fra Pizzabot, må du avinstallere Pizzabot fra worskpacen som forklart ovenfor."
+      },
+      "question3": {
+        "question": "Jeg ønsker å kontakte Pizzabot angående noe annet. Hvordan kan jeg gjøre det?",
+        "answer": "Vennligst send oss en e-post med emnet \"Pizzabot - [spørsmål]\". Du kan finne Blank's kontaktinformasjon på"
+      }
+    }
+  },
   "header": {
     "logo": "Pizzabot Administrasjon",
     "pages": {

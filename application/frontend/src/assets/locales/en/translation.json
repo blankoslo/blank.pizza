@@ -23,6 +23,24 @@
     }
   },
   "logout": "Logging you out...",
+  "home": {
+    "faq": {
+      "title": "Frequently Asked Questions:",
+      "question1": {
+        "question": "How do i delete the app from my slack workspace?",
+        "answer": "To remove Pizzabot from your workspace, you have to uninstall it through slack. Once the app has been uninstalled, ALL data associated with your workspace will be deleted, including all uploaded images.",
+        "answer2": "You can check that the deletion was successful by logging out and in. If the workspace was successfully deleted then you won't be allowed to log back in."
+      },
+      "question2": {
+        "question": "How do delete all data associated with my slack workspace and my account from pizzabot.",
+        "answer": "To remove all data associated with your slack workspace and account from pizzabot, you need to uninstall Pizzabot from your workspace as explained above."
+      },
+      "question3": {
+        "question": "I want to contact Pizzabot about something else. How can i do so?",
+        "answer": "Please send us an email named \"Pizzabot - [question]\", you can find Blank's contact information over at"
+      }
+    }
+  },
   "header": {
     "logo": "Pizzabot Administration",
     "pages": {

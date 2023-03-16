@@ -12,7 +12,8 @@ import EventPage from '../components/pages/events';
 import UsersPage from '../components/pages/users';
 import ImagesPage from '../components/pages/images';
 import GroupsPage from '../components/pages/groups';
-import {Callback} from "../components/pages/slack/callback";
+import { Callback } from '../components/pages/slack/callback';
+import HomePage from '../components/pages/home';
 
 type Props = {
     children?: React.ReactNode;
@@ -49,7 +50,7 @@ export const Router: React.FC = () => {
                         <Route path="/slack/callback/" element={<Callback />} />
                     </Route>
                     <Route element={<Auth loggedIn={true} />}>
-                        <Route path="/" element={<Outlet />} />
+                        <Route path="/" element={<HomePage />} />
                         <Route path="/restaurants" element={<RestaurantPage />} />
                         <Route path="/events" element={<EventPage />} />
                         <Route path="/users" element={<UsersPage />} />
